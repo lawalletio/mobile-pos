@@ -1,5 +1,7 @@
 package com.mobilepos;
 
+import android.os.Bundle; // required for onCreate parameter
+
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
