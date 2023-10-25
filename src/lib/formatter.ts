@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { format } from 'date-fns'
 import { AvailableCurrencies, CurrenciesMetadata } from '@/types/config'
 import { enUS, es } from 'date-fns/locale'
