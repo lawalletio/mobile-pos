@@ -44,7 +44,7 @@ export default function Component(props: ComponentProps) {
             </Flex>
           </Container>
         </Flex>
-        <Container>
+        <Container size="small">
           <Divider y={24} />
           <Flex direction="column" flex={1}>
             {children}
