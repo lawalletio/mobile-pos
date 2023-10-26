@@ -10,13 +10,18 @@
   },
   "dependencies": {
     "@bitcoin-design/bitcoin-icons-react": "^0.1.10",
+    "@nostr-dev-kit/ndk": "^2.0.3",
+    "axios": "^1.5.1",
     "confetti-js": "^0.0.18",
     "date-fns": "^2.30.0",
+    "lnurl-pay": "^3.0.1",
     "next": "13.5.6",
+    "nostr-tools": "^1.17.0",
     "prettier": "^3.0.3",
     "react": "^18",
     "react-dom": "^18",
     "react-qr-code": "^2.0.12",
+    "react-use-storage": "^0.5.1",
     "sass": "^1.69.4",
     "styled-components": "^6.1.0"
   },
