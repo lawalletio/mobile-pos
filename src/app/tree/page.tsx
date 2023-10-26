@@ -27,7 +27,7 @@ export default function Home() {
   const { userConfig } = useContext(LaWalletContext)
   const numpadData = useNumpad(userConfig.props.currency)
 
-  const [cardScanned, setCardScanned] = useState<boolean>(true)
+  const [cardScanned, setCardScanned] = useState<boolean>(false)
 
   const handleClick = () => {
     // POC
