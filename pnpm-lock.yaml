@@ -14,6 +14,9 @@ dependencies:
   axios:
     specifier: ^1.5.1
     version: 1.5.1
+  bolt11:
+    specifier: ^1.4.1
+    version: 1.4.1
   confetti-js:
     specifier: ^0.0.18
     version: 0.0.18
