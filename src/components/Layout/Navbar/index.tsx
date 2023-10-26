@@ -23,7 +23,7 @@ export default function Component(props: ComponentProps) {
             {children}
           </Flex>
           <LinkButton
-            href={theme === 'primary' ? '/tree' : '/'}
+            href={theme === 'primary' ? '/tree' : '/paydesk'}
             variant="bezeledGray"
             size="small"
             color={theme}
