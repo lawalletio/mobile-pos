@@ -1,7 +1,6 @@
 'use client'
 
 import { ReactNode } from 'react'
-import Script from 'next/script'
 import { ThemeProvider } from 'styled-components'
 
 import { LaWalletProvider } from '@/context/LaWalletContext'
@@ -12,6 +11,9 @@ import { AvailableLanguages, defaultLocale } from '@/translations'
 import theme from '@/styles/theme'
 import { fontSecondary } from '@/styles/fonts'
 import GlobalStyles from '@/styles/GlobalStyles'
+import { LNProvider } from '@/context/LN'
+import { NostrProvider } from '@/context/Nostr'
+import { OrderProvider } from '@/context/Order'
 
 interface ProviderProps {
   children: ReactNode
@@ -35,10 +37,16 @@ const Providers = (props: ProviderProps) => {
 
       <body>
         <LaWalletProvider>
-          <StyledComponentsRegistry>
-            <GlobalStyles />
-            <ThemeProvider theme={theme}>{children}</ThemeProvider>
-          </StyledComponentsRegistry>
+          <LNProvider>
+            <NostrProvider>
+              <OrderProvider>
+                <StyledComponentsRegistry>
+                  <GlobalStyles />
+                  <ThemeProvider theme={theme}>{children}</ThemeProvider>
+                </StyledComponentsRegistry>
+              </OrderProvider>
+            </NostrProvider>
+          </LNProvider>
         </LaWalletProvider>
       </body>
     </html>
