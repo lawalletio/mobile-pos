@@ -2,7 +2,7 @@
 
 import { RefreshIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 
-import { Flex, Button } from '@/components/UI'
+import { Flex, LinkButton } from '@/components/UI'
 import Container from '../Container'
 
 import { Navbar } from './style'
@@ -22,14 +22,14 @@ export default function Component(props: ComponentProps) {
           <Flex align="end" gap={8}>
             {children}
           </Flex>
-          <Button
-            onClick={() => null}
+          <LinkButton
+            href={theme === 'primary' ? '/tree' : '/paydesk'}
             variant="bezeledGray"
             size="small"
             color={theme}
           >
             <RefreshIcon />
-          </Button>
+          </LinkButton>
         </Flex>
       </Container>
     </Navbar>

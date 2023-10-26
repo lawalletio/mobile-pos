@@ -19,7 +19,7 @@ import {
   QRCode,
   Confetti,
   Icon,
-  Sheet
+  Alert
 } from '@/components/UI'
 import Container from '@/components/Layout/Container'
 import { Loader } from '@/components/Loader/Loader'
@@ -32,7 +32,7 @@ import { useOrder } from '@/context/Order'
 import { Event } from 'nostr-tools'
 import { useLN } from '@/context/LN'
 
-export default function Payment() {
+export default function Page() {
   const router = useRouter()
   const { orderId: orderIdFromUrl } = useParams()
   const { subscribeZap, getEvent } = useNostr()
@@ -52,13 +52,8 @@ export default function Payment() {
   const numpadData = useNumpad(userConfig.props.currency)
 
   const [finished, setFinished] = useState<boolean>(false)
-  const [showSheet, setShowSeet] = useState<boolean>(false)
 
   const handlePrint = () => {}
-
-  const handleCloseSheet = () => {
-    setShowSeet(false)
-  }
 
   const fetchOrder = useCallback(
     async (_orderId: string) => {
@@ -116,6 +111,13 @@ export default function Payment() {
 
   return (
     <>
+      <Alert
+        title={''}
+        description={'Disponible para escanear NFC.'}
+        type={'success'}
+        isOpen={!finished}
+      />
+
       {finished ? (
         <>
           <Confetti />
@@ -195,15 +197,7 @@ export default function Payment() {
               <Divider y={16} />
               <Flex gap={8} direction="column">
                 <Flex>
-                  <Button variant="bezeled" onClick={() => setShowSeet(true)}>
-                    Escanear tarjeta
-                  </Button>
-                </Flex>
-                <Flex>
-                  <Button
-                    variant="bezeledGray"
-                    onClick={() => router.push('/')}
-                  >
+                  <Button variant="bezeledGray" onClick={() => router.back()}>
                     Cancelar
                   </Button>
                 </Flex>
@@ -213,24 +207,6 @@ export default function Payment() {
           </Flex>
         </>
       )}
-
-      <Sheet
-        title={'Listo para escanear'}
-        isOpen={showSheet}
-        onClose={handleCloseSheet}
-      >
-        <Container>
-          <Flex direction="column" flex={1} align="center" justify="center">
-            <Icon color={theme.colors.primary}>
-              <CreditCardIcon />
-            </Icon>
-            <Divider y={8} />
-            <Text align="center">
-              Sostenga su dispositivo cerca de la etiqueta NFC.
-            </Text>
-          </Flex>
-        </Container>
-      </Sheet>
     </>
   )
 }
