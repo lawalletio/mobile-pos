@@ -87,6 +87,7 @@ const useCurrencyConverter = (): UseConverterReturns => {
 
   useEffect(() => {
     loadPrices()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return { pricesData, convertCurrency }
