@@ -9,7 +9,7 @@ import {
 import { Flex, Heading, Text, Divider, Icon, Card } from '@/components/UI'
 import Container from '@/components/Layout/Container'
 
-export default function Home() {
+export default function Page() {
   return (
     <>
       <Container size="small">

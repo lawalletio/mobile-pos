@@ -30,7 +30,7 @@ import { useNumpad } from '@/hooks/useNumpad'
 
 import theme from '@/styles/theme'
 
-export default function Home() {
+export default function Page() {
   const router = useRouter()
 
   const { userConfig } = useContext(LaWalletContext)

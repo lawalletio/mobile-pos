@@ -21,7 +21,7 @@ import Navbar from '@/components/Layout/Navbar'
 import TokenList from '@/components/TokenList'
 import { useNumpad } from '@/hooks/useNumpad'
 
-export default function Home() {
+export default function Page() {
   const router = useRouter()
 
   const { userConfig } = useContext(LaWalletContext)
