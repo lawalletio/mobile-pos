@@ -53,6 +53,9 @@ dependencies:
   styled-components:
     specifier: ^6.1.0
     version: 6.1.0(react-dom@18.0.0)(react@18.0.0)
+  use-nfc-hook:
+    specifier: ^1.0.4
+    version: 1.0.4(react@18.0.0)
 
 devDependencies:
   '@types/node':
@@ -2978,6 +2981,14 @@ packages:
     dependencies:
       punycode: 2.3.0
     dev: true
+
+  /use-nfc-hook@1.0.4(react@18.0.0):
+    resolution: {integrity: sha512-5omiwW5V52L33js9xqOv6BPcbP3e9LsHMaAAN9zEnQH84vfLLOVCXnrXmyuimhkNo5l2+f53ifvCYlcM3lQlPA==}
+    peerDependencies:
+      react: ^18.2.0
+    dependencies:
+      react: 18.0.0
+    dev: false
 
   /utf-8-validate@5.0.10:
     resolution: {integrity: sha512-Z6czzLq4u8fPOyx7TU6X3dvUZVvoJmxSQ+IcrlmagKhilxlhZgxPK6C5Jqbkw1IDUmFTM+cz9QDnnLTwDz/2gQ==}
