@@ -24,7 +24,8 @@
     "react-qr-code": "^2.0.12",
     "react-use-storage": "^0.5.1",
     "sass": "^1.69.4",
-    "styled-components": "^6.1.0"
+    "styled-components": "^6.1.0",
+    "use-nfc-hook": "^1.0.4"
   },
   "devDependencies": {
     "@types/node": "^20",
