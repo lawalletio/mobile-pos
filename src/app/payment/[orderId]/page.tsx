@@ -2,10 +2,7 @@
 
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import {
-  CheckIcon,
-  CreditCardIcon
-} from '@bitcoin-design/bitcoin-icons-react/filled'
+import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 
 import { LaWalletContext } from '@/context/LaWalletContext'
 import { formatToPreference } from '@/lib/formatter'
@@ -23,14 +20,15 @@ import {
 } from '@/components/UI'
 import Container from '@/components/Layout/Container'
 import { Loader } from '@/components/Loader/Loader'
-import { useNumpad } from '@/hooks/useNumpad'
 
 import theme from '@/styles/theme'
 import { useNostr } from '@/context/Nostr'
-import { NDKEvent } from '@nostr-dev-kit/ndk'
 import { useOrder } from '@/context/Order'
 import { Event } from 'nostr-tools'
 import { useLN } from '@/context/LN'
+import { useNfc } from 'use-nfc-hook'
+import axios from 'axios'
+import { LNURLResponse, LNURLWStatus } from '@/types/lnurl'
 
 export default function Page() {
   const router = useRouter()
@@ -46,14 +44,14 @@ export default function Page() {
     requestZapInvoice
   } = useOrder()
 
+  const { isNDEFAvailable, permission, read, abortReadCtrl, write } = useNfc()
+
   const [invoice, setInvoice] = useState<string>()
+  const [cardStatus, setCardStatus] = useState<LNURLWStatus>(LNURLWStatus.IDLE)
 
   const { userConfig } = useContext(LaWalletContext)
-  const numpadData = useNumpad(userConfig.props.currency)
 
   const [finished, setFinished] = useState<boolean>(false)
-
-  const handlePrint = () => {}
 
   const fetchOrder = useCallback(
     async (_orderId: string) => {
@@ -71,6 +69,49 @@ export default function Page() {
     },
     [getEvent, setOrderEvent]
   )
+
+  const startRead = async () => {
+    try {
+      const response = await read()
+      const record = response.message.records[0]
+      const decoder = new TextDecoder('utf-8')
+      const decodedContent = decoder.decode(record.data)
+      processLNURL(decodedContent)
+    } catch (error) {
+      alert('ALERT on reading: ' + JSON.stringify(error))
+      console.log('ERROR ', error)
+    }
+  }
+
+  const processLNURL = async (lnurl: string) => {
+    setCardStatus(LNURLWStatus.REQUESTING)
+    const url = lnurl.replace('lnurlw://', 'https://')
+    const response = await axios.get(url)
+    if (response.status !== 200) {
+      setCardStatus(LNURLWStatus.ERROR)
+      alert('Hubo un error ge')
+      alert(JSON.stringify(response.data))
+      return
+    }
+
+    processLNURLResponse(response.data)
+    // startRead()
+  }
+
+  const processLNURLResponse = async (response: LNURLResponse) => {
+    setCardStatus(LNURLWStatus.CALLBACK)
+    const url = response.callback
+    const _response = await axios.get(url, {
+      params: { k1: response.k1, pr: invoice }
+    })
+    if (_response.status !== 200) {
+      setCardStatus(LNURLWStatus.ERROR)
+      alert('Hubo un error ge')
+      alert(JSON.stringify(_response.data))
+      return
+    }
+    setCardStatus(LNURLWStatus.DONE)
+  }
 
   // Search for orderIdFromURL
   useEffect(() => {
@@ -102,6 +143,7 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId])
 
+  // New zap events
   useEffect(() => {
     if (zapEvents.length <= 0 || finished || pendingAmount > 0) {
       return
@@ -109,13 +151,42 @@ export default function Page() {
     setFinished(true)
   }, [zapEvents, finished, pendingAmount])
 
+  // On Invoice ready
+  useEffect(() => {
+    if (!invoice || !recipientPubkey) {
+      return
+    }
+
+    startRead()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [invoice, recipientPubkey])
+
+  // On Mount
+  useEffect(() => {
+    return () => {
+      abortReadCtrl()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <>
+      {isNDEFAvailable && permission === 'granted' && invoice && (
+        <Alert
+          title={''}
+          description={'Disponible para escanear NFC.'}
+          type={'success'}
+          isOpen={cardStatus === LNURLWStatus.IDLE}
+        />
+      )}
+
       <Alert
         title={''}
-        description={'Disponible para escanear NFC.'}
-        type={'success'}
-        isOpen={!finished}
+        description={'Procesando...'}
+        type={'warning'}
+        isOpen={
+          cardStatus !== LNURLWStatus.IDLE && cardStatus !== LNURLWStatus.DONE
+        }
       />
 
       {finished ? (
@@ -197,6 +268,12 @@ export default function Page() {
               <Divider y={16} />
               <Flex gap={8} direction="column">
                 <Flex>
+                  {isNDEFAvailable && permission === 'prompt' && (
+                    <Button variant="bezeledGray" onClick={() => router.back()}>
+                      Solicitar NFC
+                    </Button>
+                  )}
+
                   <Button variant="bezeledGray" onClick={() => router.back()}>
                     Cancelar
                   </Button>
