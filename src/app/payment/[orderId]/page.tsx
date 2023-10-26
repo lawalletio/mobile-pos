@@ -1,7 +1,7 @@
 'use client'
 
-import { useContext, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useCallback, useContext, useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import {
   CheckIcon,
   CreditCardIcon
@@ -15,23 +15,38 @@ import {
   Heading,
   Text,
   Divider,
-  LinkButton,
   Button,
-  Keyboard,
   QRCode,
   Confetti,
   Icon,
   Sheet
 } from '@/components/UI'
 import Container from '@/components/Layout/Container'
-import TokenList from '@/components/TokenList'
 import { Loader } from '@/components/Loader/Loader'
 import { useNumpad } from '@/hooks/useNumpad'
 
 import theme from '@/styles/theme'
+import { useNostr } from '@/context/Nostr'
+import { NDKEvent } from '@nostr-dev-kit/ndk'
+import { useOrder } from '@/context/Order'
+import { Event } from 'nostr-tools'
+import { useLN } from '@/context/LN'
 
-export default function Home() {
+export default function Payment() {
   const router = useRouter()
+  const { orderId: orderIdFromUrl } = useParams()
+  const { subscribeZap, getEvent } = useNostr()
+  const { recipientPubkey } = useLN()
+  const {
+    orderId,
+    amount,
+    setOrderEvent,
+    pendingAmount,
+    zapEvents,
+    requestZapInvoice
+  } = useOrder()
+
+  const [invoice, setInvoice] = useState<string>()
 
   const { userConfig } = useContext(LaWalletContext)
   const numpadData = useNumpad(userConfig.props.currency)
@@ -44,6 +59,60 @@ export default function Home() {
   const handleCloseSheet = () => {
     setShowSeet(false)
   }
+
+  const fetchOrder = useCallback(
+    async (_orderId: string) => {
+      const order = await getEvent!(_orderId)
+
+      if (!order) {
+        alert('NO HAY ORDER!')
+        return
+      }
+
+      setOrderEvent!((await order.toNostrEvent()) as Event)
+
+      console.info('ORDER:')
+      console.dir(order)
+    },
+    [getEvent, setOrderEvent]
+  )
+
+  // Search for orderIdFromURL
+  useEffect(() => {
+    // Not orderId found on url
+    if (!orderIdFromUrl) {
+      router.back()
+      return
+    }
+
+    // Order already set
+    if (orderId) {
+      return
+    }
+
+    fetchOrder(orderIdFromUrl as string)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderIdFromUrl, orderId])
+
+  // On orderId change
+  useEffect(() => {
+    if (!orderId || !recipientPubkey) {
+      return
+    }
+
+    requestZapInvoice!(amount * 1000, orderId).then(_invoice => {
+      console.info('INVOICE:')
+      setInvoice!(_invoice)
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderId])
+
+  useEffect(() => {
+    if (zapEvents.length <= 0 || finished || pendingAmount > 0) {
+      return
+    }
+    setFinished(true)
+  }, [zapEvents, finished, pendingAmount])
 
   return (
     <>
@@ -65,13 +134,11 @@ export default function Home() {
               <Text size="small" color={theme.colors.gray50}>
                 Pago acreditado
               </Text>
+
               <Flex justify="center" align="center" gap={4}>
                 {userConfig.props.currency !== 'SAT' && <Text>$</Text>}
                 <Heading>
-                  {formatToPreference(
-                    userConfig.props.currency,
-                    numpadData.intAmount[numpadData.usedCurrency]
-                  )}
+                  {formatToPreference(userConfig.props.currency, amount)}
                 </Heading>
               </Flex>
             </Flex>
@@ -110,7 +177,8 @@ export default function Home() {
                 <Heading>
                   {formatToPreference(
                     userConfig.props.currency,
-                    numpadData.intAmount[numpadData.usedCurrency]
+                    amount
+                    // numpadData.intAmount[numpadData.usedCurrency]
                   )}
                 </Heading>
 
@@ -120,7 +188,7 @@ export default function Home() {
             <Divider y={24} />
           </Container>
 
-          <QRCode value={'algo'} />
+          <QRCode value={invoice ? invoice : 'Wait'} />
 
           <Flex>
             <Container size="small">
