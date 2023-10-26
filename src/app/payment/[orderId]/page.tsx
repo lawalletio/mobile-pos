@@ -145,11 +145,11 @@ export default function Page() {
               </Flex>
             </Flex>
             <Flex gap={8} direction="column">
-              <Flex>
+              {/* <Flex>
                 <Button variant="bezeled" onClick={handlePrint}>
                   Imprimir comprobante
                 </Button>
-              </Flex>
+              </Flex> */}
               <Flex>
                 <Button variant="bezeledGray" onClick={() => router.push('/')}>
                   Cancelar
