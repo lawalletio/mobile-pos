@@ -6,7 +6,7 @@ import { IUseNumpad } from '@/hooks/useNumpad'
 const timeOut: Record<string, NodeJS.Timeout> = {}
 type KeyboardProps = {
   numpadData: IUseNumpad
-  disabled: boolean
+  disabled?: boolean
 }
 
 export default function Component({
