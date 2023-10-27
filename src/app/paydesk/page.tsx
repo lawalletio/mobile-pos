@@ -22,28 +22,31 @@ import TokenList from '@/components/TokenList'
 import { useNumpad } from '@/hooks/useNumpad'
 import { useOrder } from '@/context/Order'
 import { useNostr } from '@/context/Nostr'
+import { useLN } from '@/context/LN'
 import { BtnLoader } from '@/components/Loader/Loader'
+
+const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
 
 export default function Page() {
   const router = useRouter()
-  
-  const { generateOrderEvent, setAmount, setOrderEvent } = useOrder()
+  const { generateOrderEvent, setAmount, setOrderEvent, clear } = useOrder()
   const { publish } = useNostr()
+  const { fetchLNURL } = useLN()
 
   const [loading, setLoading] = useState<boolean>(false)
   const { userConfig } = useContext(LaWalletContext)
   const numpadData = useNumpad(userConfig.props.currency)
-  const sats = numpadData.intAmount["SAT"]
+  const sats = numpadData.intAmount['SAT']
 
   const handleClick = async () => {
-    if (sats === 0 || loading) return;
-    
+    if (sats === 0 || loading) return
+
     setLoading(true)
     const order = generateOrderEvent!()
 
     console.dir(order)
     // console.info('Publishing order')
-    publish!(order).catch( (e) => {
+    publish!(order).catch(e => {
       console.warn('Error publishing order')
       console.warn(e)
     })
@@ -54,9 +57,27 @@ export default function Page() {
   }
 
   useEffect(() => {
+<<<<<<< HEAD
+=======
+    if (numpadData.usedCurrency !== userConfig.props.currency)
+      numpadData.modifyCurrency(userConfig.props.currency)
+  }, [numpadData, userConfig.props.currency])
+
+  useEffect(() => {
+>>>>>>> f42900672ebf2c14638e1e46ed78102eda917a98
     setAmount(sats)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sats])
+
+  useEffect(() => {
+    void fetchLNURL(DESTINATION_LNURL)
+  }, [fetchLNURL])
+
+  // on mount
+  useEffect(() => {
+    clear()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <>
@@ -82,7 +103,9 @@ export default function Page() {
         </Flex>
         <Divider y={24} />
         <Flex gap={8}>
-          <Button onClick={handleClick} disabled={loading || sats === 0}>{loading ? < BtnLoader /> : "Generar"}</Button>
+          <Button onClick={handleClick} disabled={loading || sats === 0}>
+            {loading ? <BtnLoader /> : 'Generar'}
+          </Button>
         </Flex>
         <Divider y={24} />
         <Keyboard numpadData={numpadData} />
