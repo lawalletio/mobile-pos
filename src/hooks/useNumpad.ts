@@ -1,6 +1,6 @@
 import { decimalsToUse } from '@/lib/formatter'
 import { AvailableCurrencies, CurrenciesList } from '@/types/config'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import useCurrencyConverter from './useCurrencyConverter'
 
 type AmountType = Record<AvailableCurrencies, number>
@@ -106,6 +106,10 @@ export const useNumpad = (
         concatNumber(value)
     }
   }
+
+  useEffect(() => {
+    if (usedCurrency !== currency) modifyCurrency(currency)
+  }, [currency])
 
   return {
     usedCurrency,
