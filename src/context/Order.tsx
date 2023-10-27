@@ -31,6 +31,7 @@ export interface IOrderContext {
   zapEvents: NostrEvent[]
   currentInvoice?: string
   memo: unknown
+  clear: () => void
   setMemo: Dispatch<SetStateAction<unknown>>
   setAmount: Dispatch<SetStateAction<number>>
   checkOut: () => Promise<{ eventId: string }>
@@ -63,6 +64,9 @@ export const OrderContext = createContext<IOrderContext>({
   },
   memo: undefined,
   setMemo: function (_value: unknown): void {
+    throw new Error('Function not implemented.')
+  },
+  clear: function (): void {
     throw new Error('Function not implemented.')
   }
 })
@@ -207,6 +211,15 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     [generateZapEvent, requestInvoice]
   )
 
+  const clear = () => {
+    setAmount(0)
+    setOrderId(undefined)
+    setOrderEvent(undefined)
+    setMemo({})
+    setFiatAmount(0)
+    setZapEvents([])
+  }
+
   // Handle new incoming zap
   const onZap = (event: NDKEvent) => {
     if (event.pubkey !== zapEmitterPubKey) {
@@ -235,6 +248,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         pendingAmount,
         currentInvoice,
         memo,
+        clear,
         setMemo,
         checkOut,
         setAmount,
