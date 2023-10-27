@@ -40,12 +40,11 @@ export default function Page() {
 
     console.dir(order)
     // console.info('Publishing order')
-    try {
-      await publish!(order)
-    } catch (e) {
+
+    publish!(order).catch(e => {
       console.warn('Error publishing order')
       console.warn(e)
-    }
+    })
     setOrderEvent!(order)
 
     router.push('/payment/' + order.id)
