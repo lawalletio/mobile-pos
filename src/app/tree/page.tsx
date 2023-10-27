@@ -72,7 +72,7 @@ export default function Page() {
     })
     setOrderEvent!(order)
 
-    router.push('/payment/' + order.id)
+    router.push(`/payment/${order.id}?back=/tree`)
   }
 
   useEffect(() => {
