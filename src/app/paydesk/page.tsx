@@ -30,9 +30,7 @@ export default function Page() {
 
   const { userConfig } = useContext(LaWalletContext)
   const numpadData = useNumpad(userConfig.props.currency)
-
-  // TEMP
-  const sats = numpadData.intAmount[numpadData.usedCurrency]
+  const sats = numpadData.intAmount["SAT"]
 
   const handleClick = async () => {
     // POC
@@ -50,6 +48,10 @@ export default function Page() {
 
     router.push('/payment/' + order.id)
   }
+
+  useEffect(() => {
+    if (numpadData.usedCurrency !== userConfig.props.currency) numpadData.modifyCurrency(userConfig.props.currency)
+  }, [userConfig.props.currency])
 
   useEffect(() => {
     setAmount(sats)
