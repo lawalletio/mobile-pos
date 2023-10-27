@@ -57,14 +57,6 @@ export default function Page() {
   }
 
   useEffect(() => {
-<<<<<<< HEAD
-=======
-    if (numpadData.usedCurrency !== userConfig.props.currency)
-      numpadData.modifyCurrency(userConfig.props.currency)
-  }, [numpadData, userConfig.props.currency])
-
-  useEffect(() => {
->>>>>>> f42900672ebf2c14638e1e46ed78102eda917a98
     setAmount(sats)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sats])
