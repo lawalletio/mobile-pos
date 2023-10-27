@@ -35,7 +35,7 @@ export default function Page() {
   const router = useRouter()
   const { orderId: orderIdFromUrl } = useParams()
   const { subscribeZap, getEvent } = useNostr()
-  const { recipientPubkey } = useLN()
+  const { zapEmitterPubKey } = useLN()
   const {
     orderId,
     amount,
@@ -111,7 +111,7 @@ export default function Page() {
 
   // On orderId change
   useEffect(() => {
-    if (!orderId || !recipientPubkey) {
+    if (!orderId || !zapEmitterPubKey) {
       return
     }
 
@@ -132,13 +132,13 @@ export default function Page() {
 
   // On Invoice ready
   useEffect(() => {
-    if (!invoice || !recipientPubkey) {
+    if (!invoice || !zapEmitterPubKey || !isAvailable) {
       return
     }
 
     startRead()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [invoice, recipientPubkey])
+  }, [invoice, zapEmitterPubKey])
 
   // On Mount
   useEffect(() => {

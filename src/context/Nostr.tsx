@@ -40,7 +40,12 @@ export interface INostrContext {
 
 const NOSTR_RELAY = process.env.NEXT_PUBLIC_NOSTR_RELAY!
 
-const relays = [NOSTR_RELAY, 'wss://relay.hodl.ar']
+const relays = [
+  NOSTR_RELAY,
+  'wss://relay.damus.io',
+  'wss://nostr-pub.wellorder.net',
+  'wss://relay.nostr.info'
+]
 const relayPool = relayInit(NOSTR_RELAY)
 
 // Context
@@ -62,7 +67,7 @@ import NDK, {
 } from '@nostr-dev-kit/ndk'
 
 export const NostrProvider = ({ children }: INostrProviderProps) => {
-  const { recipientPubkey, destination } = useLN()
+  const { zapEmitterPubKey, destination } = useLN()
   // const [privateKey, setPrivateKey] = useState<string>()
   const [privateKey] = useLocalStorage('nostrPrivateKey', generatePrivateKey())
   const [publicKey, setPublicKey] = useState<string>()
@@ -78,7 +83,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
           ['relays', ...relays],
           ['amount', amountMillisats.toString()],
           ['lnurl', destination],
-          ['p', recipientPubkey]
+          ['p', zapEmitterPubKey]
         ] as string[][]
       }
 
@@ -95,17 +100,17 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
 
       return event
     },
-    [destination, recipientPubkey, privateKey, publicKey]
+    [destination, zapEmitterPubKey, privateKey, publicKey]
   )
 
   const subscribeZap = (eventId: string): NDKSubscription => {
     console.info(`Listening for zap (${eventId})...`)
-    console.info(`Recipient pubkey: ${recipientPubkey}`)
+    console.info(`Recipient pubkey: ${zapEmitterPubKey}`)
     const sub = ndk.subscribe(
       [
         {
           kinds: [9735],
-          authors: [recipientPubkey!],
+          authors: [zapEmitterPubKey!],
           '#e': [eventId],
           since: 1693157776
         }

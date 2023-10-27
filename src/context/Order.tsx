@@ -88,7 +88,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
   const { relays, localPublicKey, localPrivateKey, generateZapEvent } =
     useNostr()
-  const { requestInvoice, recipientPubkey } = useLN()
+  const { requestInvoice, zapEmitterPubKey } = useLN()
   const { subscribeZap, publish } = useNostr()
 
   // on orderEvent change
@@ -113,7 +113,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
   // Subscribe for zaps
   useEffect(() => {
-    if (!orderId || !recipientPubkey) {
+    if (!orderId || !zapEmitterPubKey) {
       return
     }
 
@@ -127,7 +127,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       sub.stop()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderId, recipientPubkey, recipientPubkey])
+  }, [orderId, zapEmitterPubKey, zapEmitterPubKey])
 
   nip44.decrypt
   const generateOrderEvent = useCallback((): Event => {
@@ -209,7 +209,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
   // Handle new incoming zap
   const onZap = (event: NDKEvent) => {
-    if (event.pubkey !== recipientPubkey) {
+    if (event.pubkey !== zapEmitterPubKey) {
       throw new Error('Invalid Recipient Pubkey')
     }
 

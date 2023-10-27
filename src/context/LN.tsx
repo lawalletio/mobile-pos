@@ -11,7 +11,7 @@ import {
 
 // Interface
 export interface ILNContext {
-  recipientPubkey?: string
+  zapEmitterPubKey?: string
   callbackUrl?: string
   destination?: string
   requestInvoice?: (_req: InvoiceRequest) => Promise<string>
@@ -32,7 +32,7 @@ interface ILNProviderProps {
 const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
 
 export const LNProvider = ({ children }: ILNProviderProps) => {
-  const [recipientPubkey, setRecipientPubkey] = useState<string>()
+  const [zapEmitterPubKey, setZapEmitterPubKey] = useState<string>()
   const [callbackUrl, setCallbackUrl] = useState<string>()
 
   const fetchLNURL = useCallback(async () => {
@@ -41,8 +41,11 @@ export const LNProvider = ({ children }: ILNProviderProps) => {
       lnUrlOrAddress: DESTINATION_LNURL
     })
 
+    console.info('lud06:')
+    console.dir(lud06)
+
     // TODO: Check if lud06 is valid
-    setRecipientPubkey(lud06.rawData.nostrPubkey as string)
+    setZapEmitterPubKey(lud06.rawData.nostrPubkey as string)
     setCallbackUrl(lud06.callback)
   }, [])
 
@@ -50,6 +53,7 @@ export const LNProvider = ({ children }: ILNProviderProps) => {
     async ({ amountMillisats, zapEvent }: InvoiceRequest): Promise<string> => {
       const encodedZapEvent = encodeURI(JSON.stringify(zapEvent))
       const url = `${callbackUrl}?amount=${amountMillisats}&nostr=${encodedZapEvent}&lnurl=${DESTINATION_LNURL}`
+      console.info('url')
       console.dir(url)
       const response = await axios.get(url)
       return response.data.pr as string
@@ -64,7 +68,7 @@ export const LNProvider = ({ children }: ILNProviderProps) => {
   return (
     <LNContext.Provider
       value={{
-        recipientPubkey,
+        zapEmitterPubKey,
         callbackUrl,
         destination: DESTINATION_LNURL,
         requestInvoice
