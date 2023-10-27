@@ -1,12 +1,14 @@
 'use client'
 
+// React/Next
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { SharedWalletIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 
-import { LaWalletContext } from '@/context/LaWalletContext'
+// Utils
 import { formatToPreference } from '@/lib/formatter'
+import { extractLNURLFromQR } from '@/lib/utils'
 
+// Components
 import {
   Flex,
   Heading,
@@ -19,24 +21,31 @@ import {
 import Container from '@/components/Layout/Container'
 import Navbar from '@/components/Layout/Navbar'
 import TokenList from '@/components/TokenList'
+import { SharedWalletIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
+
+// Contexts and Hooks
 import { useNumpad } from '@/hooks/useNumpad'
-import { extractLNURLFromQR } from '@/lib/utils'
 import { useLN } from '@/context/LN'
 import { useNostr } from '@/context/Nostr'
 import { useOrder } from '@/context/Order'
+import { LaWalletContext } from '@/context/LaWalletContext'
 
 export default function Page() {
+  // Hooks
   const router = useRouter()
   const { generateOrderEvent, setAmount, setOrderEvent, clear } = useOrder()
   const { publish } = useNostr()
   const query = useSearchParams()
   const { fetchLNURL } = useLN()
-
   const { userConfig } = useContext(LaWalletContext)
   const numpadData = useNumpad(userConfig.props.currency)
 
+  const sats = numpadData.intAmount['SAT']
+
+  // Local states
   const [cardScanned, setCardScanned] = useState<boolean>(false)
 
+  /** Functions */
   const processUrl = useCallback(
     async (url: string) => {
       const lnurl = extractLNURLFromQR(url)
@@ -57,8 +66,6 @@ export default function Page() {
     [fetchLNURL]
   )
 
-  const sats = numpadData.intAmount['SAT']
-
   const handleClick = async () => {
     // POC
     const order = generateOrderEvent!()
@@ -75,6 +82,7 @@ export default function Page() {
     router.push(`/payment/${order.id}?back=/tree`)
   }
 
+  /** useEffects */
   useEffect(() => {
     if (numpadData.usedCurrency !== userConfig.props.currency)
       numpadData.modifyCurrency(userConfig.props.currency)

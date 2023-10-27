@@ -1,4 +1,7 @@
+// React/Next
 import { createContext } from 'react'
+
+// Context and Hooks
 import useConfiguration, { ConfigReturns } from '@/hooks/useConfiguration'
 
 interface LaWalletContextType {

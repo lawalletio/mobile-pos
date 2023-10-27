@@ -109,7 +109,8 @@ export const useNumpad = (
 
   useEffect(() => {
     if (usedCurrency !== currency) modifyCurrency(currency)
-  }, [currency])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currency, usedCurrency])
 
   return {
     usedCurrency,

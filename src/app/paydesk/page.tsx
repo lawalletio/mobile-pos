@@ -1,12 +1,21 @@
 'use client'
 
+// React/Next
 import { useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { PantheonIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 
+// Contexts and Hooks
 import { LaWalletContext } from '@/context/LaWalletContext'
+import { useNumpad } from '@/hooks/useNumpad'
+import { useOrder } from '@/context/Order'
+import { useNostr } from '@/context/Nostr'
+import { useLN } from '@/context/LN'
+
+// Utils
 import { formatToPreference } from '@/lib/formatter'
 
+// Components
+import { PantheonIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import {
   Flex,
   Heading,
@@ -19,24 +28,25 @@ import {
 import Container from '@/components/Layout/Container'
 import Navbar from '@/components/Layout/Navbar'
 import TokenList from '@/components/TokenList'
-import { useNumpad } from '@/hooks/useNumpad'
-import { useOrder } from '@/context/Order'
-import { useNostr } from '@/context/Nostr'
-import { useLN } from '@/context/LN'
 import { BtnLoader } from '@/components/Loader/Loader'
 
+// Constants
 const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
 
 export default function Page() {
+  // Hooks
   const router = useRouter()
   const { generateOrderEvent, setAmount, setOrderEvent, clear } = useOrder()
   const { publish } = useNostr()
   const { fetchLNURL } = useLN()
-
-  const [loading, setLoading] = useState<boolean>(false)
   const { userConfig } = useContext(LaWalletContext)
   const numpadData = useNumpad(userConfig.props.currency)
+
+  // Local states
+  const [loading, setLoading] = useState<boolean>(false)
   const sats = numpadData.intAmount['SAT']
+
+  /** Functions */
 
   const handleClick = async () => {
     if (sats === 0 || loading) return
@@ -55,6 +65,8 @@ export default function Page() {
     setLoading(false)
     router.push('/payment/' + order.id)
   }
+
+  /** usEffects */
 
   useEffect(() => {
     setAmount(sats)

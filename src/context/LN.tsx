@@ -1,13 +1,7 @@
 'use client'
 
 // React
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState
-} from 'react'
+import { createContext, useCallback, useContext, useState } from 'react'
 
 // Interface
 export interface ILNContext {
@@ -21,6 +15,8 @@ export interface ILNContext {
 import { requestPayServiceParams } from 'lnurl-pay'
 import axios from 'axios'
 import type { InvoiceRequest } from '@/types/lightning'
+
+const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
 
 // Context
 export const LNContext = createContext<ILNContext>({
@@ -37,12 +33,12 @@ interface ILNProviderProps {
   children: React.ReactNode
 }
 
-const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
-
 export const LNProvider = ({ children }: ILNProviderProps) => {
+  // Local state
   const [zapEmitterPubKey, setZapEmitterPubKey] = useState<string>()
   const [callbackUrl, setCallbackUrl] = useState<string>()
 
+  /** Functions */
   const fetchLNURL = useCallback(async (lnurl: string) => {
     console.info(`Fetching LNURL: ${lnurl}`)
     const lud06 = await requestPayServiceParams({

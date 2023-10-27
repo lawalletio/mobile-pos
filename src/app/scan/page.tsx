@@ -1,15 +1,24 @@
 'use client'
 
+// React/Next
+import { useRouter } from 'next/navigation'
+
+// Components
+import QrScanner from '@/components/UI/Scanner/Scanner'
 import Container from '@/components/Layout/Container'
 import { Button, Divider, Flex } from '@/components/UI'
-import { useRouter } from 'next/navigation'
-import QrScanner from '@/components/UI/Scanner/Scanner'
+
+// Types
 import { TransferTypes } from '@/types/transaction'
+
+// Utils
 import { detectTransferType } from '@/lib/utils'
 
 export default function Page() {
+  // Hooks
   const router = useRouter()
 
+  /** Functions */
   const handleScan = (result: any) => {
     if (!result || !result.data) return
 
@@ -24,16 +33,6 @@ export default function Page() {
     }
 
     router.push(`/tree?data=${result.data}`)
-  }
-
-  const styleQrReader = {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    maxWidth: '500px',
-    height: '100%'
   }
 
   return (
@@ -61,4 +60,14 @@ export default function Page() {
       </Flex>
     </>
   )
+}
+
+const styleQrReader = {
+  position: 'relative',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '100%',
+  maxWidth: '500px',
+  height: '100%'
 }

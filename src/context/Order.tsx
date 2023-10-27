@@ -80,6 +80,13 @@ const NEXT_PUBLIC_ENCRYPT_PUBLIC_KEY = process.env
   .NEXT_PUBLIC_ENCRYPT_PUBLIC_KEY as string
 
 export const OrderProvider = ({ children }: IOrderProviderProps) => {
+  // Hooks
+  const { relays, localPublicKey, localPrivateKey, generateZapEvent } =
+    useNostr()
+  const { requestInvoice, zapEmitterPubKey } = useLN()
+  const { subscribeZap, publish } = useNostr()
+
+  // Local states
   const [orderId, setOrderId] = useState<string>()
   const [orderEvent, setOrderEvent] = useState<Event>()
   const [amount, setAmount] = useState<number>(0)
@@ -90,50 +97,6 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   const [fiatCurrency, setFiatCurrency] = useState<string>('ARS')
   const [zapEvents, setZapEvents] = useState<NostrEvent[]>([])
 
-  const { relays, localPublicKey, localPrivateKey, generateZapEvent } =
-    useNostr()
-  const { requestInvoice, zapEmitterPubKey } = useLN()
-  const { subscribeZap, publish } = useNostr()
-
-  // on orderEvent change
-  useEffect(() => {
-    if (!orderEvent) {
-      setOrderId(undefined)
-      setAmount(0)
-      setPendingAmount(0)
-      setFiatAmount(0)
-      setFiatCurrency('ARS')
-      return
-    }
-
-    const description = parseOrderDescription(orderEvent as Event)
-
-    setOrderId(orderEvent.id)
-    setAmount(description.amount)
-    setPendingAmount(description.amount)
-    // setFiatAmount(description.fiatAmount)
-    // setFiatCurrency(description.fiatCurrency)
-  }, [orderEvent])
-
-  // Subscribe for zaps
-  useEffect(() => {
-    if (!orderId || !zapEmitterPubKey) {
-      return
-    }
-
-    console.info(`Subscribing for ${orderId}...`)
-    const sub = subscribeZap!(orderId)
-
-    sub.addListener('event', onZap)
-
-    return () => {
-      sub.removeAllListeners()
-      sub.stop()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderId, zapEmitterPubKey, zapEmitterPubKey])
-
-  nip44.decrypt
   const generateOrderEvent = useCallback((): Event => {
     const vote = (memo as any).vote as number
 
@@ -211,15 +174,6 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     [generateZapEvent, requestInvoice]
   )
 
-  const clear = () => {
-    setAmount(0)
-    setOrderId(undefined)
-    setOrderEvent(undefined)
-    setMemo({})
-    setFiatAmount(0)
-    setZapEvents([])
-  }
-
   // Handle new incoming zap
   const onZap = (event: NDKEvent) => {
     if (event.pubkey !== zapEmitterPubKey) {
@@ -236,6 +190,55 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     addZapEvent(event)
     console.info('Amount paid : ' + decodedPaidInvoice.millisatoshis)
   }
+
+  const clear = useCallback(() => {
+    setAmount(0)
+    setOrderId(undefined)
+    setOrderEvent(undefined)
+    setMemo({})
+    setFiatAmount(0)
+    setZapEvents([])
+  }, [])
+
+  /** useEffects */
+
+  // on orderEvent change
+  useEffect(() => {
+    if (!orderEvent) {
+      setOrderId(undefined)
+      setAmount(0)
+      setPendingAmount(0)
+      setFiatAmount(0)
+      setFiatCurrency('ARS')
+      return
+    }
+
+    const description = parseOrderDescription(orderEvent as Event)
+
+    setOrderId(orderEvent.id)
+    setAmount(description.amount)
+    setPendingAmount(description.amount)
+    // setFiatAmount(description.fiatAmount)
+    // setFiatCurrency(description.fiatCurrency)
+  }, [orderEvent])
+
+  // Subscribe for zaps
+  useEffect(() => {
+    if (!orderId || !zapEmitterPubKey) {
+      return
+    }
+
+    console.info(`Subscribing for ${orderId}...`)
+    const sub = subscribeZap!(orderId)
+
+    sub.addListener('event', onZap)
+
+    return () => {
+      sub.removeAllListeners()
+      sub.stop()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderId, zapEmitterPubKey, zapEmitterPubKey])
 
   return (
     <OrderContext.Provider

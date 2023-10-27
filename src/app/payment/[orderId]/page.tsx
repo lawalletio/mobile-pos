@@ -1,12 +1,27 @@
 'use client'
 
+// React/Next
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
-import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 
+// Third-party
+import axios from 'axios'
+import { Event } from 'nostr-tools'
+
+// Types
+import { LNURLResponse, LNURLWStatus } from '@/types/lnurl'
+
+// Contexts and Hooks
+import { useNostr } from '@/context/Nostr'
+import { useOrder } from '@/context/Order'
+import { useLN } from '@/context/LN'
 import { LaWalletContext } from '@/context/LaWalletContext'
+import { useCard } from '@/hooks/useCard'
+
+// Utils
 import { formatToPreference } from '@/lib/formatter'
 
+// Components
 import {
   Flex,
   Heading,
@@ -20,41 +35,33 @@ import {
 } from '@/components/UI'
 import Container from '@/components/Layout/Container'
 import { Loader } from '@/components/Loader/Loader'
-
+import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import theme from '@/styles/theme'
-import { useNostr } from '@/context/Nostr'
-import { useOrder } from '@/context/Order'
-import { Event } from 'nostr-tools'
-import { useLN } from '@/context/LN'
-import { useNfc } from 'use-nfc-hook'
-import axios from 'axios'
-import { LNURLResponse, LNURLWStatus } from '@/types/lnurl'
-import { useCard } from '@/hooks/useCard'
 
 export default function Page() {
+  // Hooks
   const router = useRouter()
   const { orderId: orderIdFromUrl } = useParams()
   const query = useSearchParams()
-  const { subscribeZap, getEvent } = useNostr()
+  const { getEvent } = useNostr()
   const { zapEmitterPubKey } = useLN()
   const {
     orderId,
     amount,
-    setOrderEvent,
     pendingAmount,
     zapEvents,
+    setOrderEvent,
     requestZapInvoice
   } = useOrder()
-
-  const [invoice, setInvoice] = useState<string>()
-  const [cardStatus, setCardStatus] = useState<LNURLWStatus>(LNURLWStatus.IDLE)
-
   const { isAvailable, permission, scan, stop } = useCard()
-
   const { userConfig } = useContext(LaWalletContext)
 
+  // Local states
+  const [invoice, setInvoice] = useState<string>()
+  const [cardStatus, setCardStatus] = useState<LNURLWStatus>(LNURLWStatus.IDLE)
   const [finished, setFinished] = useState<boolean>(false)
 
+  /** Functions */
   const handleBack = useCallback(() => {
     const back = query.get('back')
     if (!back) {
@@ -102,6 +109,7 @@ export default function Page() {
     setCardStatus(LNURLWStatus.DONE)
   }
 
+  /** useEffects */
   // Search for orderIdFromURL
   useEffect(() => {
     // Not orderId found on url
@@ -212,7 +220,7 @@ export default function Page() {
               </Flex> */}
               <Flex>
                 <Button variant="bezeledGray" onClick={() => handleBack()}>
-                  Cancelar
+                  Volver
                 </Button>
               </Flex>
             </Flex>
@@ -237,10 +245,7 @@ export default function Page() {
               <Flex justify="center" align="center" gap={4}>
                 {userConfig.props.currency !== 'SAT' && <Text>$</Text>}
                 <Heading>
-                  {formatToPreference(
-                    userConfig.props.currency,
-                    amount
-                  )}
+                  {formatToPreference(userConfig.props.currency, amount)}
                 </Heading>
 
                 <Text>{userConfig.props.currency}</Text>
@@ -249,7 +254,7 @@ export default function Page() {
             <Divider y={24} />
           </Container>
 
-        {!invoice ? <Loader /> : <QRCode value={invoice} />}
+          {!invoice ? <Loader /> : <QRCode value={invoice} />}
 
           <Flex>
             <Container size="small">

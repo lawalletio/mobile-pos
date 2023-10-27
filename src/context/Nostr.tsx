@@ -72,6 +72,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
   const [privateKey] = useLocalStorage('nostrPrivateKey', generatePrivateKey())
   const [publicKey, setPublicKey] = useState<string>()
 
+  /** Functions */
   const generateZapEvent = useCallback(
     (amountMillisats: number, postEventId?: string): NDKEvent => {
       const unsignedEvent: UnsignedEvent = {
@@ -133,6 +134,8 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
     const ndkEvent = new NDKEvent(ndk, event)
     return ndkEvent.publish()
   }
+
+  /** useEffects */
 
   useEffect(() => {
     console.info('Connecting....')

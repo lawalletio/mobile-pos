@@ -1,13 +1,15 @@
 'use client'
 
+// React/Next
 import Link from 'next/link'
+
+// Components
+import { Flex, Heading, Text, Divider, Icon, Card } from '@/components/UI'
+import Container from '@/components/Layout/Container'
 import {
   PantheonIcon,
   SharedWalletIcon
 } from '@bitcoin-design/bitcoin-icons-react/filled'
-
-import { Flex, Heading, Text, Divider, Icon, Card } from '@/components/UI'
-import Container from '@/components/Layout/Container'
 
 export default function Page() {
   return (

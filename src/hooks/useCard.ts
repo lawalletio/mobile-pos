@@ -1,8 +1,15 @@
-import { useState } from 'react'
+// React/Next
+import { useCallback, useState } from 'react'
+
+// Thirdparty
+import axios from 'axios'
+
+// Types
 import { ScanCardStatus } from '@/types/card'
 import { LNURLResponse } from '@/types/lnurl'
+
+// Hooks
 import { useNfc } from 'use-nfc-hook'
-import axios from 'axios'
 
 export type CardReturns = {
   isAvailable: boolean
@@ -25,7 +32,9 @@ const requestLNURL = async (url: string) => {
 export const useCard = (): CardReturns => {
   const { isNDEFAvailable, permission, read, abortReadCtrl } = useNfc()
   const [status, setStatus] = useState<ScanCardStatus>(ScanCardStatus.IDLE)
-  const scan = async (): Promise<LNURLResponse> => {
+
+  // Functions
+  const scan = useCallback(async (): Promise<LNURLResponse> => {
     setStatus(ScanCardStatus.SCANNING)
     let url = ''
     try {
@@ -43,7 +52,8 @@ export const useCard = (): CardReturns => {
     const response = requestLNURL(url)
     setStatus(ScanCardStatus.DONE)
     return response
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return {
     isAvailable: !!isNDEFAvailable,
