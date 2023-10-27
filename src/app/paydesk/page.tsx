@@ -39,8 +39,8 @@ export default function Page() {
     const order = generateOrderEvent!()
 
     console.dir(order)
-    console.info('Publishing order')
-    await publish!(order)
+    // console.info('Publishing order')
+    // await publish!(order)
     setOrderEvent!(order)
     router.push('/payment/' + order.id)
   }
