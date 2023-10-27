@@ -248,7 +248,7 @@ export default function Page() {
               <Flex gap={8} direction="column">
                 <Flex>
                   {isAvailable && permission === 'prompt' && (
-                    <Button variant="bezeledGray" onClick={() => router.back()}>
+                    <Button variant="bezeledGray" onClick={() => startRead()}>
                       Solicitar NFC
                     </Button>
                   )}
