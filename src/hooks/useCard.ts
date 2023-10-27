@@ -32,9 +32,7 @@ const requestLNURL = async (url: string) => {
 export const useCard = (): CardReturns => {
   const { isNDEFAvailable, permission, read, abortReadCtrl } = useNfc()
   const [status, setStatus] = useState<ScanCardStatus>(ScanCardStatus.IDLE)
-
-  // Functions
-  const scan = useCallback(async (): Promise<LNURLResponse> => {
+  const scan = async (): Promise<LNURLResponse> => {
     setStatus(ScanCardStatus.SCANNING)
     let url = ''
     try {
@@ -52,8 +50,7 @@ export const useCard = (): CardReturns => {
     const response = requestLNURL(url)
     setStatus(ScanCardStatus.DONE)
     return response
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }
 
   return {
     isAvailable: !!isNDEFAvailable,
