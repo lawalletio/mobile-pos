@@ -36,3 +36,16 @@ export const detectTransferType = (data: string): TransferTypes | false => {
 
   return false
 }
+
+export const isValidLightningURL = (url: string): boolean => {
+  const pattern = /^lightning:\/\/[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+  return pattern.test(url)
+}
+
+export const extractLNURLFromQR = (url: string): string | null => {
+  const pattern =
+    /^lightning:\/\/([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/
+  const matches = url.match(pattern)
+
+  return matches ? matches[1] : null
+}

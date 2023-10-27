@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useContext, useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 
 import { LaWalletContext } from '@/context/LaWalletContext'
@@ -34,6 +34,7 @@ import { useCard } from '@/hooks/useCard'
 export default function Page() {
   const router = useRouter()
   const { orderId: orderIdFromUrl } = useParams()
+  const query = useSearchParams()
   const { subscribeZap, getEvent } = useNostr()
   const { zapEmitterPubKey } = useLN()
   const {
@@ -53,6 +54,15 @@ export default function Page() {
   const { userConfig } = useContext(LaWalletContext)
 
   const [finished, setFinished] = useState<boolean>(false)
+
+  const handleBack = useCallback(() => {
+    const back = query.get('back')
+    if (!back) {
+      router.back()
+      return
+    }
+    router.push(back)
+  }, [router, query])
 
   const fetchOrder = useCallback(
     async (_orderId: string) => {
@@ -96,7 +106,7 @@ export default function Page() {
   useEffect(() => {
     // Not orderId found on url
     if (!orderIdFromUrl) {
-      router.back()
+      handleBack()
       return
     }
 
@@ -201,7 +211,7 @@ export default function Page() {
                 </Button>
               </Flex> */}
               <Flex>
-                <Button variant="bezeledGray" onClick={() => router.push('/')}>
+                <Button variant="bezeledGray" onClick={() => handleBack()}>
                   Cancelar
                 </Button>
               </Flex>
@@ -247,12 +257,12 @@ export default function Page() {
               <Flex gap={8} direction="column">
                 <Flex>
                   {isAvailable && permission === 'prompt' && (
-                    <Button variant="bezeledGray" onClick={() => router.back()}>
+                    <Button variant="bezeledGray" onClick={() => startRead()}>
                       Solicitar NFC
                     </Button>
                   )}
 
-                  <Button variant="bezeledGray" onClick={() => router.back()}>
+                  <Button variant="bezeledGray" onClick={() => handleBack()}>
                     Cancelar
                   </Button>
                 </Flex>
