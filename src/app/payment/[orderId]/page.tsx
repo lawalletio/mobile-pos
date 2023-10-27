@@ -37,6 +37,7 @@ import Container from '@/components/Layout/Container'
 import { Loader } from '@/components/Loader/Loader'
 import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import theme from '@/styles/theme'
+import useCurrencyConverter from '@/hooks/useCurrencyConverter'
 
 export default function Page() {
   // Hooks
@@ -44,6 +45,8 @@ export default function Page() {
   const { orderId: orderIdFromUrl } = useParams()
   const query = useSearchParams()
   const { getEvent } = useNostr()
+
+  const { convertCurrency } = useCurrencyConverter();
   const { zapEmitterPubKey } = useLN()
   const {
     orderId,
@@ -166,6 +169,10 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  if (!invoice) return (
+    <Flex flex={1} align='center' justify='center'><Loader /></Flex>
+  )
+
   return (
     <>
       {isAvailable && permission === 'granted' && invoice && (
@@ -208,7 +215,7 @@ export default function Page() {
               <Flex justify="center" align="center" gap={4}>
                 {userConfig.props.currency !== 'SAT' && <Text>$</Text>}
                 <Heading>
-                  {formatToPreference(userConfig.props.currency, amount)}
+                  {formatToPreference(userConfig.props.currency, convertCurrency(amount, "SAT", userConfig.props.currency))}
                 </Heading>
               </Flex>
             </Flex>
@@ -245,7 +252,7 @@ export default function Page() {
               <Flex justify="center" align="center" gap={4}>
                 {userConfig.props.currency !== 'SAT' && <Text>$</Text>}
                 <Heading>
-                  {formatToPreference(userConfig.props.currency, amount)}
+                  {formatToPreference(userConfig.props.currency, convertCurrency(amount, "SAT", userConfig.props.currency))}
                 </Heading>
 
                 <Text>{userConfig.props.currency}</Text>
@@ -254,7 +261,7 @@ export default function Page() {
             <Divider y={24} />
           </Container>
 
-          {!invoice ? <Loader /> : <QRCode value={invoice} />}
+          <QRCode value={invoice} />
 
           <Flex>
             <Container size="small">
