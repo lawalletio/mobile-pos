@@ -230,7 +230,6 @@ export default function Page() {
                   {formatToPreference(
                     userConfig.props.currency,
                     amount
-                    // numpadData.intAmount[numpadData.usedCurrency]
                   )}
                 </Heading>
 
@@ -240,7 +239,7 @@ export default function Page() {
             <Divider y={24} />
           </Container>
 
-          <QRCode value={invoice ? invoice : 'Wait'} />
+        {!invoice ? <Loader /> : <QRCode value={invoice} />}
 
           <Flex>
             <Container size="small">
