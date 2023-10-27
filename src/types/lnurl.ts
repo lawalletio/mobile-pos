@@ -9,6 +9,7 @@ export interface LNURLResponse {
 
 export enum LNURLWStatus {
   IDLE = 'IDLE',
+  SCANNING = 'SCANNING',
   REQUESTING = 'REQUESTING',
   CALLBACK = 'CALLBACK',
   DONE = 'DONE',

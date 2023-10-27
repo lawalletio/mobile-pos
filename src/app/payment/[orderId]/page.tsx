@@ -10,6 +10,7 @@ import { Event } from 'nostr-tools'
 
 // Types
 import { LNURLResponse, LNURLWStatus } from '@/types/lnurl'
+import { ScanCardStatus } from '@/types/card'
 
 // Contexts and Hooks
 import { useNostr } from '@/context/Nostr'
@@ -17,6 +18,7 @@ import { useOrder } from '@/context/Order'
 import { useLN } from '@/context/LN'
 import { LaWalletContext } from '@/context/LaWalletContext'
 import { useCard } from '@/hooks/useCard'
+import useCurrencyConverter from '@/hooks/useCurrencyConverter'
 
 // Utils
 import { formatToPreference } from '@/lib/formatter'
@@ -37,7 +39,6 @@ import Container from '@/components/Layout/Container'
 import { Loader } from '@/components/Loader/Loader'
 import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import theme from '@/styles/theme'
-import useCurrencyConverter from '@/hooks/useCurrencyConverter'
 
 export default function Page() {
   // Hooks
@@ -46,7 +47,7 @@ export default function Page() {
   const query = useSearchParams()
   const { getEvent } = useNostr()
 
-  const { convertCurrency } = useCurrencyConverter();
+  const { convertCurrency } = useCurrencyConverter()
   const { zapEmitterPubKey } = useLN()
   const {
     orderId,
@@ -56,7 +57,7 @@ export default function Page() {
     setOrderEvent,
     requestZapInvoice
   } = useOrder()
-  const { isAvailable, permission, scan, stop } = useCard()
+  const { isAvailable, permission, status: scanStatus, scan, stop } = useCard()
   const { userConfig } = useContext(LaWalletContext)
 
   // Local states
@@ -92,7 +93,6 @@ export default function Page() {
   )
 
   const startRead = async () => {
-    setCardStatus(LNURLWStatus.REQUESTING)
     const lnurlResponse = await scan()
     processLNURLResponse(lnurlResponse)
   }
@@ -161,6 +161,20 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invoice, zapEmitterPubKey])
 
+  useEffect(() => {
+    switch (scanStatus) {
+      case ScanCardStatus.SCANNING:
+        setCardStatus(LNURLWStatus.SCANNING)
+        break
+      case ScanCardStatus.REQUESTING:
+        setCardStatus(LNURLWStatus.REQUESTING)
+        break
+      case ScanCardStatus.ERROR:
+        setCardStatus(LNURLWStatus.ERROR)
+        break
+    }
+  }, [scanStatus])
+
   // On Mount
   useEffect(() => {
     return () => {
@@ -169,28 +183,40 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  if (!invoice) return (
-    <Flex flex={1} align='center' justify='center'><Loader /></Flex>
-  )
+  if (!invoice)
+    return (
+      <Flex flex={1} align="center" justify="center">
+        <Loader />
+      </Flex>
+    )
 
   return (
     <>
-      {isAvailable && permission === 'granted' && invoice && (
+      {invoice && (
         <Alert
           title={''}
           description={'Disponible para escanear NFC.'}
           type={'success'}
-          isOpen={cardStatus === LNURLWStatus.IDLE}
+          isOpen={cardStatus === LNURLWStatus.SCANNING}
         />
       )}
 
       <Alert
         title={''}
-        description={'Procesando...'}
-        type={'warning'}
-        isOpen={
-          cardStatus !== LNURLWStatus.IDLE && cardStatus !== LNURLWStatus.DONE
+        description={
+          cardStatus === LNURLWStatus.REQUESTING ? 'Procesando' : 'Cobrando'
         }
+        type={'success'}
+        isOpen={[LNURLWStatus.REQUESTING, LNURLWStatus.CALLBACK].includes(
+          cardStatus
+        )}
+      />
+
+      <Alert
+        title={''}
+        description={'Error al cobrar'}
+        type={'error'}
+        isOpen={cardStatus === LNURLWStatus.ERROR}
       />
 
       {finished ? (
@@ -215,7 +241,10 @@ export default function Page() {
               <Flex justify="center" align="center" gap={4}>
                 {userConfig.props.currency !== 'SAT' && <Text>$</Text>}
                 <Heading>
-                  {formatToPreference(userConfig.props.currency, convertCurrency(amount, "SAT", userConfig.props.currency))}
+                  {formatToPreference(
+                    userConfig.props.currency,
+                    convertCurrency(amount, 'SAT', userConfig.props.currency)
+                  )}
                 </Heading>
               </Flex>
             </Flex>
@@ -252,7 +281,10 @@ export default function Page() {
               <Flex justify="center" align="center" gap={4}>
                 {userConfig.props.currency !== 'SAT' && <Text>$</Text>}
                 <Heading>
-                  {formatToPreference(userConfig.props.currency, convertCurrency(amount, "SAT", userConfig.props.currency))}
+                  {formatToPreference(
+                    userConfig.props.currency,
+                    convertCurrency(amount, 'SAT', userConfig.props.currency)
+                  )}
                 </Heading>
 
                 <Text>{userConfig.props.currency}</Text>
