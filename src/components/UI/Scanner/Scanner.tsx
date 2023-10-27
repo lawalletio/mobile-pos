@@ -88,6 +88,7 @@ const QrScanner = (props: QrScannerProps) => {
         scanner.destroy()
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
