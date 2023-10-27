@@ -64,22 +64,32 @@ export default function Page() {
               <Text align="center">
                 Acerca la tarjeta de quien desea cargar su tarjeta mediante NFC.
               </Text>
+              <Divider y={16} />
+              <Flex>
+                <Button onClick={() => router.push('/scan')}>
+                  Escanear QR
+                </Button>
+              </Flex>
             </Flex>
           )}
         </Flex>
         <Divider y={24} />
-        <Flex gap={8}>
-          <Button
-            onClick={handleClick}
-            color="secondary"
-            disabled={!cardScanned}
-          >
-            Transferir
-          </Button>
-        </Flex>
-        <Divider y={24} />
-        <Keyboard numpadData={numpadData} disabled={!cardScanned} />
-        <Divider y={24} />
+        {cardScanned && (
+          <>
+            <Flex gap={8}>
+              <Button
+                onClick={handleClick}
+                color="secondary"
+                disabled={!cardScanned}
+              >
+                Transferir
+              </Button>
+            </Flex>
+            <Divider y={24} />
+            <Keyboard numpadData={numpadData} disabled={!cardScanned} />
+            <Divider y={24} />
+          </>
+        )}
       </Container>
     </>
   )
