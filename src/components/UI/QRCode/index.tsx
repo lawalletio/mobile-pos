@@ -10,7 +10,7 @@ interface ComponentProps {
   size?: number
 }
 
-export default function Component({ value, size = 150 }: ComponentProps) {
+export default function Component({ value, size = 250 }: ComponentProps) {
   return (
     <QRCode $isSmall={false}>
       <ReactQRCode
