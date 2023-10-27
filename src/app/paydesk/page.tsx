@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext, useEffect } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { PantheonIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 
@@ -22,18 +22,23 @@ import TokenList from '@/components/TokenList'
 import { useNumpad } from '@/hooks/useNumpad'
 import { useOrder } from '@/context/Order'
 import { useNostr } from '@/context/Nostr'
+import { BtnLoader } from '@/components/Loader/Loader'
 
 export default function Page() {
   const router = useRouter()
+  
   const { generateOrderEvent, setAmount, setOrderEvent } = useOrder()
   const { publish } = useNostr()
 
+  const [loading, setLoading] = useState<boolean>(false)
   const { userConfig } = useContext(LaWalletContext)
   const numpadData = useNumpad(userConfig.props.currency)
   const sats = numpadData.intAmount["SAT"]
 
   const handleClick = async () => {
-    // POC
+    if (sats === 0 || loading) return;
+    
+    setLoading(true)
     const order = generateOrderEvent!()
 
     console.dir(order)
@@ -44,7 +49,9 @@ export default function Page() {
       console.warn('Error publishing order')
       console.warn(e)
     }
+
     setOrderEvent!(order)
+    setLoading(false)
 
     router.push('/payment/' + order.id)
   }
@@ -82,7 +89,7 @@ export default function Page() {
         </Flex>
         <Divider y={24} />
         <Flex gap={8}>
-          <Button onClick={handleClick}>Generar</Button>
+          <Button onClick={handleClick} disabled={loading || sats === 0}>{loading ? < BtnLoader /> : "Generar"}</Button>
         </Flex>
         <Divider y={24} />
         <Keyboard numpadData={numpadData} />
