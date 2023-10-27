@@ -29,6 +29,7 @@ import { useLN } from '@/context/LN'
 import { useNfc } from 'use-nfc-hook'
 import axios from 'axios'
 import { LNURLResponse, LNURLWStatus } from '@/types/lnurl'
+import { useCard } from '@/hooks/useCard'
 
 export default function Page() {
   const router = useRouter()
@@ -44,10 +45,10 @@ export default function Page() {
     requestZapInvoice
   } = useOrder()
 
-  const { isNDEFAvailable, permission, read, abortReadCtrl, write } = useNfc()
-
   const [invoice, setInvoice] = useState<string>()
   const [cardStatus, setCardStatus] = useState<LNURLWStatus>(LNURLWStatus.IDLE)
+
+  const { isAvailable, permission, scan, stop } = useCard()
 
   const { userConfig } = useContext(LaWalletContext)
 
@@ -71,31 +72,9 @@ export default function Page() {
   )
 
   const startRead = async () => {
-    try {
-      const response = await read()
-      const record = response.message.records[0]
-      const decoder = new TextDecoder('utf-8')
-      const decodedContent = decoder.decode(record.data)
-      processLNURL(decodedContent)
-    } catch (error) {
-      alert('ALERT on reading: ' + JSON.stringify(error))
-      console.log('ERROR ', error)
-    }
-  }
-
-  const processLNURL = async (lnurl: string) => {
     setCardStatus(LNURLWStatus.REQUESTING)
-    const url = lnurl.replace('lnurlw://', 'https://')
-    const response = await axios.get(url)
-    if (response.status !== 200) {
-      setCardStatus(LNURLWStatus.ERROR)
-      alert('Hubo un error ge')
-      alert(JSON.stringify(response.data))
-      return
-    }
-
-    processLNURLResponse(response.data)
-    // startRead()
+    const lnurlResponse = await scan()
+    processLNURLResponse(lnurlResponse)
   }
 
   const processLNURLResponse = async (response: LNURLResponse) => {
@@ -164,14 +143,14 @@ export default function Page() {
   // On Mount
   useEffect(() => {
     return () => {
-      abortReadCtrl()
+      stop()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
     <>
-      {isNDEFAvailable && permission === 'granted' && invoice && (
+      {isAvailable && permission === 'granted' && invoice && (
         <Alert
           title={''}
           description={'Disponible para escanear NFC.'}
@@ -268,7 +247,7 @@ export default function Page() {
               <Divider y={16} />
               <Flex gap={8} direction="column">
                 <Flex>
-                  {isNDEFAvailable && permission === 'prompt' && (
+                  {isAvailable && permission === 'prompt' && (
                     <Button variant="bezeledGray" onClick={() => router.back()}>
                       Solicitar NFC
                     </Button>
