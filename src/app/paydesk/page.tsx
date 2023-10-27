@@ -22,15 +22,19 @@ import TokenList from '@/components/TokenList'
 import { useNumpad } from '@/hooks/useNumpad'
 import { useOrder } from '@/context/Order'
 import { useNostr } from '@/context/Nostr'
+import { useLN } from '@/context/LN'
+
+const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
 
 export default function Page() {
   const router = useRouter()
-  const { generateOrderEvent, setAmount, setOrderEvent } = useOrder()
+  const { generateOrderEvent, setAmount, setOrderEvent, clear } = useOrder()
   const { publish } = useNostr()
+  const { fetchLNURL } = useLN()
 
   const { userConfig } = useContext(LaWalletContext)
   const numpadData = useNumpad(userConfig.props.currency)
-  const sats = numpadData.intAmount["SAT"]
+  const sats = numpadData.intAmount['SAT']
 
   const handleClick = async () => {
     // POC
@@ -49,13 +53,24 @@ export default function Page() {
   }
 
   useEffect(() => {
-    if (numpadData.usedCurrency !== userConfig.props.currency) numpadData.modifyCurrency(userConfig.props.currency)
-  }, [userConfig.props.currency])
+    if (numpadData.usedCurrency !== userConfig.props.currency)
+      numpadData.modifyCurrency(userConfig.props.currency)
+  }, [numpadData, userConfig.props.currency])
 
   useEffect(() => {
     setAmount(sats)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sats])
+
+  useEffect(() => {
+    void fetchLNURL(DESTINATION_LNURL)
+  }, [fetchLNURL])
+
+  // on mount
+  useEffect(() => {
+    clear()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <>
