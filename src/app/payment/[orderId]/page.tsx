@@ -136,10 +136,14 @@ export default function Page() {
       return
     }
 
-    requestZapInvoice!(amount * 1000, orderId).then(_invoice => {
-      console.info('INVOICE:')
-      setInvoice!(_invoice)
-    })
+    requestZapInvoice!(amount * 1000, orderId)
+      .then(_invoice => {
+        console.info('INVOICE:')
+        setInvoice!(_invoice)
+      })
+      .catch(() => {
+        alert("Couldn't generate invoice.")
+      })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId])
 
