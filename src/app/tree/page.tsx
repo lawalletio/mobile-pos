@@ -48,19 +48,12 @@ export default function Page() {
   /** Functions */
   const processUrl = useCallback(
     async (url: string) => {
-      const lnurl = extractLNURLFromQR(url)
-
-      if (!lnurl) {
-        alert('Invalid QR code')
-        return
-      }
-
       try {
-        await fetchLNURL(lnurl)
+        await fetchLNURL(url)
         setCardScanned(true)
       } catch (e) {
         console.error(e)
-        alert(JSON.stringify(e))
+        alert("what the hell?" + JSON.stringify(e))
       }
     },
     [fetchLNURL]
