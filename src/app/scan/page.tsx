@@ -12,7 +12,7 @@ import { Button, Divider, Flex } from '@/components/UI'
 import { TransferTypes } from '@/types/transaction'
 
 // Utils
-import { detectTransferType } from '@/lib/utils'
+import { detectTransferType, extractLNURLFromQR } from '@/lib/utils'
 
 export default function Page() {
   // Hooks
@@ -26,13 +26,14 @@ export default function Page() {
       result.data
     )
     if (!decodeTransferType) return
+    const lnurl = extractLNURLFromQR(result.data)
 
     if (decodeTransferType === TransferTypes.INVOICE) {
-      router.push(`/tree?data=${result.data}`)
+      router.push(`/tree?data=${lnurl}`)
       return
     }
 
-    router.push(`/tree?data=${result.data}`)
+    router.push(`/tree?data=${lnurl}`)
   }
 
   return (

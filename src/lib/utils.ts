@@ -43,9 +43,10 @@ export const isValidLightningURL = (url: string): boolean => {
 }
 
 export const extractLNURLFromQR = (url: string): string | null => {
-  const pattern =
-    /^lightning:\/\/([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/
-  const matches = url.match(pattern)
-
-  return matches ? matches[1] : null
+  if (url.startsWith("lightning://")) {
+    // If it does, remove the prefix and return the rest of the string
+    return url.replace("lightning://", "");
+  }
+  // Otherwise, return the string as is
+  return url;
 }
