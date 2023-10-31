@@ -107,7 +107,7 @@ export default function Page() {
       </Navbar>
       <Container size="small">
         <Divider y={24} />
-        <Flex direction="column" gap={16}>
+        <Flex direction="column" gap={24}>
           {categories.map(category => (
             <Flex key={category.id} direction="column">
               <Text size="small" color={theme.colors.gray50}>
