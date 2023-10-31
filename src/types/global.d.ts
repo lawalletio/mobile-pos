@@ -4,6 +4,7 @@ declare global {
   interface Window {
     Android?: {
       print: (str: string) => void
+      read: () => string
     }
   }
 }
