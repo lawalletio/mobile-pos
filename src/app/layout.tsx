@@ -14,6 +14,7 @@ import GlobalStyles from '@/styles/GlobalStyles'
 import { LNProvider } from '@/context/LN'
 import { NostrProvider } from '@/context/Nostr'
 import { OrderProvider } from '@/context/Order'
+import { InjectedNFCProvider } from '@/context/InjectedNFC'
 
 interface ProviderProps {
   children: ReactNode
@@ -45,18 +46,20 @@ const Providers = (props: ProviderProps) => {
       </head>
 
       <body>
-        <LaWalletProvider>
-          <LNProvider>
-            <NostrProvider>
-              <OrderProvider>
-                <StyledComponentsRegistry>
-                  <GlobalStyles />
-                  <ThemeProvider theme={theme}>{children}</ThemeProvider>
-                </StyledComponentsRegistry>
-              </OrderProvider>
-            </NostrProvider>
-          </LNProvider>
-        </LaWalletProvider>
+        <InjectedNFCProvider>
+          <LaWalletProvider>
+            <LNProvider>
+              <NostrProvider>
+                <OrderProvider>
+                  <StyledComponentsRegistry>
+                    <GlobalStyles />
+                    <ThemeProvider theme={theme}>{children}</ThemeProvider>
+                  </StyledComponentsRegistry>
+                </OrderProvider>
+              </NostrProvider>
+            </LNProvider>
+          </LaWalletProvider>
+        </InjectedNFCProvider>
       </body>
     </html>
   )
