@@ -76,9 +76,6 @@ interface IOrderProviderProps {
   children: React.ReactNode
 }
 
-const NEXT_PUBLIC_ENCRYPT_PUBLIC_KEY = process.env
-  .NEXT_PUBLIC_ENCRYPT_PUBLIC_KEY as string
-
 export const OrderProvider = ({ children }: IOrderProviderProps) => {
   // Hooks
   const { relays, localPublicKey, localPrivateKey, generateZapEvent } =
