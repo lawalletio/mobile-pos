@@ -21,7 +21,7 @@ export const usePrint = (): PrintReturns => {
   )
 
   useEffect(() => {
-    setIsAvailable(!!window.Android)
+    setIsAvailable(!!window.Android?.print)
   }, [])
 
   return {
