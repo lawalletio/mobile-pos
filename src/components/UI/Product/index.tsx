@@ -35,18 +35,25 @@ export default function Component(props: ComponentProps) {
 
   return (
     <Product>
-      <Flex direction="column">
-        <Heading as="h4">{name}</Heading>
-        <Flex align="center" gap={4}>
-          {price?.currency === 'SAT' ? <Text>SAT</Text> : <Text>$</Text>}
-          <Heading as="h5">{price?.value}</Heading>
+      <Flex direction="column" gap={4}>
+        <Text isBold>{name}</Text>
+        <Flex align="start" gap={4}>
+          <Flex flex={0}>
+            {price?.currency !== 'SAT' && <Text size="small">$</Text>}
+            <Heading as="h5">{price?.value}</Heading>
+          </Flex>
           {price?.currency !== 'SAT' && <Text size="small">ARS</Text>}
         </Flex>
       </Flex>
       <Flex align="center" justify="end" gap={8} flex={1}>
         {quantityInCart > 0 ? (
           <>
-            <Button size="small" variant="bezeled" onClick={onRemoveOne}>
+            <Button
+              size="small"
+              color="secondary"
+              variant="bezeled"
+              onClick={onRemoveOne}
+            >
               -
             </Button>
             <Text>{quantityInCart}</Text>
@@ -56,7 +63,7 @@ export default function Component(props: ComponentProps) {
           </>
         ) : (
           <Button size="small" onClick={onAddToCart}>
-            Añadir
+            Agregar
           </Button>
         )}
       </Flex>

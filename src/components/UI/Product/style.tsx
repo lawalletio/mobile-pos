@@ -8,7 +8,7 @@ export const Product = styled.div`
   align-items: center;
   width: 100%;
 
-  padding: 8px 0;
+  padding: 12px 0;
 
   border-bottom: 1px solid ${theme.colors.gray20};
 
