@@ -5,7 +5,15 @@ import { useState } from 'react'
 
 // Components
 import { CartIcon, TrashIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
-import { Flex, Heading, Divider, Button, Icon, Product } from '@/components/UI'
+import {
+  Flex,
+  Heading,
+  Divider,
+  Button,
+  Icon,
+  Product,
+  Text
+} from '@/components/UI'
 import Container from '@/components/Layout/Container'
 import FooterCart from '@/components/Layout/FooterCart'
 import Navbar from '@/components/Layout/Navbar'
@@ -13,6 +21,9 @@ import Navbar from '@/components/Layout/Navbar'
 // MOCK
 import categories from '@/constants/categories.json'
 import products from '@/constants/products.json'
+
+// Style
+import theme from '@/styles/theme'
 
 interface ProductData {
   id: number
@@ -98,8 +109,10 @@ export default function Page() {
         <Divider y={24} />
         <Flex direction="column" gap={16}>
           {categories.map(category => (
-            <Flex key={category.id} direction="column" gap={8}>
-              <Heading as="h2">{category.name}</Heading>
+            <Flex key={category.id} direction="column">
+              <Text size="small" color={theme.colors.gray50}>
+                {category.name}
+              </Text>
               <Flex direction="column">
                 {groupedProducts[category.id]?.map(product => (
                   <Product
