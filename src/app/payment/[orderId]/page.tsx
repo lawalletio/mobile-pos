@@ -39,6 +39,8 @@ import Container from '@/components/Layout/Container'
 import { Loader } from '@/components/Loader/Loader'
 import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import theme from '@/styles/theme'
+import { usePrint } from '@/hooks/usePrint'
+import { PrintOrder } from '@/types/print'
 
 export default function Page() {
   // Hooks
@@ -58,6 +60,8 @@ export default function Page() {
     requestZapInvoice
   } = useOrder()
   const { isAvailable, permission, status: scanStatus, scan, stop } = useCard()
+  const { print } = usePrint()
+
   const { userConfig } = useContext(LaWalletContext)
 
   // Local states
@@ -147,14 +151,6 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId])
 
-  // New zap events
-  useEffect(() => {
-    if (zapEvents.length <= 0 || finished || pendingAmount > 0) {
-      return
-    }
-    setFinished(true)
-  }, [zapEvents, finished, pendingAmount])
-
   // On Invoice ready
   useEffect(() => {
     if (!invoice || !zapEmitterPubKey || !isAvailable) {
@@ -164,6 +160,34 @@ export default function Page() {
     startRead()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invoice, zapEmitterPubKey])
+
+  // New zap events
+  useEffect(() => {
+    if (zapEvents.length <= 0 || finished || pendingAmount > 0) {
+      return
+    }
+
+    const testOrder: PrintOrder = {
+      items: [
+        {
+          name: 'Coca Cola',
+          qty: 2,
+          price: 500
+        },
+        {
+          name: 'Pizza',
+          qty: 3,
+          price: 800
+        }
+      ],
+      total: 1000,
+      totalSats: amount,
+      currency: 'ARS'
+    }
+
+    print(testOrder)
+    setFinished(true)
+  }, [zapEvents, finished, pendingAmount, amount, print])
 
   useEffect(() => {
     switch (scanStatus) {
