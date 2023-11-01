@@ -56,6 +56,7 @@ export default function Page() {
     amount,
     pendingAmount,
     zapEvents,
+    products,
     setOrderEvent,
     requestZapInvoice
   } = useOrder()
@@ -163,31 +164,29 @@ export default function Page() {
 
   // New zap events
   useEffect(() => {
+    console.dir('products:')
+    console.dir(products)
     if (zapEvents.length <= 0 || finished || pendingAmount > 0) {
       return
     }
 
-    const testOrder: PrintOrder = {
-      items: [
-        {
-          name: 'Coca Cola',
-          qty: 2,
-          price: 500
-        },
-        {
-          name: 'Pizza',
-          qty: 3,
-          price: 800
-        }
-      ],
-      total: 1000,
+    const printOrder = {
+      total: convertCurrency(amount, 'SAT', 'ARS'),
       totalSats: amount,
-      currency: 'ARS'
+      currency: 'ARS',
+      items: products.map(product => ({
+        name: product.name,
+        price: product.price.value,
+        qty: product.qty
+      }))
     }
 
-    print(testOrder)
+    console.dir('printOrder:')
+    console.dir(printOrder)
+    print(printOrder)
     setFinished(true)
-  }, [zapEvents, finished, pendingAmount, amount, print])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zapEvents, finished, pendingAmount, amount, print, products])
 
   useEffect(() => {
     switch (scanStatus) {

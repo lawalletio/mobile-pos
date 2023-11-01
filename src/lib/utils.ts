@@ -5,11 +5,18 @@ import bolt11 from 'bolt11'
 import type { IOrderEventContent } from '@/types/order'
 import { TransferTypes } from '@/types/transaction'
 import type { Event } from 'nostr-tools'
+import { ProductData, ProductQtyData } from '@/types/product'
 
 export const parseOrderDescription = (event: Event): IOrderEventContent => {
   return JSON.parse(
     event.tags.find(tag => tag[0] === 'description')![1]!
   ) as IOrderEventContent
+}
+
+export const parseOrderProducts = (event: Event): ProductQtyData[] => {
+  return JSON.parse(
+    event.tags.find(tag => tag[0] === 'products')![1]!
+  ) as ProductQtyData[]
 }
 
 export const parseZapInvoice = (event: Event): bolt11.PaymentRequestObject => {
@@ -47,4 +54,26 @@ export const removeLightningStandard = (str: string) => {
     : lowStr.startsWith('lightning:')
     ? lowStr.replace('lightning:', '')
     : lowStr
+}
+
+export const aggregateProducts = (
+  products: ProductData[]
+): ProductQtyData[] => {
+  const productMap = new Map<string, ProductQtyData>()
+
+  products.forEach(product => {
+    const key = `${product.id}`
+    const existingProduct = productMap.get(key)
+    if (existingProduct) {
+      existingProduct.qty += 1
+    } else {
+      const newProduct: ProductQtyData = {
+        ...product,
+        qty: 1
+      }
+      productMap.set(key, newProduct)
+    }
+  })
+
+  return Array.from(productMap.values())
 }
