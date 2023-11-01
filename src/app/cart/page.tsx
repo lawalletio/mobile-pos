@@ -129,7 +129,7 @@ export default function Page() {
     setCart([])
     setProductQuantities({})
     clearOrder()
-  }, [])
+  }, [clearOrder])
 
   const handleClearCartAndCloseSheet = useCallback(() => {
     setShowSheet(false)
