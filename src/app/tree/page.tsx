@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 
 // Utils
 import { formatToPreference } from '@/lib/formatter'
-import { extractLNURLFromQR } from '@/lib/utils'
 
 // Components
 import { Flex, Heading, Text, Divider, Button, Keyboard } from '@/components/UI'

@@ -2,12 +2,14 @@ import * as React from 'react'
 import NimiqQrScanner from 'qr-scanner'
 import { QrScannerProps } from './types'
 
-const styles: any = {
+const styles: Record<string, React.CSSProperties> = {
   container: {
+    height: '100%',
     width: '100%',
-    paddingTop: '100%',
+    bottom: 0,
+    left: 0,
     overflow: 'hidden',
-    position: 'relative'
+    position: 'fixed'
   },
   video: {
     top: 0,
@@ -16,8 +18,7 @@ const styles: any = {
     height: '100%',
     display: 'block',
     overflow: 'hidden',
-    position: 'absolute',
-    transform: undefined
+    position: 'absolute'
   }
 }
 
@@ -84,11 +85,9 @@ const QrScanner = (props: QrScannerProps) => {
       if (onMount) onMount(scanner)
 
       return () => {
-        // dispose of component
         scanner.destroy()
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

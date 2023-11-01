@@ -24,15 +24,12 @@ export const validateEmail = (email: string): RegExpMatchArray | null => {
 }
 
 export const detectTransferType = (data: string): TransferTypes | false => {
-  const cleanStr: string = data.includes('lightning://')
-    ? data.replace('lightning://', '').toUpperCase()
-    : data.toUpperCase()
-
-  const isLUD16 = validateEmail(cleanStr)
+  const upperStr: string = data.toUpperCase()
+  const isLUD16 = validateEmail(upperStr)
   if (isLUD16) return TransferTypes.LUD16
 
-  if (cleanStr.includes('LNURL')) return TransferTypes.LNURL
-  if (cleanStr.includes('LNBC')) return TransferTypes.INVOICE
+  if (upperStr.startsWith('LNURL')) return TransferTypes.LNURL
+  if (upperStr.startsWith('LNBC')) return TransferTypes.INVOICE
 
   return false
 }
@@ -42,11 +39,12 @@ export const isValidLightningURL = (url: string): boolean => {
   return pattern.test(url)
 }
 
-export const extractLNURLFromQR = (url: string): string | null => {
-  if (url.startsWith("lightning://")) {
-    // If it does, remove the prefix and return the rest of the string
-    return url.replace("lightning://", "");
-  }
-  // Otherwise, return the string as is
-  return url;
+export const removeLightningStandard = (str: string) => {
+  const lowStr: string = str.toLowerCase()
+
+  return lowStr.startsWith('lightning://')
+    ? lowStr.replace('lightning://', '')
+    : lowStr.startsWith('lightning:')
+    ? lowStr.replace('lightning:', '')
+    : lowStr
 }

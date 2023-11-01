@@ -6,13 +6,15 @@ import { useRouter } from 'next/navigation'
 // Components
 import QrScanner from '@/components/UI/Scanner/Scanner'
 import Container from '@/components/Layout/Container'
-import { Button, Divider, Flex } from '@/components/UI'
+import { Button, Divider, Flex, Heading } from '@/components/UI'
 
 // Types
 import { TransferTypes } from '@/types/transaction'
 
 // Utils
-import { detectTransferType, extractLNURLFromQR } from '@/lib/utils'
+import { detectTransferType, removeLightningStandard } from '@/lib/utils'
+import Navbar from '@/components/Layout/Navbar'
+import { useEffect } from 'react'
 
 export default function Page() {
   // Hooks
@@ -22,29 +24,38 @@ export default function Page() {
   const handleScan = (result: any) => {
     if (!result || !result.data) return
 
-    const decodeTransferType: TransferTypes | false = detectTransferType(
-      result.data
-    )
-    if (!decodeTransferType) return
-    const lnurl = extractLNURLFromQR(result.data)
+    const cleanScan: string = removeLightningStandard(result.data)
+    const scanType: boolean | string = detectTransferType(cleanScan)
+    if (!scanType) return
 
-    if (decodeTransferType === TransferTypes.INVOICE) {
-      router.push(`/tree?data=${lnurl}`)
+    if (scanType === TransferTypes.INVOICE) {
+      // router.push(`/tree?data=${cleanScan}`)
       return
     }
 
-    router.push(`/tree?data=${lnurl}`)
+    router.push(`/tree?data=${cleanScan}`)
   }
+
+  useEffect(() => {
+    router.prefetch('/tree')
+  }, [])
 
   return (
     <>
+      <Navbar showBackPage={true}>
+        <Flex align="center">
+          <Heading as="h5">Escanea el código QR</Heading>
+        </Flex>
+      </Navbar>
+
       <Flex justify="center" align="center" flex={1}>
         <QrScanner
           onDecode={handleScan}
-          containerStyle={styleQrReader}
           startOnLaunch={true}
           highlightScanRegion={true}
           highlightCodeOutline={true}
+          constraints={{ facingMode: 'environment' }}
+          preferredCamera={'environment'}
         />
       </Flex>
 
