@@ -12,7 +12,8 @@ import {
   Button,
   Icon,
   Product,
-  Text
+  Text,
+  Sheet
 } from '@/components/UI'
 import Container from '@/components/Layout/Container'
 import FooterCart from '@/components/Layout/FooterCart'
@@ -37,6 +38,10 @@ interface ProductData {
 }
 
 export default function Page() {
+  // Sheet
+  const [showSheet, setShowSheet] = useState(false)
+
+  // Cart
   const [cart, setCart] = useState<ProductData[]>([])
 
   const [productQuantities, setProductQuantities] = useState<{
@@ -92,9 +97,14 @@ export default function Page() {
     groupedProducts[categoryId].push(product)
   })
 
-  const clearCart = () => {
+  const handleClearCart = () => {
     setCart([])
     setProductQuantities({})
+  }
+
+  const handleClearCartAndCloseSheet = () => {
+    setShowSheet(false)
+    handleClearCart()
   }
 
   return (
@@ -133,24 +143,93 @@ export default function Page() {
           <FooterCart>
             <Flex gap={8}>
               <div className="clear-button">
-                <Button variant="bezeled" color="error" onClick={clearCart}>
+                <Button
+                  variant="bezeled"
+                  color="error"
+                  onClick={handleClearCart}
+                >
                   <TrashIcon />
                   <span>{cart.length}</span>
                 </Button>
               </div>
               <Flex>
                 <Button
-                  color="secondary"
+                  // color="secondary"
                   variant="bezeled"
-                  onClick={() => null}
+                  onClick={() => setShowSheet(true)}
                 >
-                  Cobrar ${getTotalPrice()}
+                  Ver carrito
                 </Button>
               </Flex>
             </Flex>
           </FooterCart>
         )}
       </Container>
+      <Sheet
+        isOpen={showSheet}
+        onClose={() => setShowSheet(false)}
+        title={`Resumen de compra`}
+      >
+        <Container>
+          <ul>
+            {Object.entries(productQuantities).map(product => {
+              const id = Number(product[0])
+              const quantities = Number(product[1])
+
+              const localProduct = products.find(product => product.id === id)
+
+              if (quantities > 0 && localProduct) {
+                return (
+                  <li key={localProduct.id}>
+                    <Divider y={8} />
+                    <Flex justify="space-between" align="center">
+                      <Flex direction="column">
+                        <Text isBold>{localProduct?.name}</Text>
+                        <Text size="small">
+                          {quantities}{' '}
+                          {quantities === 1 ? 'unidad' : 'unidades'}.
+                        </Text>
+                      </Flex>
+                      <Flex align="start" gap={4} flex={1}>
+                        <Flex flex={0}>
+                          <Text size="small">$</Text>
+                          <Heading as="h5">
+                            {localProduct?.price.value * quantities}
+                          </Heading>
+                        </Flex>
+                      </Flex>
+                    </Flex>
+                    <Divider y={8} />
+                  </li>
+                )
+              }
+            })}
+          </ul>
+        </Container>
+        <FooterCart>
+          <Flex gap={8}>
+            <div className="clear-button">
+              <Button
+                variant="bezeled"
+                color="error"
+                onClick={handleClearCartAndCloseSheet}
+              >
+                <TrashIcon />
+                <span>{cart.length}</span>
+              </Button>
+            </div>
+            <Flex>
+              <Button
+                color="secondary"
+                variant="bezeled"
+                onClick={() => setShowSheet(true)}
+              >
+                Cobrar ${getTotalPrice()}
+              </Button>
+            </Flex>
+          </Flex>
+        </FooterCart>
+      </Sheet>
     </>
   )
 }

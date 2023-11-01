@@ -8,7 +8,8 @@ import { Flex, Heading, Text, Divider, Icon, Card } from '@/components/UI'
 import Container from '@/components/Layout/Container'
 import {
   PantheonIcon,
-  SharedWalletIcon
+  SharedWalletIcon,
+  CartIcon
 } from '@bitcoin-design/bitcoin-icons-react/filled'
 
 export default function Page() {
@@ -40,6 +41,21 @@ export default function Page() {
                 <Flex direction="column" gap={4}>
                   <Heading as="h5">Caja</Heading>
                   <Text size="small">Medio de cobro para tu negocio.</Text>
+                </Flex>
+              </Link>
+            </Card>
+          </Flex>
+          <Flex>
+            <Card>
+              <Link href="/cart">
+                <Icon>
+                  <CartIcon />
+                </Icon>
+                <Flex direction="column" gap={4}>
+                  <Heading as="h5">Carrito de compras</Heading>
+                  <Text size="small">
+                    Empeza a vender productos seleccionados.
+                  </Text>
                 </Flex>
               </Link>
             </Card>
