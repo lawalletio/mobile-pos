@@ -31,9 +31,17 @@ const requestLNURL = async (url: string) => {
 }
 
 export const useCard = (): CardReturns => {
-  const { isNDEFAvailable, permission, read, abortReadCtrl } = useNfc()
-  const { isAvailable: isInjectedAvailable, read: readInjected } =
-    useInjectedNFC()
+  const {
+    isNDEFAvailable,
+    permission,
+    read,
+    abortReadCtrl: abortReadNativeCtrl
+  } = useNfc()
+  const {
+    isAvailable: isInjectedAvailable,
+    read: readInjected,
+    abortReadCtrl: abortReadInjectedCtrl
+  } = useInjectedNFC()
   const [status, setStatus] = useState<ScanCardStatus>(ScanCardStatus.IDLE)
 
   const readNative = useCallback(async (): Promise<string> => {
@@ -68,6 +76,6 @@ export const useCard = (): CardReturns => {
     permission,
     status,
     scan,
-    stop: abortReadCtrl
+    stop: isInjectedAvailable ? abortReadInjectedCtrl : abortReadNativeCtrl
   }
 }
