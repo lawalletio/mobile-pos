@@ -10,7 +10,7 @@ export const FooterCart = styled.div`
   width: 100%;
   height: 60px;
 
-  background-color: ${theme.colors.background};
+  background-color: ${theme.colors.gray15};
 
   .clear-button {
     position: relative;
