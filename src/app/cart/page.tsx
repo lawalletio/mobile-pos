@@ -1,7 +1,13 @@
 'use client'
 
 // React/Next
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+
+// Hooks
+import { useLN } from '@/context/LN'
+import { useOrder } from '@/context/Order'
+import { useNostr } from '@/context/Nostr'
 
 // Components
 import { TrashIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
@@ -24,6 +30,7 @@ import products from '@/constants/products.json'
 
 // Style
 import theme from '@/styles/theme'
+import useCurrencyConverter from '@/hooks/useCurrencyConverter'
 
 interface ProductData {
   id: number
@@ -36,7 +43,23 @@ interface ProductData {
   }
 }
 
+// Constants
+const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
+
 export default function Page() {
+  // Hooks
+  const { fetchLNURL } = useLN()
+  const {
+    generateOrderEvent,
+    setAmount,
+    amount,
+    setOrderEvent,
+    clear: clearOrder
+  } = useOrder()
+  const { publish } = useNostr()
+  const router = useRouter()
+  const { convertCurrency } = useCurrencyConverter()
+
   // Sheet
   const [showSheet, setShowSheet] = useState(false)
 
@@ -47,44 +70,50 @@ export default function Page() {
     [productId: number]: number
   }>({})
 
-  const addToCart = (product: ProductData) => {
-    // Update cart
-    const updatedCart = [...cart, product]
-    setCart(updatedCart)
+  const addToCart = useCallback(
+    (product: ProductData) => {
+      // Update cart
+      const updatedCart = [...cart, product]
+      setCart(updatedCart)
 
-    // Update quantities
-    const productId = product.id
-    const updatedQuantities = { ...productQuantities }
-    updatedQuantities[productId] = (updatedQuantities[productId] || 0) + 1
-    setProductQuantities(updatedQuantities)
-  }
+      // Update quantities
+      const productId = product.id
+      const updatedQuantities = { ...productQuantities }
+      updatedQuantities[productId] = (updatedQuantities[productId] || 0) + 1
+      setProductQuantities(updatedQuantities)
+    },
+    [cart, productQuantities]
+  )
 
-  const removeFromCart = (product: ProductData) => {
-    // Update cart
-    const updatedCart = [...cart]
+  const removeFromCart = useCallback(
+    (product: ProductData) => {
+      // Update cart
+      const updatedCart = [...cart]
 
-    // Update quantities
-    const productId = product.id
-    const updatedQuantities = { ...productQuantities }
-    if (updatedQuantities[productId] > 0) {
-      updatedCart.splice(
-        updatedCart.findIndex(item => item.id === productId),
-        1
-      )
-      updatedQuantities[productId] -= 1
-    }
+      // Update quantities
+      const productId = product.id
+      const updatedQuantities = { ...productQuantities }
+      if (updatedQuantities[productId] > 0) {
+        updatedCart.splice(
+          updatedCart.findIndex(item => item.id === productId),
+          1
+        )
+        updatedQuantities[productId] -= 1
+      }
 
-    setCart(updatedCart)
-    setProductQuantities(updatedQuantities)
-  }
+      setCart(updatedCart)
+      setProductQuantities(updatedQuantities)
+    },
+    [cart, productQuantities]
+  )
 
-  const getTotalPrice = () => {
+  const getTotalPrice = useCallback(() => {
     let totalPrice = 0
     cart.forEach(product => {
       totalPrice += product.price.value
     })
     return totalPrice
-  }
+  }, [cart])
 
   const groupedProducts: { [categoryId: number]: ProductData[] } = {}
 
@@ -96,15 +125,43 @@ export default function Page() {
     groupedProducts[categoryId].push(product)
   })
 
-  const handleClearCart = () => {
+  const handleClearCart = useCallback(() => {
     setCart([])
     setProductQuantities({})
-  }
+    clearOrder()
+  }, [])
 
-  const handleClearCartAndCloseSheet = () => {
+  const handleClearCartAndCloseSheet = useCallback(() => {
     setShowSheet(false)
     handleClearCart()
+  }, [handleClearCart])
+
+  const handleCheckout = async () => {
+    if (amount <= 0) return
+
+    const order = generateOrderEvent!()
+
+    console.dir(order)
+    // console.info('Publishing order')
+    publish!(order).catch(e => {
+      console.warn('Error publishing order')
+      console.warn(e)
+    })
+
+    setOrderEvent!(order)
+    router.push('/payment/' + order.id)
   }
+
+  useEffect(() => {
+    void fetchLNURL(DESTINATION_LNURL)
+    clearOrder()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    setAmount(convertCurrency(getTotalPrice(), 'ARS', 'SAT'))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productQuantities, getTotalPrice])
 
   return (
     <>
@@ -218,7 +275,7 @@ export default function Page() {
               <Button
                 color="secondary"
                 variant="bezeled"
-                onClick={() => setShowSheet(true)}
+                onClick={() => handleCheckout()}
               >
                 Cobrar ${getTotalPrice()}
               </Button>
