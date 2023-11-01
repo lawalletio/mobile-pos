@@ -10,6 +10,7 @@ import { LNURLResponse } from '@/types/lnurl'
 
 // Hooks
 import { useNfc } from 'use-nfc-hook'
+import { useInjectedNFC } from './useInjectedNFC'
 
 export type CardReturns = {
   isAvailable: boolean
@@ -31,16 +32,26 @@ const requestLNURL = async (url: string) => {
 
 export const useCard = (): CardReturns => {
   const { isNDEFAvailable, permission, read, abortReadCtrl } = useNfc()
+  const { isAvailable: isInjectedAvailable, read: readInjected } =
+    useInjectedNFC()
   const [status, setStatus] = useState<ScanCardStatus>(ScanCardStatus.IDLE)
+
+  const readNative = useCallback(async (): Promise<string> => {
+    const response = await read()
+    const record = response.message.records[0]
+    const decoder = new TextDecoder('utf-8')
+    return decoder.decode(record.data)
+  }, [read])
+
   const scan = async (): Promise<LNURLResponse> => {
     setStatus(ScanCardStatus.SCANNING)
     let url = ''
     try {
-      const response = await read()
-      const record = response.message.records[0]
-      const decoder = new TextDecoder('utf-8')
-      const decodedContent = decoder.decode(record.data)
-      url = decodedContent.replace('lnurlw://', 'https://')
+      console.info('USING Injected')
+      const response = await (isInjectedAvailable
+        ? readInjected()
+        : readNative())
+      url = response.replace('lnurlw://', 'https://')
     } catch (error) {
       alert('ALERT on reading: ' + JSON.stringify(error))
       console.log('ERROR ', error)
@@ -53,7 +64,7 @@ export const useCard = (): CardReturns => {
   }
 
   return {
-    isAvailable: !!isNDEFAvailable,
+    isAvailable: isInjectedAvailable || !!isNDEFAvailable,
     permission,
     status,
     scan,
