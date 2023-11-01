@@ -1,5 +1,5 @@
 import { InjectedNFCContext } from '@/context/InjectedNFC'
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useContext } from 'react'
 
 interface PrintReturns {
   isAvailable: boolean
@@ -8,26 +8,11 @@ interface PrintReturns {
 }
 
 export const useInjectedNFC = (): PrintReturns => {
-  const [isAvailable, setIsAvailable] = useState(false)
-  const { subscribe } = useContext(InjectedNFCContext)
-
-  const read = useCallback(async (): Promise<string> => {
-    if (!isAvailable) {
-      throw new Error('No hay NFC inyectado')
-    }
-    alert('Falta implementar')
-    return ''
-  }, [isAvailable])
-
-  const abortReadCtrl = useCallback(() => {}, [])
-
-  useEffect(() => {
-    setIsAvailable(!!window.Android?.read)
-  }, [])
+  const { isAvailable, subscribe, unsubscribe } = useContext(InjectedNFCContext)
 
   return {
     isAvailable,
-    read,
-    abortReadCtrl
+    read: subscribe,
+    abortReadCtrl: unsubscribe
   }
 }
