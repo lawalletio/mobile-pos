@@ -12,7 +12,7 @@ export const usePrint = (): PrintReturns => {
   const print = useCallback(
     (order: PrintOrder) => {
       if (!isAvailable) {
-        alert('No se puede imprimir, no se encuentra el objeto Android')
+        console.error('No se puede imprimir, no se encuentra el objeto Android')
         return
       }
       window!.Android!.print(JSON.stringify(order))
