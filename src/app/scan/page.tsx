@@ -38,7 +38,7 @@ export default function Page() {
 
   useEffect(() => {
     router.prefetch('/tree')
-  }, [])
+  }, [router])
 
   return (
     <>
