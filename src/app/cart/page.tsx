@@ -8,6 +8,10 @@ import { useRouter } from 'next/navigation'
 import { useLN } from '@/context/LN'
 import { useOrder } from '@/context/Order'
 import { useNostr } from '@/context/Nostr'
+import useCurrencyConverter from '@/hooks/useCurrencyConverter'
+
+// Types
+import { ProductData } from '@/types/product'
 
 // Components
 import { TrashIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
@@ -30,18 +34,7 @@ import products from '@/constants/products.json'
 
 // Style
 import theme from '@/styles/theme'
-import useCurrencyConverter from '@/hooks/useCurrencyConverter'
-
-interface ProductData {
-  id: number
-  category_id: number
-  name: string
-  description: string
-  price: {
-    value: number
-    currency: string
-  }
-}
+import { aggregateProducts } from '@/lib/utils'
 
 // Constants
 const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
@@ -54,6 +47,7 @@ export default function Page() {
     setAmount,
     amount,
     setOrderEvent,
+    setProducts,
     clear: clearOrder
   } = useOrder()
   const { publish } = useNostr()
@@ -140,8 +134,6 @@ export default function Page() {
     if (amount <= 0) return
 
     const order = generateOrderEvent!()
-
-    console.dir(order)
     // console.info('Publishing order')
     publish!(order).catch(e => {
       console.warn('Error publishing order')
@@ -160,6 +152,7 @@ export default function Page() {
 
   useEffect(() => {
     setAmount(convertCurrency(getTotalPrice(), 'ARS', 'SAT'))
+    setProducts(aggregateProducts(cart))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productQuantities, getTotalPrice])
 
