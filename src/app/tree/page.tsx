@@ -9,19 +9,10 @@ import { formatToPreference } from '@/lib/formatter'
 import { extractLNURLFromQR } from '@/lib/utils'
 
 // Components
-import {
-  Flex,
-  Heading,
-  Text,
-  Divider,
-  Button,
-  Keyboard,
-  Icon
-} from '@/components/UI'
+import { Flex, Heading, Text, Divider, Button, Keyboard } from '@/components/UI'
 import Container from '@/components/Layout/Container'
 import Navbar from '@/components/Layout/Navbar'
 import TokenList from '@/components/TokenList'
-import { SharedWalletIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 
 // Contexts and Hooks
 import { useNumpad } from '@/hooks/useNumpad'
@@ -53,7 +44,7 @@ export default function Page() {
         setCardScanned(true)
       } catch (e) {
         console.error(e)
-        alert("what the hell?" + JSON.stringify(e))
+        alert('what the hell?' + JSON.stringify(e))
       }
     },
     [fetchLNURL]
@@ -106,10 +97,7 @@ export default function Page() {
 
   return (
     <>
-      <Navbar theme="secondary">
-        <Icon>
-          <SharedWalletIcon />
-        </Icon>
+      <Navbar showBackPage={true}>
         <Heading as="h5">Modo ARBOLITO</Heading>
       </Navbar>
       <Container size="small">

@@ -15,16 +15,7 @@ import { useLN } from '@/context/LN'
 import { formatToPreference } from '@/lib/formatter'
 
 // Components
-import { PantheonIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
-import {
-  Flex,
-  Heading,
-  Text,
-  Divider,
-  Button,
-  Keyboard,
-  Icon
-} from '@/components/UI'
+import { Flex, Heading, Text, Divider, Button, Keyboard } from '@/components/UI'
 import Container from '@/components/Layout/Container'
 import Navbar from '@/components/Layout/Navbar'
 import TokenList from '@/components/TokenList'
@@ -85,10 +76,7 @@ export default function Page() {
 
   return (
     <>
-      <Navbar>
-        <Icon>
-          <PantheonIcon />
-        </Icon>
+      <Navbar showBackPage={true}>
         <Heading as="h5">Modo CAJA</Heading>
       </Navbar>
       <Container size="small">

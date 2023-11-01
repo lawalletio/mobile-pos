@@ -1,35 +1,36 @@
 'use client'
 
-import { RefreshIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
+import { useRouter } from 'next/navigation'
+import { CaretLeftIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 
-import { Flex, LinkButton } from '@/components/UI'
+import { Flex, Icon } from '@/components/UI'
 import Container from '../Container'
 
-import { Navbar } from './style'
+import { Navbar, BackButton } from './style'
+import { ReactNode } from 'react'
 
 interface ComponentProps {
-  children?: any
-  theme?: 'primary' | 'secondary'
+  children?: ReactNode
+  showBackPage?: boolean
 }
 
 export default function Component(props: ComponentProps) {
-  const { children, theme = 'primary' } = props
+  const { children, showBackPage = false } = props
+
+  const router = useRouter()
 
   return (
-    <Navbar $theme={theme}>
+    <Navbar>
       <Container>
         <Flex flex={1} align="center" gap={8}>
-          <Flex align="end" gap={8}>
-            {children}
-          </Flex>
-          <LinkButton
-            href={theme === 'primary' ? '/tree' : '/paydesk'}
-            variant="bezeledGray"
-            size="small"
-            color={theme}
-          >
-            <RefreshIcon />
-          </LinkButton>
+          {showBackPage && (
+            <BackButton onClick={() => router.back()}>
+              <Icon>
+                <CaretLeftIcon />
+              </Icon>
+            </BackButton>
+          )}
+          {children}
         </Flex>
       </Container>
     </Navbar>

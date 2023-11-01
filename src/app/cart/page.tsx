@@ -4,13 +4,12 @@
 import { useState } from 'react'
 
 // Components
-import { CartIcon, TrashIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
+import { TrashIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import {
   Flex,
   Heading,
   Divider,
   Button,
-  Icon,
   Product,
   Text,
   Sheet
@@ -109,10 +108,7 @@ export default function Page() {
 
   return (
     <>
-      <Navbar>
-        <Icon>
-          <CartIcon />
-        </Icon>
+      <Navbar showBackPage={true}>
         <Heading as="h5">Carrito de compras</Heading>
       </Navbar>
       <Container size="small">

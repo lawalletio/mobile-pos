@@ -4,14 +4,20 @@ import { styled } from 'styled-components'
 
 import theme from '@/styles/theme'
 
-interface NavbarProps {
-  $theme: 'primary' | 'secondary'
-}
+interface NavbarProps {}
 
 export const Navbar = styled.div<NavbarProps>`
   height: 60px;
+  position: relative;
+  z-index: 10;
+  background-color: ${theme.colors.background};
+`
 
-  background-color: ${props => theme.colors[props.$theme]};
+export const BackButton = styled.button`
+  background-color: transparent;
+  border: none;
 
-  color: ${theme.colors.black};
+  color: ${theme.colors.primary};
+
+  cursor: pointer;
 `
