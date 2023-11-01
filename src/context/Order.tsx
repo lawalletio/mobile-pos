@@ -14,10 +14,15 @@ import type { Dispatch, SetStateAction } from 'react'
 import type { Event, UnsignedEvent } from 'nostr-tools'
 import { useLN } from './LN'
 import type { NDKEvent, NostrEvent } from '@nostr-dev-kit/ndk'
+import { ProductQtyData } from '@/types/product'
 
 // Utils
 import { useNostr } from './Nostr'
-import { parseOrderDescription, parseZapInvoice } from '@/lib/utils'
+import {
+  parseOrderDescription,
+  parseOrderProducts,
+  parseZapInvoice
+} from '@/lib/utils'
 import { getEventHash, getSignature, nip44, validateEvent } from 'nostr-tools'
 import bolt11 from 'bolt11'
 
@@ -31,6 +36,8 @@ export interface IOrderContext {
   zapEvents: NostrEvent[]
   currentInvoice?: string
   memo: unknown
+  products: ProductQtyData[]
+  setProducts: Dispatch<SetStateAction<ProductQtyData[]>>
   clear: () => void
   setMemo: Dispatch<SetStateAction<unknown>>
   setAmount: Dispatch<SetStateAction<number>>
@@ -53,6 +60,8 @@ export const OrderContext = createContext<IOrderContext>({
   fiatAmount: 0,
   zapEvents: [],
   fiatCurrency: 'ARS',
+  memo: undefined,
+  products: [],
   checkOut: function (): Promise<{ eventId: string }> {
     throw new Error('Function not implemented.')
   },
@@ -62,11 +71,13 @@ export const OrderContext = createContext<IOrderContext>({
   setFiatAmount: function (): void {
     throw new Error('Function not implemented.')
   },
-  memo: undefined,
   setMemo: function (_value: unknown): void {
     throw new Error('Function not implemented.')
   },
   clear: function (): void {
+    throw new Error('Function not implemented.')
+  },
+  setProducts: function (value: SetStateAction<ProductQtyData[]>): void {
     throw new Error('Function not implemented.')
   }
 })
@@ -93,6 +104,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   const [fiatAmount, setFiatAmount] = useState<number>(0)
   const [fiatCurrency, setFiatCurrency] = useState<string>('ARS')
   const [zapEvents, setZapEvents] = useState<NostrEvent[]>([])
+  const [products, setProducts] = useState<ProductQtyData[]>([])
 
   const generateOrderEvent = useCallback((): Event => {
     const vote = (memo as any).vote as number
@@ -112,7 +124,9 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
             memo,
             amount,
             vote
-          })
+          }),
+          'products',
+          JSON.stringify(products)
         ]
       ] as string[][]
     }
@@ -127,7 +141,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     console.dir(event)
 
     return event
-  }, [amount, localPrivateKey, localPublicKey, relays, memo])
+  }, [memo, localPublicKey, relays, amount, products, localPrivateKey])
 
   // Checkout function
   const checkOut = useCallback(async (): Promise<{
@@ -211,9 +225,11 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     }
 
     const description = parseOrderDescription(orderEvent as Event)
+    const _products = parseOrderProducts(orderEvent as Event)
 
     setOrderId(orderEvent.id)
     setAmount(description.amount)
+    setProducts(_products)
     setPendingAmount(description.amount)
     // setFiatAmount(description.fiatAmount)
     // setFiatCurrency(description.fiatCurrency)
@@ -248,6 +264,8 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         pendingAmount,
         currentInvoice,
         memo,
+        products,
+        setProducts,
         clear,
         setMemo,
         checkOut,
