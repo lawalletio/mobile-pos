@@ -15,7 +15,7 @@ export const parseOrderDescription = (event: Event): IOrderEventContent => {
 
 export const parseOrderProducts = (event: Event): ProductQtyData[] => {
   return JSON.parse(
-    event.tags.find(tag => tag[0] === 'products')![1]!
+    event.tags.find(tag => tag[0] === 'products')?.[1] ?? '[]'
   ) as ProductQtyData[]
 }
 
