@@ -124,10 +124,9 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
             memo,
             amount,
             vote
-          }),
-          'products',
-          JSON.stringify(products)
-        ]
+          })
+        ],
+        ['products', JSON.stringify(products)]
       ] as string[][]
     }
 
