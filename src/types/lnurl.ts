@@ -5,6 +5,7 @@ export interface LNURLResponse {
   minWithdrawable: number
   maxWithdrawable: number
   defaultDescription: string
+  accountPubKey?: string
 }
 
 export enum LNURLWStatus {
