@@ -29,7 +29,7 @@ export default function Page() {
   const router = useRouter()
   const { generateOrderEvent, setAmount, setOrderEvent, clear } = useOrder()
   const { publish } = useNostr()
-  const { fetchLNURL } = useLN()
+  const { setDestinationLNURL } = useLN()
   const { userConfig } = useContext(LaWalletContext)
   const numpadData = useNumpad(userConfig.props.currency)
 
@@ -65,8 +65,8 @@ export default function Page() {
   }, [sats])
 
   useEffect(() => {
-    void fetchLNURL(DESTINATION_LNURL)
-  }, [fetchLNURL])
+    void setDestinationLNURL(DESTINATION_LNURL)
+  }, [setDestinationLNURL])
 
   // on mount
   useEffect(() => {

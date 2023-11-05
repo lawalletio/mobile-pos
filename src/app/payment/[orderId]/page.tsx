@@ -6,14 +6,12 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation'
 
 // Third-party
 import axios from 'axios'
-import { Event } from 'nostr-tools'
 
 // Types
 import { LNURLResponse, LNURLWStatus } from '@/types/lnurl'
 import { ScanCardStatus } from '@/types/card'
 
 // Contexts and Hooks
-import { useNostr } from '@/context/Nostr'
 import { useOrder } from '@/context/Order'
 import { useLN } from '@/context/LN'
 import { LaWalletContext } from '@/context/LaWalletContext'
@@ -40,25 +38,22 @@ import { Loader } from '@/components/Loader/Loader'
 import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import theme from '@/styles/theme'
 import { usePrint } from '@/hooks/usePrint'
-import { PrintOrder } from '@/types/print'
 
 export default function Page() {
   // Hooks
   const router = useRouter()
   const { orderId: orderIdFromUrl } = useParams()
   const query = useSearchParams()
-  const { getEvent } = useNostr()
 
   const { convertCurrency } = useCurrencyConverter()
   const { zapEmitterPubKey } = useLN()
   const {
     orderId,
     amount,
-    pendingAmount,
-    zapEvents,
     products,
-    setOrderEvent,
-    requestZapInvoice
+    isPaid,
+    currentInvoice: invoice,
+    loadOrder
   } = useOrder()
   const { isAvailable, permission, status: scanStatus, scan, stop } = useCard()
   const { print } = usePrint()
@@ -66,7 +61,6 @@ export default function Page() {
   const { userConfig } = useContext(LaWalletContext)
 
   // Local states
-  const [invoice, setInvoice] = useState<string>()
   const [cardStatus, setCardStatus] = useState<LNURLWStatus>(LNURLWStatus.IDLE)
   const [finished, setFinished] = useState<boolean>(false)
 
@@ -79,23 +73,6 @@ export default function Page() {
     }
     router.push(back)
   }, [router, query])
-
-  const fetchOrder = useCallback(
-    async (_orderId: string) => {
-      const order = await getEvent!(_orderId)
-
-      if (!order) {
-        alert('NO HAY ORDER!')
-        return
-      }
-
-      setOrderEvent!((await order.toNostrEvent()) as Event)
-
-      console.info('ORDER:')
-      console.dir(order)
-    },
-    [getEvent, setOrderEvent]
-  )
 
   const startRead = async () => {
     const lnurlResponse = await scan()
@@ -131,26 +108,13 @@ export default function Page() {
       return
     }
 
-    fetchOrder(orderIdFromUrl as string)
+    // fetchOrder(orderIdFromUrl as string)
+    if (!loadOrder(orderIdFromUrl as string)) {
+      alert('No se encontró la orden')
+      handleBack()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderIdFromUrl, orderId])
-
-  // On orderId change
-  useEffect(() => {
-    if (!orderId || !zapEmitterPubKey) {
-      return
-    }
-
-    requestZapInvoice!(amount * 1000, orderId)
-      .then(_invoice => {
-        console.info('INVOICE:')
-        setInvoice!(_invoice)
-      })
-      .catch(() => {
-        alert("Couldn't generate invoice.")
-      })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderId])
 
   // On Invoice ready
   useEffect(() => {
@@ -164,9 +128,7 @@ export default function Page() {
 
   // New zap events
   useEffect(() => {
-    console.dir('products:')
-    console.dir(products)
-    if (zapEvents.length <= 0 || finished || pendingAmount > 0) {
+    if (!isPaid || finished) {
       return
     }
 
@@ -186,7 +148,7 @@ export default function Page() {
     print(printOrder)
     setFinished(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zapEvents, finished, pendingAmount, amount, print, products])
+  }, [isPaid, finished, amount, print, products])
 
   useEffect(() => {
     switch (scanStatus) {

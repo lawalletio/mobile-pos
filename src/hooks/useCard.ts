@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react'
 import axios from 'axios'
 
 // Types
-import { ScanCardStatus } from '@/types/card'
+import { ScanCardStatus, ScanAction } from '@/types/card'
 import { LNURLResponse } from '@/types/lnurl'
 
 // Hooks
@@ -16,12 +16,23 @@ export type CardReturns = {
   isAvailable: boolean
   permission: string
   status: ScanCardStatus
-  scan: () => Promise<LNURLResponse>
+  scan: (type?: ScanAction) => Promise<LNURLResponse>
   stop: () => void
 }
 
-const requestLNURL = async (url: string) => {
-  const response = await axios.get(url)
+const FEDERATION_ID = process.env.FEDERATION_ID!
+
+const requestLNURL = async (url: string, type: ScanAction) => {
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-LaWallet-Action': type,
+    'X-LaWallet-Param': `federationId=${FEDERATION_ID}, tokens=BTC`
+  }
+
+  alert('headers: ' + JSON.stringify(headers))
+  const response = await axios.get(url, {
+    headers: headers
+  })
   if (response.status !== 200) {
     alert(JSON.stringify(response.data))
     throw new Error('Hubo un error: ' + JSON.stringify(response.data))
@@ -51,7 +62,9 @@ export const useCard = (): CardReturns => {
     return decoder.decode(record.data)
   }, [read])
 
-  const scan = async (): Promise<LNURLResponse> => {
+  const scan = async (
+    type: ScanAction = ScanAction.DEFAULT
+  ): Promise<LNURLResponse> => {
     setStatus(ScanCardStatus.SCANNING)
     let url = ''
     try {
@@ -66,7 +79,7 @@ export const useCard = (): CardReturns => {
     }
 
     setStatus(ScanCardStatus.REQUESTING)
-    const response = requestLNURL(url)
+    const response = requestLNURL(url, type)
     setStatus(ScanCardStatus.DONE)
     return response
   }

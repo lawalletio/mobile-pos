@@ -1,14 +1,26 @@
 'use client'
 
 // React
-import { createContext, useCallback, useContext, useState } from 'react'
+import {
+  Dispatch,
+  SetStateAction,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState
+} from 'react'
 
 // Interface
 export interface ILNContext {
   zapEmitterPubKey?: string
   callbackUrl?: string
   destination?: string
-  fetchLNURL: (_lnurl: string) => Promise<void>
+  destinationPubKey?: string
+  destinationLNURL?: string
+  setZapEmitterPubKey: (_pubKey: string) => void
+  setCallbackUrl: (_url: string) => void
+  setDestinationLNURL: Dispatch<SetStateAction<string | undefined>>
   requestInvoice: (_req: InvoiceRequest) => Promise<string>
 }
 
@@ -20,10 +32,18 @@ const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
 
 // Context
 export const LNContext = createContext<ILNContext>({
-  fetchLNURL: function (_lnurl: string): Promise<void> {
+  requestInvoice: function (_req: InvoiceRequest): Promise<string> {
     throw new Error('Function not implemented.')
   },
-  requestInvoice: function (_req: InvoiceRequest): Promise<string> {
+  setZapEmitterPubKey: function (_pubKey: string): void {
+    throw new Error('Function not implemented.')
+  },
+  setCallbackUrl: function (_url: string): void {
+    throw new Error('Function not implemented.')
+  },
+  setDestinationLNURL: function (
+    value: SetStateAction<string | undefined>
+  ): void {
     throw new Error('Function not implemented.')
   }
 })
@@ -37,6 +57,8 @@ export const LNProvider = ({ children }: ILNProviderProps) => {
   // Local state
   const [zapEmitterPubKey, setZapEmitterPubKey] = useState<string>()
   const [callbackUrl, setCallbackUrl] = useState<string>()
+  const [destinationPubKey, setDestinationPubKey] = useState<string>()
+  const [destinationLNURL, setDestinationLNURL] = useState<string>()
 
   /** Functions */
   const fetchLNURL = useCallback(async (lnurl: string) => {
@@ -65,13 +87,27 @@ export const LNProvider = ({ children }: ILNProviderProps) => {
     [callbackUrl]
   )
 
+  useEffect(() => {
+    if (!destinationLNURL) {
+      setZapEmitterPubKey(undefined)
+      setCallbackUrl(undefined)
+      return
+    }
+    fetchLNURL(destinationLNURL)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [destinationLNURL])
+
   return (
     <LNContext.Provider
       value={{
         zapEmitterPubKey,
         callbackUrl,
+        destinationPubKey,
         destination: DESTINATION_LNURL,
-        fetchLNURL,
+        destinationLNURL,
+        setZapEmitterPubKey,
+        setCallbackUrl,
+        setDestinationLNURL,
         requestInvoice
       }}
     >

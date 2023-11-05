@@ -13,40 +13,41 @@ import {
 import type { Dispatch, SetStateAction } from 'react'
 import type { Event, UnsignedEvent } from 'nostr-tools'
 import { useLN } from './LN'
-import type { NDKEvent, NostrEvent } from '@nostr-dev-kit/ndk'
+import type { NDKEvent } from '@nostr-dev-kit/ndk'
 import { ProductQtyData } from '@/types/product'
+import { IPayment, IPaymentCache } from '@/types/order'
+
+// Contexts and Hooks
+import { useNostr } from './Nostr'
+import { useLocalStorage } from 'react-use-storage'
 
 // Utils
-import { useNostr } from './Nostr'
-import {
-  parseOrderDescription,
-  parseOrderProducts,
-  parseZapInvoice
-} from '@/lib/utils'
-import { getEventHash, getSignature, nip44, validateEvent } from 'nostr-tools'
 import bolt11 from 'bolt11'
+import { parseZapInvoice } from '@/lib/utils'
+import { getEventHash, getSignature, nip44, validateEvent } from 'nostr-tools'
 
 // Interface
 export interface IOrderContext {
   orderId?: string
   amount: number
-  pendingAmount: number
   fiatAmount: number
   fiatCurrency?: string
-  zapEvents: NostrEvent[]
   currentInvoice?: string
   memo: unknown
   products: ProductQtyData[]
+  isPaid?: boolean
+  isPrinted?: boolean
+  orderEvent: Event | undefined
+  loadOrder: (orderId: string) => boolean
+  setIsPrinted?: Dispatch<SetStateAction<boolean>>
   setProducts: Dispatch<SetStateAction<ProductQtyData[]>>
   clear: () => void
   setMemo: Dispatch<SetStateAction<unknown>>
   setAmount: Dispatch<SetStateAction<number>>
   checkOut: () => Promise<{ eventId: string }>
-  setCurrentInvoice?: Dispatch<SetStateAction<string | undefined>>
   setOrderEvent?: Dispatch<SetStateAction<Event | undefined>>
   generateOrderEvent?: () => Event
   setFiatAmount: Dispatch<SetStateAction<number>>
-  addZapEvent?: (event: NDKEvent) => void
   requestZapInvoice?: (
     amountMillisats: number,
     orderEventId: string
@@ -56,9 +57,7 @@ export interface IOrderContext {
 // Context
 export const OrderContext = createContext<IOrderContext>({
   amount: 0,
-  pendingAmount: 0,
   fiatAmount: 0,
-  zapEvents: [],
   fiatCurrency: 'ARS',
   memo: undefined,
   products: [],
@@ -79,7 +78,11 @@ export const OrderContext = createContext<IOrderContext>({
   },
   setProducts: function (value: SetStateAction<ProductQtyData[]>): void {
     throw new Error('Function not implemented.')
-  }
+  },
+  loadOrder: function (orderId: string): boolean {
+    throw new Error('Function not implemented.')
+  },
+  orderEvent: undefined
 })
 
 // Component Props
@@ -91,20 +94,29 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   // Hooks
   const { relays, localPublicKey, localPrivateKey, generateZapEvent } =
     useNostr()
-  const { requestInvoice, zapEmitterPubKey } = useLN()
+  const {
+    destinationLNURL,
+    zapEmitterPubKey,
+    requestInvoice,
+    setDestinationLNURL
+  } = useLN()
   const { subscribeZap, publish } = useNostr()
 
   // Local states
   const [orderId, setOrderId] = useState<string>()
+  const [isPaid, setIsPaid] = useState<boolean>(false)
+  const [isPrinted, setIsPrinted] = useState<boolean>(false)
   const [orderEvent, setOrderEvent] = useState<Event>()
   const [amount, setAmount] = useState<number>(0)
   const [memo, setMemo] = useState<unknown>({})
   const [currentInvoice, setCurrentInvoice] = useState<string>()
-  const [pendingAmount, setPendingAmount] = useState<number>(0)
   const [fiatAmount, setFiatAmount] = useState<number>(0)
   const [fiatCurrency, setFiatCurrency] = useState<string>('ARS')
-  const [zapEvents, setZapEvents] = useState<NostrEvent[]>([])
   const [products, setProducts] = useState<ProductQtyData[]>([])
+  const [paymentsCache, setPaymentsCache] = useLocalStorage<IPaymentCache>(
+    'paymentsCache',
+    {}
+  )
 
   const generateOrderEvent = useCallback((): Event => {
     const vote = (memo as any).vote as number
@@ -139,8 +151,55 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     console.info('event:')
     console.dir(event)
 
+    // Saving current payments status
+    const payment: IPayment = {
+      amount,
+      event: event!,
+      id: event!.id,
+      isPaid,
+      destinationLNURL: destinationLNURL!,
+      isPrinted: isPrinted,
+      items: products
+    }
+
+    paymentsCache[payment.id] = payment
+    setPaymentsCache(paymentsCache)
+
     return event
-  }, [memo, localPublicKey, relays, amount, products, localPrivateKey])
+  }, [
+    memo,
+    localPublicKey,
+    relays,
+    amount,
+    products,
+    localPrivateKey,
+    isPaid,
+    destinationLNURL,
+    isPrinted,
+    paymentsCache,
+    setPaymentsCache
+  ])
+
+  // Load order from cache
+  const loadOrder = useCallback(
+    (orderId: string): boolean => {
+      console.info('Loading order from cache')
+      const order = paymentsCache[orderId]
+      if (!order) {
+        return false
+      }
+      setAmount(order.amount)
+      setIsPaid(order.isPaid)
+      setIsPrinted(order.isPrinted)
+      setProducts(order.items)
+      setOrderEvent(order.event)
+
+      setDestinationLNURL(order.destinationLNURL)
+      setOrderId(order.id)
+      return true
+    },
+    [paymentsCache, setDestinationLNURL]
+  )
 
   // Checkout function
   const checkOut = useCallback(async (): Promise<{
@@ -152,18 +211,6 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
     return { eventId: order.id }
   }, [generateOrderEvent, publish])
-
-  const addZapEvent = useCallback(async (event: NDKEvent) => {
-    const invoice = parseZapInvoice(event as Event)
-    if (!invoice.complete) {
-      console.info('Incomplete invoice')
-      return
-    }
-    const amountPaid = parseInt(invoice.millisatoshis!) / 1000
-    setPendingAmount(prev => prev - amountPaid)
-    const _event = await event.toNostrEvent()
-    setZapEvents(prev => [...prev, _event])
-  }, [])
 
   const requestZapInvoice = useCallback(
     async (amountMillisats: number, orderEventId: string): Promise<string> => {
@@ -184,63 +231,80 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     [generateZapEvent, requestInvoice]
   )
 
+  const handlePaymentReceived = useCallback(
+    async (event: NDKEvent) => {
+      const invoice = parseZapInvoice(event as Event)
+      if (!invoice.complete) {
+        console.info('Incomplete invoice')
+        return
+      }
+      const amountPaid = parseInt(invoice.millisatoshis!) / 1000
+      if (amountPaid >= amount) {
+        setIsPaid(true)
+      }
+      const _event = await event.toNostrEvent()
+    },
+    [amount]
+  )
+
   // Handle new incoming zap
-  const onZap = (event: NDKEvent) => {
-    if (event.pubkey !== zapEmitterPubKey) {
-      throw new Error('Invalid Recipient Pubkey')
-    }
+  const onZap = useCallback(
+    (event: NDKEvent) => {
+      if (event.pubkey !== zapEmitterPubKey) {
+        throw new Error('Invalid Recipient Pubkey')
+      }
 
-    if (!validateEvent(event)) {
-      throw new Error('Invalid event')
-    }
+      if (!validateEvent(event)) {
+        throw new Error('Invalid event')
+      }
 
-    const paidInvoice = event.tags.find(tag => tag[0] === 'bolt11')?.[1]
-    const decodedPaidInvoice = bolt11.decode(paidInvoice!)
+      const paidInvoice = event.tags.find(tag => tag[0] === 'bolt11')?.[1]
+      const decodedPaidInvoice = bolt11.decode(paidInvoice!)
 
-    addZapEvent(event)
-    console.info('Amount paid : ' + decodedPaidInvoice.millisatoshis)
-  }
+      handlePaymentReceived(event)
+      console.info('Amount paid : ' + decodedPaidInvoice.millisatoshis)
+    },
+    [handlePaymentReceived, zapEmitterPubKey]
+  )
 
   const clear = useCallback(() => {
-    setAmount(0)
     setOrderId(undefined)
     setOrderEvent(undefined)
-    setMemo({})
+    setAmount(0)
     setFiatAmount(0)
-    setZapEvents([])
+    setIsPaid(false)
+    setCurrentInvoice(undefined)
+    setIsPrinted(false)
+    setProducts([])
+    setMemo({})
   }, [])
 
   /** useEffects */
 
-  // on orderEvent change
+  // on order id change
   useEffect(() => {
-    if (!orderEvent) {
-      setOrderId(undefined)
-      setAmount(0)
-      setPendingAmount(0)
-      setFiatAmount(0)
-      setFiatCurrency('ARS')
+    if (!orderId) {
       return
     }
-
-    const description = parseOrderDescription(orderEvent as Event)
-    const _products = parseOrderProducts(orderEvent as Event)
-
-    setOrderId(orderEvent.id)
-    setAmount(description.amount)
-    setProducts(_products)
-    setPendingAmount(description.amount)
-    // setFiatAmount(description.fiatAmount)
-    // setFiatCurrency(description.fiatCurrency)
-  }, [orderEvent])
+    const order = paymentsCache[orderId]
+    // Prevent order from updating to false
+    paymentsCache[orderId] = {
+      ...order,
+      isPaid: order.isPaid || isPaid,
+      isPrinted: order.isPrinted || isPrinted
+    }
+    setPaymentsCache(paymentsCache)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderId, isPaid, isPrinted, paymentsCache])
 
   // Subscribe for zaps
   useEffect(() => {
-    if (!orderId || !zapEmitterPubKey) {
+    if (!orderId || !zapEmitterPubKey || isPaid) {
       return
     }
 
     console.info(`Subscribing for ${orderId}...`)
+
     const sub = subscribeZap!(orderId)
 
     sub.addListener('event', onZap)
@@ -252,29 +316,45 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId, zapEmitterPubKey, zapEmitterPubKey])
 
+  // On orderId change
+  useEffect(() => {
+    if (!orderId || !zapEmitterPubKey) {
+      return
+    }
+
+    requestZapInvoice!(amount * 1000, orderId)
+      .then(_invoice => {
+        setCurrentInvoice!(_invoice)
+      })
+      .catch(() => {
+        alert("Couldn't generate invoice.")
+      })
+  }, [amount, orderId, zapEmitterPubKey, requestZapInvoice])
+
   return (
     <OrderContext.Provider
       value={{
         orderId,
-        zapEvents,
         amount,
         fiatAmount,
         fiatCurrency,
-        pendingAmount,
         currentInvoice,
         memo,
         products,
+        isPaid,
+        isPrinted,
+        orderEvent,
+        loadOrder,
+        setIsPrinted,
         setProducts,
         clear,
         setMemo,
         checkOut,
         setAmount,
         setFiatAmount,
-        setCurrentInvoice,
         requestZapInvoice,
         generateOrderEvent,
-        setOrderEvent,
-        addZapEvent
+        setOrderEvent
       }}
     >
       {children}

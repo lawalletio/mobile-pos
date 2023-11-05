@@ -19,6 +19,8 @@ import { useLN } from '@/context/LN'
 import { useNostr } from '@/context/Nostr'
 import { useOrder } from '@/context/Order'
 import { LaWalletContext } from '@/context/LaWalletContext'
+import { useCard } from '@/hooks/useCard'
+import { ScanAction } from '@/types/card'
 
 export default function Page() {
   // Hooks
@@ -26,9 +28,11 @@ export default function Page() {
   const { generateOrderEvent, setAmount, setOrderEvent, clear } = useOrder()
   const { publish } = useNostr()
   const query = useSearchParams()
-  const { fetchLNURL } = useLN()
+  const { setDestinationLNURL } = useLN()
   const { userConfig } = useContext(LaWalletContext)
   const numpadData = useNumpad(userConfig.props.currency)
+
+  const { isAvailable, scan, stop } = useCard()
 
   const sats = numpadData.intAmount['SAT']
 
@@ -39,14 +43,14 @@ export default function Page() {
   const processUrl = useCallback(
     async (url: string) => {
       try {
-        await fetchLNURL(url)
+        await setDestinationLNURL(url)
         setCardScanned(true)
       } catch (e) {
         console.error(e)
         alert('what the hell?' + JSON.stringify(e))
       }
     },
-    [fetchLNURL]
+    [setDestinationLNURL]
   )
 
   const handleClick = async () => {
@@ -63,6 +67,17 @@ export default function Page() {
     setOrderEvent!(order)
 
     router.push(`/payment/${order.id}?back=/tree`)
+  }
+
+  const startScanning = async () => {
+    try {
+      const scanned = await scan(ScanAction.WRONG)
+      alert(JSON.stringify(scanned))
+      // setCardScanned(true);
+    } catch (e) {
+      console.error(e)
+      alert('what the hell?' + JSON.stringify(e))
+    }
   }
 
   /** useEffects */
@@ -91,8 +106,14 @@ export default function Page() {
   // on mount
   useEffect(() => {
     clear()
+    if (isAvailable) {
+      startScanning()
+      return () => {
+        stop()
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [isAvailable])
 
   return (
     <>

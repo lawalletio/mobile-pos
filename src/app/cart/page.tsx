@@ -41,7 +41,7 @@ const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
 
 export default function Page() {
   // Hooks
-  const { fetchLNURL } = useLN()
+  const { setDestinationLNURL } = useLN()
   const {
     generateOrderEvent,
     setAmount,
@@ -145,7 +145,7 @@ export default function Page() {
   }
 
   useEffect(() => {
-    void fetchLNURL(DESTINATION_LNURL)
+    void setDestinationLNURL(DESTINATION_LNURL)
     clearOrder()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
