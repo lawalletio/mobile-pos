@@ -9,6 +9,5 @@ export enum ScanCardStatus {
 export enum ScanAction {
   IDENTITY_QUERY = 'identityQuery',
   EXTENDED_SCAN = 'extendedScan',
-  WRONG = 'wrong',
   DEFAULT = 'default'
 }
