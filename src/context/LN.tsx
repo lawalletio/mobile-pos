@@ -27,6 +27,7 @@ export interface ILNContext {
 import { requestPayServiceParams } from 'lnurl-pay'
 import axios from 'axios'
 import type { InvoiceRequest } from '@/types/lightning'
+import { isValidUrl } from '@/lib/utils'
 
 const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
 
@@ -62,16 +63,28 @@ export const LNProvider = ({ children }: ILNProviderProps) => {
 
   /** Functions */
   const fetchLNURL = useCallback(async (lnurl: string) => {
+    let lud06
     console.info(`Fetching LNURL: ${lnurl}`)
-    const lud06 = await requestPayServiceParams({
-      lnUrlOrAddress: lnurl
-    })
+    if (isValidUrl(lnurl)) {
+      console.info('Going for regular https')
+      const response = await axios.get(lnurl)
+      lud06 = {
+        ...response.data,
+        rawData: response.data
+      }
+    } else {
+      console.info('Going for LNURL')
+      lud06 = await requestPayServiceParams({
+        lnUrlOrAddress: lnurl
+      })
+    }
 
     console.info('LUD06 response:')
     console.dir(lud06)
 
     // TODO: Check if lud06 is valid
     setZapEmitterPubKey(lud06.rawData.nostrPubkey as string)
+    setDestinationPubKey(lud06.rawData.accountPubKey as string)
     setCallbackUrl(lud06.callback)
   }, [])
 
