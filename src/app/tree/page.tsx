@@ -22,6 +22,8 @@ import { LaWalletContext } from '@/context/LaWalletContext'
 import { useCard } from '@/hooks/useCard'
 import { ScanAction } from '@/types/card'
 
+const IDENTITY_PROVIDER_URL = process.env.NEXT_PUBLIC_IDENTITY_PROVIDER_URL!
+
 export default function Page() {
   // Hooks
   const router = useRouter()
@@ -71,7 +73,13 @@ export default function Page() {
 
   const startScanning = async () => {
     try {
-      const scanned = await scan(ScanAction.WRONG)
+      const scanned = await scan(ScanAction.IDENTITY_QUERY)
+      if (scanned.tag !== 'laWallet:identityQuery') {
+        alert('Compatible solo con tarjetas de LaWallet')
+        return
+      }
+
+      processUrl(`${IDENTITY_PROVIDER_URL}/api/lud06/${scanned.accountPubKey}`)
       alert(JSON.stringify(scanned))
       // setCardScanned(true);
     } catch (e) {
