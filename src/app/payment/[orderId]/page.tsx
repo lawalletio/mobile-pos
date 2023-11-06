@@ -9,7 +9,7 @@ import axios from 'axios'
 
 // Types
 import { LNURLResponse, LNURLWStatus } from '@/types/lnurl'
-import { ScanCardStatus } from '@/types/card'
+import { ScanAction, ScanCardStatus } from '@/types/card'
 
 // Contexts and Hooks
 import { useOrder } from '@/context/Order'
@@ -74,25 +74,62 @@ export default function Page() {
     router.push(back)
   }, [router, query])
 
-  const startRead = async () => {
-    const lnurlResponse = await scan()
-    processLNURLResponse(lnurlResponse)
-  }
+  const processRegularPayment = useCallback(
+    async (response: LNURLResponse) => {
+      setCardStatus(LNURLWStatus.CALLBACK)
+      const url = response.callback
+      const _response = await axios.get(url, {
+        params: { k1: response.k1, pr: invoice }
+      })
+      if (_response.status !== 200) {
+        setCardStatus(LNURLWStatus.ERROR)
+        alert('Hubo un error al intentar cobrar')
+        alert(JSON.stringify(_response.data))
+        return
+      }
+      setCardStatus(LNURLWStatus.DONE)
+    },
+    [invoice]
+  )
 
-  const processLNURLResponse = async (response: LNURLResponse) => {
-    setCardStatus(LNURLWStatus.CALLBACK)
-    const url = response.callback
-    const _response = await axios.get(url, {
-      params: { k1: response.k1, pr: invoice }
-    })
-    if (_response.status !== 200) {
-      setCardStatus(LNURLWStatus.ERROR)
-      alert('Hubo un error ge')
-      alert(JSON.stringify(_response.data))
-      return
+  const processExtendedPayment = useCallback(
+    async (response: LNURLResponse) => {
+      alert(JSON.stringify(response))
+
+      setCardStatus(LNURLWStatus.CALLBACK)
+      const url = response.callback
+
+      try {
+        await axios.post(url, {
+          params: {
+            k1: response.k1,
+            tokens: {
+              btc: amount
+            }
+          }
+        })
+        alert('Vamooooosssss')
+
+        setCardStatus(LNURLWStatus.DONE)
+      } catch (e) {
+        setCardStatus(LNURLWStatus.ERROR)
+        alert(JSON.stringify(e))
+        alert('Hubo un error al intentar cobrar por extended')
+      }
+    },
+    [amount]
+  )
+
+  const startRead = useCallback(async () => {
+    const lnurlResponse = await scan(ScanAction.EXTENDED_SCAN)
+
+    if (lnurlResponse.tag === 'laWallet:withdrawRequest') {
+      processExtendedPayment(lnurlResponse)
+      alert('Implementing extended')
+    } else {
+      processRegularPayment(lnurlResponse)
     }
-    setCardStatus(LNURLWStatus.DONE)
-  }
+  }, [processExtendedPayment, processRegularPayment, scan])
 
   /** useEffects */
   // Search for orderIdFromURL

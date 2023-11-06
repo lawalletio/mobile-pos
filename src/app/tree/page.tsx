@@ -22,15 +22,13 @@ import { LaWalletContext } from '@/context/LaWalletContext'
 import { useCard } from '@/hooks/useCard'
 import { ScanAction } from '@/types/card'
 
-const IDENTITY_PROVIDER_URL = process.env.NEXT_PUBLIC_IDENTITY_PROVIDER_URL!
-
 export default function Page() {
   // Hooks
   const router = useRouter()
+  const query = useSearchParams()
   const { generateOrderEvent, setAmount, setOrderEvent, clear } = useOrder()
   const { publish } = useNostr()
-  const query = useSearchParams()
-  const { setDestinationLNURL } = useLN()
+  const { setDestinationLNURL, setAccountPubKey } = useLN()
   const { userConfig } = useContext(LaWalletContext)
   const numpadData = useNumpad(userConfig.props.currency)
 
@@ -79,7 +77,8 @@ export default function Page() {
         return
       }
 
-      processUrl(`${IDENTITY_PROVIDER_URL}/api/lud06/${scanned.accountPubKey}`)
+      setAccountPubKey(scanned.accountPubKey!)
+      setCardScanned(true)
       alert(JSON.stringify(scanned))
       // setCardScanned(true);
     } catch (e) {
