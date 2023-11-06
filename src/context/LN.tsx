@@ -11,6 +11,14 @@ import {
   useState
 } from 'react'
 
+// Types
+import type { InvoiceRequest } from '@/types/lightning'
+
+// Utils
+import axios from 'axios'
+import { requestPayServiceParams } from 'lnurl-pay'
+import { isValidUrl } from '@/lib/utils'
+
 // Interface
 export interface ILNContext {
   zapEmitterPubKey?: string
@@ -18,16 +26,12 @@ export interface ILNContext {
   destination?: string
   destinationPubKey?: string
   destinationLNURL?: string
+  setAccountPubKey: (_pubKey: string) => void
   setZapEmitterPubKey: (_pubKey: string) => void
   setCallbackUrl: (_url: string) => void
   setDestinationLNURL: Dispatch<SetStateAction<string | undefined>>
   requestInvoice: (_req: InvoiceRequest) => Promise<string>
 }
-
-import { requestPayServiceParams } from 'lnurl-pay'
-import axios from 'axios'
-import type { InvoiceRequest } from '@/types/lightning'
-import { isValidUrl } from '@/lib/utils'
 
 const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
 
@@ -46,6 +50,9 @@ export const LNContext = createContext<ILNContext>({
     value: SetStateAction<string | undefined>
   ): void {
     throw new Error('Function not implemented.')
+  },
+  setAccountPubKey: function (_pubKey: string): void {
+    throw new Error('Function not implemented.')
   }
 })
 
@@ -53,6 +60,8 @@ export const LNContext = createContext<ILNContext>({
 interface ILNProviderProps {
   children: React.ReactNode
 }
+
+const IDENTITY_PROVIDER_URL = process.env.NEXT_PUBLIC_IDENTITY_PROVIDER_URL!
 
 export const LNProvider = ({ children }: ILNProviderProps) => {
   // Local state
@@ -88,6 +97,12 @@ export const LNProvider = ({ children }: ILNProviderProps) => {
     setCallbackUrl(lud06.callback)
   }, [])
 
+  const setAccountPubKey = (pubkey: string) => {
+    setDestinationPubKey(pubkey)
+    setCallbackUrl(pubkey)
+    setDestinationLNURL(`${IDENTITY_PROVIDER_URL}/api/lud06/${pubkey}`)
+  }
+
   const requestInvoice = useCallback(
     async ({ amountMillisats, zapEvent }: InvoiceRequest): Promise<string> => {
       const encodedZapEvent = encodeURI(JSON.stringify(zapEvent))
@@ -106,9 +121,12 @@ export const LNProvider = ({ children }: ILNProviderProps) => {
       setCallbackUrl(undefined)
       return
     }
+    if (destinationPubKey) {
+      return
+    }
     fetchLNURL(destinationLNURL)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destinationLNURL])
+  }, [destinationLNURL, destinationPubKey])
 
   return (
     <LNContext.Provider
@@ -118,6 +136,7 @@ export const LNProvider = ({ children }: ILNProviderProps) => {
         destinationPubKey,
         destination: DESTINATION_LNURL,
         destinationLNURL,
+        setAccountPubKey,
         setZapEmitterPubKey,
         setCallbackUrl,
         setDestinationLNURL,

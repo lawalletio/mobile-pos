@@ -100,7 +100,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     requestInvoice,
     setDestinationLNURL
   } = useLN()
-  const { subscribeZap, publish } = useNostr()
+  const { subscribeZap, subscribeInternalTransaction, publish } = useNostr()
 
   // Local states
   const [orderId, setOrderId] = useState<string>()
@@ -267,6 +267,11 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     [handlePaymentReceived, zapEmitterPubKey]
   )
 
+  const onInternalTransaction = useCallback((event: NDKEvent) => {
+    console.info('event')
+    console.dir(event)
+  }, [])
+
   const clear = useCallback(() => {
     setOrderId(undefined)
     setOrderEvent(undefined)
@@ -305,13 +310,17 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
     console.info(`Subscribing for ${orderId}...`)
 
-    const sub = subscribeZap!(orderId)
+    const subZap = subscribeZap!(orderId)
+    const subInternal = subscribeInternalTransaction!(orderId)
 
-    sub.addListener('event', onZap)
+    subZap.addListener('event', onZap)
+    subInternal.addListener('event', onInternalTransaction)
 
     return () => {
-      sub.removeAllListeners()
-      sub.stop()
+      subZap.removeAllListeners()
+      subInternal.removeAllListeners()
+      subZap.stop()
+      subInternal.stop()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId, zapEmitterPubKey, zapEmitterPubKey])

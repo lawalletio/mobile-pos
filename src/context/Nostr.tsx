@@ -18,7 +18,6 @@ import {
   getEventHash,
   getPublicKey,
   getSignature,
-  nip44,
   relayInit
 } from 'nostr-tools'
 import { useLocalStorage } from 'react-use-storage'
@@ -34,6 +33,7 @@ export interface INostrContext {
   ndk: NDK
   generateZapEvent?: (amountMillisats: number, postEventId?: string) => NDKEvent
   subscribeZap?: (eventId: string) => NDKSubscription
+  subscribeInternalTransaction?: (eventId: string) => NDKSubscription
   getEvent?: (eventId: string) => Promise<NDKEvent | null>
   publish?: (_event: Event) => Promise<Set<NDKRelay>>
 }
@@ -62,6 +62,7 @@ interface INostrProviderProps {
 
 import NDK, {
   NDKEvent,
+  NDKKind,
   type NDKRelay,
   type NDKSubscription
 } from '@nostr-dev-kit/ndk'
@@ -124,6 +125,27 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
     return sub
   }
 
+  const subscribeInternalTransaction = (eventId: string): NDKSubscription => {
+    console.info(`Listening for zap (${eventId})...`)
+    console.info(`Recipient pubkey: ${zapEmitterPubKey}`)
+    const sub = ndk.subscribe(
+      [
+        {
+          kinds: [1112 as NDKKind],
+          authors: [zapEmitterPubKey!],
+          '#e': [eventId],
+          '#t': ['intenal-transaction-ok', 'intenal-transaction-error'],
+          since: 1693157776
+        }
+      ],
+      {
+        closeOnEose: false,
+        groupableDelay: 0
+      }
+    )
+    return sub
+  }
+
   const getEvent = async (eventId: string): Promise<NDKEvent | null> => {
     return ndk.fetchEvent({
       ids: [eventId]
@@ -165,6 +187,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
         ndk,
         generateZapEvent,
         subscribeZap,
+        subscribeInternalTransaction,
         getEvent,
         publish
       }}
