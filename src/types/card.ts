@@ -7,6 +7,7 @@ export enum ScanCardStatus {
 }
 
 export enum ScanAction {
+  PAY_REQUEST = 'payRequest',
   IDENTITY_QUERY = 'identityQuery',
   EXTENDED_SCAN = 'extendedScan',
   DEFAULT = 'default'

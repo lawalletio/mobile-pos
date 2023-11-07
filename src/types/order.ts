@@ -1,5 +1,6 @@
 import { Event } from 'nostr-tools'
 import { ProductQtyData } from './product'
+import { LNURLResponse } from './lnurl'
 
 export interface IOrderEventContent {
   amount: number
@@ -17,7 +18,7 @@ export interface IPayment {
   items: ProductQtyData[]
   amount: number
   event: Event
-  destinationLNURL: string
+  lud06: LNURLResponse
   isPaid: boolean
   isPrinted: boolean
 }
