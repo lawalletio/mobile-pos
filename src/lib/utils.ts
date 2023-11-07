@@ -6,6 +6,8 @@ import type { IOrderEventContent } from '@/types/order'
 import { TransferTypes } from '@/types/transaction'
 import type { Event } from 'nostr-tools'
 import { ProductData, ProductQtyData } from '@/types/product'
+import { requestPayServiceParams } from 'lnurl-pay'
+import { LNURLResponse } from '@/types/lnurl'
 
 export const parseOrderDescription = (event: Event): IOrderEventContent => {
   return JSON.parse(
@@ -84,4 +86,15 @@ export function isValidUrl(urlString: string): boolean {
   const regex = new RegExp(expression)
 
   return !!urlString.match(regex)
+}
+
+export async function fetchLNURL(lnurl: string): Promise<LNURLResponse> {
+  console.info('fetchLNURL')
+  console.info(lnurl)
+  console.info('requestPayServiceParams')
+  return (
+    await requestPayServiceParams({
+      lnUrlOrAddress: lnurl
+    })
+  ).rawData as unknown as LNURLResponse
 }
