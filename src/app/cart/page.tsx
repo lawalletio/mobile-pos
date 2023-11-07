@@ -43,10 +43,10 @@ export default function Page() {
   // Hooks
   const { setLUD06 } = useLN()
   const {
-    generateOrderEvent,
-    setAmount,
     amount,
+    setAmount,
     setOrderEvent,
+    generateOrderEvent,
     setProducts,
     clear: clearOrder
   } = useOrder()

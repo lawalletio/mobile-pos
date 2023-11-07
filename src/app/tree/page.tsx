@@ -83,14 +83,12 @@ export default function Page() {
     setIsTapping(true)
     try {
       const scanned = await scan(ScanAction.PAY_REQUEST)
-      alert(JSON.stringify(scanned))
       if (scanned.tag !== 'laWallet:payRequest') {
         alert('Compatible solo con tarjetas de LaWallet')
         setIsTapping(false)
         return
       }
       setLUD06(scanned)
-      alert(JSON.stringify(scanned))
       setCardScanned(true)
     } catch (e) {
       console.error(e)
