@@ -20,6 +20,7 @@ import Container from '@/components/Layout/Container'
 import Navbar from '@/components/Layout/Navbar'
 import TokenList from '@/components/TokenList'
 import { BtnLoader } from '@/components/Loader/Loader'
+import { fetchLNURL } from '@/lib/utils'
 
 // Constants
 const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
@@ -29,7 +30,7 @@ export default function Page() {
   const router = useRouter()
   const { generateOrderEvent, setAmount, setOrderEvent, clear } = useOrder()
   const { publish } = useNostr()
-  const { setDestinationLNURL } = useLN()
+  const { setLUD06 } = useLN()
   const { userConfig } = useContext(LaWalletContext)
   const numpadData = useNumpad(userConfig.props.currency)
 
@@ -65,8 +66,10 @@ export default function Page() {
   }, [sats])
 
   useEffect(() => {
-    void setDestinationLNURL(DESTINATION_LNURL)
-  }, [setDestinationLNURL])
+    console.info('HACIENDO ESTO : ' + DESTINATION_LNURL)
+    fetchLNURL(DESTINATION_LNURL).then(setLUD06)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // on mount
   useEffect(() => {
