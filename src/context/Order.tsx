@@ -94,13 +94,8 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   // Hooks
   const { relays, localPublicKey, localPrivateKey, generateZapEvent } =
     useNostr()
-  const {
-    destinationLNURL,
-    zapEmitterPubKey,
-    requestInvoice,
-    setDestinationLNURL
-  } = useLN()
-  const { subscribeZap, publish } = useNostr()
+  const { lud06, zapEmitterPubKey, requestInvoice, setLUD06 } = useLN()
+  const { subscribeZap, subscribeInternalTransaction, publish } = useNostr()
 
   // Local states
   const [orderId, setOrderId] = useState<string>()
@@ -119,8 +114,6 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   )
 
   const generateOrderEvent = useCallback((): Event => {
-    const vote = (memo as any).vote as number
-
     const unsignedEvent: UnsignedEvent = {
       kind: 1,
       content: '',
@@ -134,8 +127,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
           'description',
           JSON.stringify({
             memo,
-            amount,
-            vote
+            amount
           })
         ],
         ['products', JSON.stringify(products)]
@@ -148,16 +140,13 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       ...unsignedEvent
     }
 
-    console.info('event:')
-    console.dir(event)
-
     // Saving current payments status
     const payment: IPayment = {
       amount,
       event: event!,
       id: event!.id,
       isPaid,
-      destinationLNURL: destinationLNURL!,
+      lud06: lud06!,
       isPrinted: isPrinted,
       items: products
     }
@@ -167,14 +156,14 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
     return event
   }, [
-    memo,
     localPublicKey,
     relays,
+    memo,
     amount,
     products,
     localPrivateKey,
     isPaid,
-    destinationLNURL,
+    lud06,
     isPrinted,
     paymentsCache,
     setPaymentsCache
@@ -193,12 +182,13 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       setIsPrinted(order.isPrinted)
       setProducts(order.items)
       setOrderEvent(order.event)
-
-      setDestinationLNURL(order.destinationLNURL)
+      setLUD06(order.lud06)
       setOrderId(order.id)
+
+      console.dir(order)
       return true
     },
-    [paymentsCache, setDestinationLNURL]
+    [paymentsCache, setLUD06]
   )
 
   // Checkout function
@@ -267,6 +257,11 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     [handlePaymentReceived, zapEmitterPubKey]
   )
 
+  const onInternalTransaction = useCallback((event: NDKEvent) => {
+    console.info('event')
+    console.dir(event)
+  }, [])
+
   const clear = useCallback(() => {
     setOrderId(undefined)
     setOrderEvent(undefined)
@@ -305,16 +300,20 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
     console.info(`Subscribing for ${orderId}...`)
 
-    const sub = subscribeZap!(orderId)
+    const subZap = subscribeZap!(orderId)
+    const subInternal = subscribeInternalTransaction!(orderId)
 
-    sub.addListener('event', onZap)
+    subZap.addListener('event', onZap)
+    subInternal.addListener('event', onInternalTransaction)
 
     return () => {
-      sub.removeAllListeners()
-      sub.stop()
+      subZap.removeAllListeners()
+      subInternal.removeAllListeners()
+      subZap.stop()
+      subInternal.stop()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderId, zapEmitterPubKey, zapEmitterPubKey])
+  }, [orderId, zapEmitterPubKey, zapEmitterPubKey, isPaid])
 
   // On orderId change
   useEffect(() => {

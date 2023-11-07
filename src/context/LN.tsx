@@ -11,39 +11,38 @@ import {
   useState
 } from 'react'
 
+// Types
+import type { InvoiceRequest } from '@/types/lightning'
+
+// Utils
+import axios from 'axios'
+import { LNURLResponse } from '@/types/lnurl'
+
 // Interface
 export interface ILNContext {
   zapEmitterPubKey?: string
   callbackUrl?: string
-  destination?: string
   destinationPubKey?: string
-  destinationLNURL?: string
-  setZapEmitterPubKey: (_pubKey: string) => void
-  setCallbackUrl: (_url: string) => void
-  setDestinationLNURL: Dispatch<SetStateAction<string | undefined>>
+  isReady?: boolean
+  lud06?: LNURLResponse
+  setLUD06: Dispatch<SetStateAction<LNURLResponse | undefined>>
+  clear: () => void
+  setAccountPubKey: (_pubKey: string) => void
   requestInvoice: (_req: InvoiceRequest) => Promise<string>
 }
-
-import { requestPayServiceParams } from 'lnurl-pay'
-import axios from 'axios'
-import type { InvoiceRequest } from '@/types/lightning'
-
-const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
 
 // Context
 export const LNContext = createContext<ILNContext>({
   requestInvoice: function (_req: InvoiceRequest): Promise<string> {
     throw new Error('Function not implemented.')
   },
-  setZapEmitterPubKey: function (_pubKey: string): void {
+  setAccountPubKey: function (_pubKey: string): void {
     throw new Error('Function not implemented.')
   },
-  setCallbackUrl: function (_url: string): void {
+  clear: function (): void {
     throw new Error('Function not implemented.')
   },
-  setDestinationLNURL: function (
-    value: SetStateAction<string | undefined>
-  ): void {
+  setLUD06: function (value: SetStateAction<LNURLResponse | undefined>): void {
     throw new Error('Function not implemented.')
   }
 })
@@ -53,49 +52,62 @@ interface ILNProviderProps {
   children: React.ReactNode
 }
 
+const IDENTITY_PROVIDER_URL = process.env.NEXT_PUBLIC_IDENTITY_PROVIDER_URL!
+
 export const LNProvider = ({ children }: ILNProviderProps) => {
   // Local state
   const [zapEmitterPubKey, setZapEmitterPubKey] = useState<string>()
   const [callbackUrl, setCallbackUrl] = useState<string>()
   const [destinationPubKey, setDestinationPubKey] = useState<string>()
-  const [destinationLNURL, setDestinationLNURL] = useState<string>()
+  const [isReady, setIsReady] = useState<boolean>(false)
+  const [lud06, setLUD06] = useState<LNURLResponse>()
 
   /** Functions */
-  const fetchLNURL = useCallback(async (lnurl: string) => {
-    console.info(`Fetching LNURL: ${lnurl}`)
-    const lud06 = await requestPayServiceParams({
-      lnUrlOrAddress: lnurl
-    })
 
-    console.info('LUD06 response:')
-    console.dir(lud06)
-
-    // TODO: Check if lud06 is valid
-    setZapEmitterPubKey(lud06.rawData.nostrPubkey as string)
-    setCallbackUrl(lud06.callback)
+  const setAccountPubKey = useCallback((pubkey: string) => {
+    setDestinationPubKey(pubkey)
+    setCallbackUrl(pubkey)
+    setIsReady(true)
   }, [])
 
   const requestInvoice = useCallback(
     async ({ amountMillisats, zapEvent }: InvoiceRequest): Promise<string> => {
       const encodedZapEvent = encodeURI(JSON.stringify(zapEvent))
-      const url = `${callbackUrl}?amount=${amountMillisats}&nostr=${encodedZapEvent}&lnurl=${DESTINATION_LNURL}`
+      const url = `${callbackUrl}?amount=${amountMillisats}&nostr=${encodedZapEvent}&lnurl=${destinationPubKey}`
       console.info('url')
       console.dir(url)
       const response = await axios.get(url)
       return response.data.pr as string
     },
-    [callbackUrl]
+    [callbackUrl, destinationPubKey]
   )
 
+  const clear = useCallback((): void => {
+    console.info('CLEAR LN')
+    setLUD06(undefined)
+    setZapEmitterPubKey(undefined)
+    setCallbackUrl(undefined)
+    setDestinationPubKey(undefined)
+    setIsReady(false)
+  }, [])
+
+  // on lud06 change
   useEffect(() => {
-    if (!destinationLNURL) {
-      setZapEmitterPubKey(undefined)
-      setCallbackUrl(undefined)
+    if (!lud06) {
       return
     }
-    fetchLNURL(destinationLNURL)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destinationLNURL])
+
+    if (!lud06.allowsNostr || !lud06.nostrPubkey) {
+      console.warn('LNURL does not allow nostr')
+      alert('LNURL does not allow nostr')
+      return
+    }
+
+    setZapEmitterPubKey(lud06.nostrPubkey)
+    setCallbackUrl(lud06.callback)
+    setDestinationPubKey(lud06.accountPubKey)
+    setIsReady(true)
+  }, [lud06])
 
   return (
     <LNContext.Provider
@@ -103,11 +115,11 @@ export const LNProvider = ({ children }: ILNProviderProps) => {
         zapEmitterPubKey,
         callbackUrl,
         destinationPubKey,
-        destination: DESTINATION_LNURL,
-        destinationLNURL,
-        setZapEmitterPubKey,
-        setCallbackUrl,
-        setDestinationLNURL,
+        isReady,
+        lud06,
+        setLUD06,
+        clear,
+        setAccountPubKey,
         requestInvoice
       }}
     >

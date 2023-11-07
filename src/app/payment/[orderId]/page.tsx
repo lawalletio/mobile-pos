@@ -9,14 +9,15 @@ import axios from 'axios'
 
 // Types
 import { LNURLResponse, LNURLWStatus } from '@/types/lnurl'
-import { ScanCardStatus } from '@/types/card'
+import { ScanAction, ScanCardStatus } from '@/types/card'
 
 // Contexts and Hooks
 import { useOrder } from '@/context/Order'
 import { useLN } from '@/context/LN'
-import { LaWalletContext } from '@/context/LaWalletContext'
 import { useCard } from '@/hooks/useCard'
+import { usePrint } from '@/hooks/usePrint'
 import useCurrencyConverter from '@/hooks/useCurrencyConverter'
+import { LaWalletContext } from '@/context/LaWalletContext'
 
 // Utils
 import { formatToPreference } from '@/lib/formatter'
@@ -37,32 +38,36 @@ import Container from '@/components/Layout/Container'
 import { Loader } from '@/components/Loader/Loader'
 import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import theme from '@/styles/theme'
-import { usePrint } from '@/hooks/usePrint'
+import { generateInternalTransactionEvent } from '@/lib/utils'
+import { useNostr } from '@/context/Nostr'
 
 export default function Page() {
   // Hooks
   const router = useRouter()
   const { orderId: orderIdFromUrl } = useParams()
   const query = useSearchParams()
+  const [error, setError] = useState<string>()
 
   const { convertCurrency } = useCurrencyConverter()
-  const { zapEmitterPubKey } = useLN()
+  const { zapEmitterPubKey, lud06 } = useLN()
   const {
     orderId,
     amount,
     products,
     isPaid,
+    isPrinted,
     currentInvoice: invoice,
+    setIsPrinted,
     loadOrder
   } = useOrder()
   const { isAvailable, permission, status: scanStatus, scan, stop } = useCard()
+  const { localPrivateKey, relays } = useNostr()
   const { print } = usePrint()
 
   const { userConfig } = useContext(LaWalletContext)
 
   // Local states
   const [cardStatus, setCardStatus] = useState<LNURLWStatus>(LNURLWStatus.IDLE)
-  const [finished, setFinished] = useState<boolean>(false)
 
   /** Functions */
   const handleBack = useCallback(() => {
@@ -74,25 +79,76 @@ export default function Page() {
     router.push(back)
   }, [router, query])
 
-  const startRead = async () => {
-    const lnurlResponse = await scan()
-    processLNURLResponse(lnurlResponse)
-  }
+  const handleRefresh = useCallback(() => {
+    router.refresh()
+  }, [router])
 
-  const processLNURLResponse = async (response: LNURLResponse) => {
-    setCardStatus(LNURLWStatus.CALLBACK)
-    const url = response.callback
-    const _response = await axios.get(url, {
-      params: { k1: response.k1, pr: invoice }
-    })
-    if (_response.status !== 200) {
+  const processRegularPayment = useCallback(
+    async (response: LNURLResponse) => {
+      setCardStatus(LNURLWStatus.CALLBACK)
+      const url = response.callback
+      const _response = await axios.get(url, {
+        params: { k1: response.k1, pr: invoice }
+      })
+
+      if (_response.status < 200 || _response.status >= 300) {
+        throw new Error(`Error al intentar cobrar ${_response.status}}`)
+      }
+      if (_response.data.status !== 'OK') {
+        throw new Error(`Error al intentar cobrar ${_response.data.reason}}`)
+      }
+      setCardStatus(LNURLWStatus.DONE)
+    },
+    [invoice]
+  )
+
+  const processExtendedPayment = useCallback(
+    async (response: LNURLResponse) => {
+      setCardStatus(LNURLWStatus.CALLBACK)
+      const url = response.callback
+
+      alert('LUD06')
+      alert(JSON.stringify(lud06))
+
+      const event = generateInternalTransactionEvent({
+        amount: amount * 1000,
+        destinationPubKey: lud06!.accountPubKey!,
+        k1: response.k1!,
+        privateKey: localPrivateKey!,
+        relays: relays!
+      })
+
+      alert(JSON.stringify(event))
+
+      try {
+        const _response = await axios.post(url, event)
+        alert('Vamooooosssss')
+
+        setCardStatus(LNURLWStatus.DONE)
+        return _response
+      } catch (e) {}
+    },
+    [amount, localPrivateKey, lud06, relays]
+  )
+
+  const startRead = useCallback(async () => {
+    try {
+      const lnurlResponse = await scan(ScanAction.DEFAULT)
+      // const lnurlResponse = await scan(
+      //   lud06?.accountPubKey ? ScanAction.EXTENDED_SCAN : ScanAction.DEFAULT
+      // )
+
+      if (lnurlResponse.tag === 'laWallet:withdrawRequest') {
+        await processExtendedPayment(lnurlResponse)
+      } else {
+        await processRegularPayment(lnurlResponse)
+      }
+    } catch (e) {
+      alert('Error con la tarjeta')
       setCardStatus(LNURLWStatus.ERROR)
-      alert('Hubo un error ge')
-      alert(JSON.stringify(_response.data))
-      return
+      setError((e as Error).message)
     }
-    setCardStatus(LNURLWStatus.DONE)
-  }
+  }, [processExtendedPayment, processRegularPayment, scan])
 
   /** useEffects */
   // Search for orderIdFromURL
@@ -114,9 +170,9 @@ export default function Page() {
       handleBack()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderIdFromUrl, orderId])
+  }, [orderIdFromUrl, orderId, loadOrder])
 
-  // On Invoice ready
+  // on Invoice ready
   useEffect(() => {
     if (!invoice || !zapEmitterPubKey || !isAvailable) {
       return
@@ -126,9 +182,9 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invoice, zapEmitterPubKey])
 
-  // New zap events
+  // new zap events
   useEffect(() => {
-    if (!isPaid || finished) {
+    if (!isPaid || isPrinted) {
       return
     }
 
@@ -146,10 +202,11 @@ export default function Page() {
     console.dir('printOrder:')
     console.dir(printOrder)
     print(printOrder)
-    setFinished(true)
+    setIsPrinted!(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPaid, finished, amount, print, products])
+  }, [isPaid, amount, products, print])
 
+  // on card scanStatus change
   useEffect(() => {
     switch (scanStatus) {
       case ScanCardStatus.SCANNING:
@@ -164,7 +221,7 @@ export default function Page() {
     }
   }, [scanStatus])
 
-  // On Mount
+  // on Mount
   useEffect(() => {
     return () => {
       stop()
@@ -203,12 +260,12 @@ export default function Page() {
 
       <Alert
         title={''}
-        description={'Error al cobrar'}
+        description={`Error al cobrar: ${error}`}
         type={'error'}
         isOpen={cardStatus === LNURLWStatus.ERROR}
       />
 
-      {finished ? (
+      {isPaid ? (
         <>
           <Confetti />
           <Container size="small">
@@ -238,11 +295,6 @@ export default function Page() {
               </Flex>
             </Flex>
             <Flex gap={8} direction="column">
-              {/* <Flex>
-                <Button variant="bezeled" onClick={handlePrint}>
-                  Imprimir comprobante
-                </Button>
-              </Flex> */}
               <Flex>
                 <Button variant="bezeledGray" onClick={() => handleBack()}>
                   Volver
@@ -297,6 +349,9 @@ export default function Page() {
 
                   <Button variant="bezeledGray" onClick={() => handleBack()}>
                     Cancelar
+                  </Button>
+                  <Button variant="borderless" onClick={() => handleRefresh()}>
+                    Refrescar
                   </Button>
                 </Flex>
               </Flex>

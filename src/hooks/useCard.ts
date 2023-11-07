@@ -20,7 +20,7 @@ export type CardReturns = {
   stop: () => void
 }
 
-const FEDERATION_ID = process.env.FEDERATION_ID!
+const FEDERATION_ID = process.env.NEXT_PUBLIC_FEDERATION_ID!
 
 const requestLNURL = async (url: string, type: ScanAction) => {
   const headers = {
@@ -29,12 +29,12 @@ const requestLNURL = async (url: string, type: ScanAction) => {
     'X-LaWallet-Param': `federationId=${FEDERATION_ID}, tokens=BTC`
   }
 
-  alert('headers: ' + JSON.stringify(headers))
+  // alert('headers: ' + JSON.stringify(headers))
   const response = await axios.get(url, {
     headers: headers
   })
-  if (response.status !== 200) {
-    alert(JSON.stringify(response.data))
+  if (response.status < 200 && response.status >= 300) {
+    // alert(JSON.stringify(response.data))
     throw new Error('Hubo un error: ' + JSON.stringify(response.data))
   }
 
@@ -79,8 +79,11 @@ export const useCard = (): CardReturns => {
     }
 
     setStatus(ScanCardStatus.REQUESTING)
-    const response = requestLNURL(url, type)
+    const response = await requestLNURL(url, type)
     setStatus(ScanCardStatus.DONE)
+    if (response.status === 'ERROR') {
+      throw new Error(response.reason)
+    }
     return response
   }
 

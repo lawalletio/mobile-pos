@@ -21,18 +21,26 @@ import { useOrder } from '@/context/Order'
 import { LaWalletContext } from '@/context/LaWalletContext'
 import { useCard } from '@/hooks/useCard'
 import { ScanAction } from '@/types/card'
+import { fetchLNURL } from '@/lib/utils'
+import { BtnLoader } from '@/components/Loader/Loader'
 
 export default function Page() {
   // Hooks
   const router = useRouter()
-  const { generateOrderEvent, setAmount, setOrderEvent, clear } = useOrder()
-  const { publish } = useNostr()
   const query = useSearchParams()
-  const { setDestinationLNURL } = useLN()
+  const {
+    generateOrderEvent,
+    setAmount,
+    setOrderEvent,
+    clear: clearOrder
+  } = useOrder()
+  const { publish } = useNostr()
+  const { isReady, setLUD06, clear: clearLN } = useLN()
   const { userConfig } = useContext(LaWalletContext)
   const numpadData = useNumpad(userConfig.props.currency)
-
   const { isAvailable, scan, stop } = useCard()
+  const [isTapping, setIsTapping] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const sats = numpadData.intAmount['SAT']
 
@@ -43,17 +51,19 @@ export default function Page() {
   const processUrl = useCallback(
     async (url: string) => {
       try {
-        await setDestinationLNURL(url)
+        const lud06 = await fetchLNURL(url)
+        setLUD06(lud06)
         setCardScanned(true)
       } catch (e) {
         console.error(e)
         alert('what the hell?' + JSON.stringify(e))
       }
     },
-    [setDestinationLNURL]
+    [setLUD06]
   )
 
   const handleClick = async () => {
+    setIsLoading(true)
     // POC
     const order = generateOrderEvent!()
 
@@ -69,15 +79,22 @@ export default function Page() {
     router.push(`/payment/${order.id}?back=/tree`)
   }
 
-  const startScanning = async () => {
+  const startTapping = async () => {
+    setIsTapping(true)
     try {
-      const scanned = await scan(ScanAction.WRONG)
-      alert(JSON.stringify(scanned))
-      // setCardScanned(true);
+      const scanned = await scan(ScanAction.PAY_REQUEST)
+      if (scanned.tag !== 'laWallet:payRequest') {
+        alert('Compatible solo con tarjetas de LaWallet')
+        setIsTapping(false)
+        return
+      }
+      setLUD06(scanned)
+      setCardScanned(true)
     } catch (e) {
       console.error(e)
       alert('what the hell?' + JSON.stringify(e))
     }
+    setIsTapping(false)
   }
 
   /** useEffects */
@@ -91,23 +108,22 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sats])
 
+  // Gets
   useEffect(() => {
     const url = query.get('data')
-
     if (!url) {
+      clearOrder()
+      clearLN()
       return
     }
-
-    console.info('processUrl?')
     processUrl(url)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query])
 
-  // on mount
+  // NFC available
   useEffect(() => {
-    clear()
     if (isAvailable) {
-      startScanning()
+      startTapping()
       return () => {
         stop()
       }
@@ -138,10 +154,15 @@ export default function Page() {
             </>
           ) : (
             <Flex direction="column" align="center">
-              <Heading as="h3">Escaneando receptor...</Heading>
-              <Text align="center">
-                Acerca la tarjeta de quien desea cargar su tarjeta mediante NFC.
-              </Text>
+              {isTapping && (
+                <>
+                  <Heading as="h3">Escaneando receptor...</Heading>
+                  <Text align="center">
+                    Acerca la tarjeta de quien desea cargar su tarjeta mediante
+                    NFC.
+                  </Text>
+                </>
+              )}
               <Divider y={16} />
               <Flex>
                 <Button onClick={() => router.push('/scan')}>
@@ -158,9 +179,9 @@ export default function Page() {
               <Button
                 onClick={handleClick}
                 color="secondary"
-                disabled={!cardScanned}
+                disabled={!isLoading && !isReady}
               >
-                Transferir
+                {isLoading ? <BtnLoader /> : 'Transferir'}
               </Button>
             </Flex>
             <Divider y={24} />

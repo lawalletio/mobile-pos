@@ -34,19 +34,19 @@ import products from '@/constants/products.json'
 
 // Style
 import theme from '@/styles/theme'
-import { aggregateProducts } from '@/lib/utils'
+import { aggregateProducts, fetchLNURL } from '@/lib/utils'
 
 // Constants
 const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
 
 export default function Page() {
   // Hooks
-  const { setDestinationLNURL } = useLN()
+  const { setLUD06 } = useLN()
   const {
-    generateOrderEvent,
-    setAmount,
     amount,
+    setAmount,
     setOrderEvent,
+    generateOrderEvent,
     setProducts,
     clear: clearOrder
   } = useOrder()
@@ -145,8 +145,8 @@ export default function Page() {
   }
 
   useEffect(() => {
-    void setDestinationLNURL(DESTINATION_LNURL)
     clearOrder()
+    fetchLNURL(DESTINATION_LNURL).then(setLUD06)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
