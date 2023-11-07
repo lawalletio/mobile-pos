@@ -20,22 +20,13 @@ export type CardReturns = {
   stop: () => void
 }
 
-const FEDERATION_ID = process.env.FEDERATION_ID!
+const FEDERATION_ID = process.env.NEXT_PUBLIC_FEDERATION_ID!
 
 const requestLNURL = async (url: string, type: ScanAction) => {
   const headers = {
     'Content-Type': 'application/json',
     'X-LaWallet-Action': type,
     'X-LaWallet-Param': `federationId=${FEDERATION_ID}, tokens=BTC`
-  }
-
-  if (type === ScanAction.IDENTITY_QUERY) {
-    alert('Returning Mock')
-    return {
-      tag: 'laWallet:identityQuery',
-      accountPubKey:
-        '685e19eeb895be1331aaa3d1a2c946fbb36cbf83ec763cdaa1561f799d07c21d'
-    }
   }
 
   alert('headers: ' + JSON.stringify(headers))
