@@ -4,10 +4,17 @@ import bolt11 from 'bolt11'
 // Types
 import type { IOrderEventContent } from '@/types/order'
 import { TransferTypes } from '@/types/transaction'
-import type { Event } from 'nostr-tools'
+import {
+  getPublicKey,
+  type Event,
+  type UnsignedEvent,
+  getEventHash,
+  getSignature
+} from 'nostr-tools'
 import { ProductData, ProductQtyData } from '@/types/product'
 import { requestPayServiceParams } from 'lnurl-pay'
 import { LNURLResponse } from '@/types/lnurl'
+import { NDKKind } from '@nostr-dev-kit/ndk'
 
 export const parseOrderDescription = (event: Event): IOrderEventContent => {
   return JSON.parse(
@@ -97,4 +104,47 @@ export async function fetchLNURL(lnurl: string): Promise<LNURLResponse> {
       lnUrlOrAddress: lnurl
     })
   ).rawData as unknown as LNURLResponse
+}
+
+interface InternalTransactionEventParams {
+  privateKey: string
+  k1: string
+  destinationPubKey: string
+  relays: string[]
+  amount: number
+}
+
+export function generateInternalTransactionEvent({
+  privateKey,
+  k1,
+  destinationPubKey,
+  relays,
+  amount
+}: InternalTransactionEventParams) {
+  const publicKey = getPublicKey(privateKey)
+  const unsignedEvent: UnsignedEvent = {
+    kind: 1112 as NDKKind,
+    content: JSON.stringify({
+      k1,
+      pubkey: destinationPubKey,
+      tokens: {
+        BTC: amount
+      }
+    }),
+    pubkey: publicKey,
+    created_at: Math.round(Date.now() / 1000),
+    tags: [
+      ['relays', ...relays!],
+      ['p', publicKey],
+      ['t', 'order']
+    ] as string[][]
+  }
+
+  const event: Event = {
+    id: getEventHash(unsignedEvent),
+    sig: getSignature(unsignedEvent, privateKey!),
+    ...unsignedEvent
+  }
+
+  return event
 }
