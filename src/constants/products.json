@@ -42,7 +42,7 @@
   {
     "id": 5,
     "category_id": 2,
-    "name": "Hongos",
+    "name": "Papa fritas",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 2400,
@@ -52,7 +52,7 @@
   {
     "id": 6,
     "category_id": 2,
-    "name": "Porro",
+    "name": "Pancho",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 2400,
@@ -63,16 +63,6 @@
     "id": 7,
     "category_id": 1,
     "name": "Champagne",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
-    "price": {
-      "value": 1500,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 8,
-    "category_id": 1,
-    "name": "Esperma de pitufo",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 1500,
@@ -113,16 +103,6 @@
     "id": 12,
     "category_id": 3,
     "name": "Medias",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
-    "price": {
-      "value": 1500,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 13,
-    "category_id": 3,
-    "name": "Preservativos",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 1500,
