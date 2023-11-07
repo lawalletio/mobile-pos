@@ -68,7 +68,7 @@ import NDK, {
 } from '@nostr-dev-kit/ndk'
 
 export const NostrProvider = ({ children }: INostrProviderProps) => {
-  const { zapEmitterPubKey, destination } = useLN()
+  const { zapEmitterPubKey } = useLN()
   // const [privateKey, setPrivateKey] = useState<string>()
   const [privateKey] = useLocalStorage('nostrPrivateKey', generatePrivateKey())
   const [publicKey, setPublicKey] = useState<string>()
@@ -84,7 +84,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
         tags: [
           ['relays', ...relays],
           ['amount', amountMillisats.toString()],
-          ['lnurl', destination],
+          ['lnurl', 'lnurl'],
           ['p', zapEmitterPubKey]
         ] as string[][]
       }
@@ -102,7 +102,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
 
       return event
     },
-    [destination, zapEmitterPubKey, privateKey, publicKey]
+    [zapEmitterPubKey, privateKey, publicKey]
   )
 
   const subscribeZap = (eventId: string): NDKSubscription => {
