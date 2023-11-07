@@ -52,8 +52,6 @@ interface ILNProviderProps {
   children: React.ReactNode
 }
 
-const IDENTITY_PROVIDER_URL = process.env.NEXT_PUBLIC_IDENTITY_PROVIDER_URL!
-
 export const LNProvider = ({ children }: ILNProviderProps) => {
   // Local state
   const [zapEmitterPubKey, setZapEmitterPubKey] = useState<string>()
