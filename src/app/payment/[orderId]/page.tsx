@@ -14,9 +14,10 @@ import { ScanAction, ScanCardStatus } from '@/types/card'
 // Contexts and Hooks
 import { useOrder } from '@/context/Order'
 import { useLN } from '@/context/LN'
-import { LaWalletContext } from '@/context/LaWalletContext'
 import { useCard } from '@/hooks/useCard'
+import { usePrint } from '@/hooks/usePrint'
 import useCurrencyConverter from '@/hooks/useCurrencyConverter'
+import { LaWalletContext } from '@/context/LaWalletContext'
 
 // Utils
 import { formatToPreference } from '@/lib/formatter'
@@ -37,7 +38,6 @@ import Container from '@/components/Layout/Container'
 import { Loader } from '@/components/Loader/Loader'
 import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import theme from '@/styles/theme'
-import { usePrint } from '@/hooks/usePrint'
 
 export default function Page() {
   // Hooks
@@ -46,13 +46,15 @@ export default function Page() {
   const query = useSearchParams()
 
   const { convertCurrency } = useCurrencyConverter()
-  const { zapEmitterPubKey } = useLN()
+  const { zapEmitterPubKey, lud06 } = useLN()
   const {
     orderId,
     amount,
     products,
     isPaid,
+    isPrinted,
     currentInvoice: invoice,
+    setIsPrinted,
     loadOrder
   } = useOrder()
   const { isAvailable, permission, status: scanStatus, scan, stop } = useCard()
@@ -62,7 +64,6 @@ export default function Page() {
 
   // Local states
   const [cardStatus, setCardStatus] = useState<LNURLWStatus>(LNURLWStatus.IDLE)
-  const [finished, setFinished] = useState<boolean>(false)
 
   /** Functions */
   const handleBack = useCallback(() => {
@@ -151,9 +152,9 @@ export default function Page() {
       handleBack()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderIdFromUrl, orderId])
+  }, [orderIdFromUrl, orderId, loadOrder])
 
-  // On Invoice ready
+  // on Invoice ready
   useEffect(() => {
     if (!invoice || !zapEmitterPubKey || !isAvailable) {
       return
@@ -163,9 +164,9 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invoice, zapEmitterPubKey])
 
-  // New zap events
+  // new zap events
   useEffect(() => {
-    if (!isPaid || finished) {
+    if (!isPaid || isPrinted) {
       return
     }
 
@@ -183,10 +184,11 @@ export default function Page() {
     console.dir('printOrder:')
     console.dir(printOrder)
     print(printOrder)
-    setFinished(true)
+    setIsPrinted!(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPaid, finished, amount, print, products])
+  }, [isPaid, amount, products, print])
 
+  // on card scanStatus change
   useEffect(() => {
     switch (scanStatus) {
       case ScanCardStatus.SCANNING:
@@ -201,7 +203,7 @@ export default function Page() {
     }
   }, [scanStatus])
 
-  // On Mount
+  // on Mount
   useEffect(() => {
     return () => {
       stop()
@@ -245,7 +247,7 @@ export default function Page() {
         isOpen={cardStatus === LNURLWStatus.ERROR}
       />
 
-      {finished ? (
+      {isPaid ? (
         <>
           <Confetti />
           <Container size="small">
@@ -275,11 +277,6 @@ export default function Page() {
               </Flex>
             </Flex>
             <Flex gap={8} direction="column">
-              {/* <Flex>
-                <Button variant="bezeled" onClick={handlePrint}>
-                  Imprimir comprobante
-                </Button>
-              </Flex> */}
               <Flex>
                 <Button variant="bezeledGray" onClick={() => handleBack()}>
                   Volver
