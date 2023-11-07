@@ -38,12 +38,15 @@ import Container from '@/components/Layout/Container'
 import { Loader } from '@/components/Loader/Loader'
 import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import theme from '@/styles/theme'
+import { generateInternalTransactionEvent } from '@/lib/utils'
+import { useNostr } from '@/context/Nostr'
 
 export default function Page() {
   // Hooks
   const router = useRouter()
   const { orderId: orderIdFromUrl } = useParams()
   const query = useSearchParams()
+  const [error, setError] = useState<string>()
 
   const { convertCurrency } = useCurrencyConverter()
   const { zapEmitterPubKey, lud06 } = useLN()
@@ -58,6 +61,7 @@ export default function Page() {
     loadOrder
   } = useOrder()
   const { isAvailable, permission, status: scanStatus, scan, stop } = useCard()
+  const { localPrivateKey, relays } = useNostr()
   const { print } = usePrint()
 
   const { userConfig } = useContext(LaWalletContext)
@@ -75,6 +79,10 @@ export default function Page() {
     router.push(back)
   }, [router, query])
 
+  const handleRefresh = useCallback(() => {
+    router.refresh()
+  }, [router])
+
   const processRegularPayment = useCallback(
     async (response: LNURLResponse) => {
       setCardStatus(LNURLWStatus.CALLBACK)
@@ -82,11 +90,12 @@ export default function Page() {
       const _response = await axios.get(url, {
         params: { k1: response.k1, pr: invoice }
       })
-      if (_response.status !== 200) {
-        setCardStatus(LNURLWStatus.ERROR)
-        alert('Hubo un error al intentar cobrar')
-        alert(JSON.stringify(_response.data))
-        return
+
+      if (_response.status < 200 || _response.status >= 300) {
+        throw new Error(`Error al intentar cobrar ${_response.status}}`)
+      }
+      if (_response.data.status !== 'OK') {
+        throw new Error(`Error al intentar cobrar ${_response.data.reason}}`)
       }
       setCardStatus(LNURLWStatus.DONE)
     },
@@ -95,40 +104,49 @@ export default function Page() {
 
   const processExtendedPayment = useCallback(
     async (response: LNURLResponse) => {
-      alert(JSON.stringify(response))
-
       setCardStatus(LNURLWStatus.CALLBACK)
       const url = response.callback
 
+      alert('LUD06')
+      alert(JSON.stringify(lud06))
+
+      const event = generateInternalTransactionEvent({
+        amount: amount * 1000,
+        destinationPubKey: lud06!.accountPubKey!,
+        k1: response.k1!,
+        privateKey: localPrivateKey!,
+        relays: relays!
+      })
+
+      alert(JSON.stringify(event))
+
       try {
-        await axios.post(url, {
-          params: {
-            k1: response.k1,
-            tokens: {
-              btc: amount
-            }
-          }
-        })
+        const _response = await axios.post(url, event)
         alert('Vamooooosssss')
 
         setCardStatus(LNURLWStatus.DONE)
-      } catch (e) {
-        setCardStatus(LNURLWStatus.ERROR)
-        alert(JSON.stringify(e))
-        alert('Hubo un error al intentar cobrar por extended')
-      }
+        return _response
+      } catch (e) {}
     },
-    [amount]
+    [amount, localPrivateKey, lud06, relays]
   )
 
   const startRead = useCallback(async () => {
-    const lnurlResponse = await scan(ScanAction.EXTENDED_SCAN)
+    try {
+      const lnurlResponse = await scan(ScanAction.DEFAULT)
+      // const lnurlResponse = await scan(
+      //   lud06?.accountPubKey ? ScanAction.EXTENDED_SCAN : ScanAction.DEFAULT
+      // )
 
-    if (lnurlResponse.tag === 'laWallet:withdrawRequest') {
-      processExtendedPayment(lnurlResponse)
-      alert('Implementing extended')
-    } else {
-      processRegularPayment(lnurlResponse)
+      if (lnurlResponse.tag === 'laWallet:withdrawRequest') {
+        await processExtendedPayment(lnurlResponse)
+      } else {
+        await processRegularPayment(lnurlResponse)
+      }
+    } catch (e) {
+      alert('Error con la tarjeta')
+      setCardStatus(LNURLWStatus.ERROR)
+      setError((e as Error).message)
     }
   }, [processExtendedPayment, processRegularPayment, scan])
 
@@ -242,7 +260,7 @@ export default function Page() {
 
       <Alert
         title={''}
-        description={'Error al cobrar'}
+        description={`Error al cobrar: ${error}`}
         type={'error'}
         isOpen={cardStatus === LNURLWStatus.ERROR}
       />
@@ -331,6 +349,9 @@ export default function Page() {
 
                   <Button variant="bezeledGray" onClick={() => handleBack()}>
                     Cancelar
+                  </Button>
+                  <Button variant="borderless" onClick={() => handleRefresh()}>
+                    Refrescar
                   </Button>
                 </Flex>
               </Flex>
