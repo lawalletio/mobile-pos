@@ -8,7 +8,14 @@ export enum ScanCardStatus {
 
 export enum ScanAction {
   PAY_REQUEST = 'payRequest',
+  INFO = 'info',
+  RESET = 'reset',
   IDENTITY_QUERY = 'identityQuery',
   EXTENDED_SCAN = 'extendedScan',
   DEFAULT = 'default'
+}
+
+export interface CardUrlParams {
+  p: string
+  c: string
 }
