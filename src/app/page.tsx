@@ -60,7 +60,7 @@ export default function Page() {
                 </Flex>
               </Link>
             </Card>
-            <Card color="secondary">
+            <Card color="error">
               <Link href="/admin">
                 <Icon>
                   <MinerIcon />
