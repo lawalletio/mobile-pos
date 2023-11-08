@@ -16,6 +16,8 @@ export type CardReturns = {
   isAvailable: boolean
   permission: string
   status: ScanCardStatus
+  requestLNURL: (url: string, type: ScanAction) => Promise<LNURLResponse>
+  scanURL: () => Promise<string>
   scan: (type?: ScanAction) => Promise<LNURLResponse>
   stop: () => void
 }
@@ -68,11 +70,7 @@ export const useCard = (): CardReturns => {
     setStatus(ScanCardStatus.SCANNING)
     let url = ''
     try {
-      console.info('USING Injected')
-      const response = await (isInjectedAvailable
-        ? readInjected()
-        : readNative())
-      url = response.replace('lnurlw://', 'https://')
+      url = await scanURL()
     } catch (error) {
       alert('ALERT on reading: ' + JSON.stringify(error))
       console.log('ERROR ', error)
@@ -87,11 +85,19 @@ export const useCard = (): CardReturns => {
     return response
   }
 
+  const scanURL = async (): Promise<string> => {
+    console.info('USING Injected')
+    const response = await (isInjectedAvailable ? readInjected() : readNative())
+    return response.replace('lnurlw://', 'https://')
+  }
+
   return {
     isAvailable: isInjectedAvailable || !!isNDEFAvailable,
     permission,
     status,
+    requestLNURL,
     scan,
+    scanURL,
     stop: isInjectedAvailable ? abortReadInjectedCtrl : abortReadNativeCtrl
   }
 }
