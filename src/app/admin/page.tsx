@@ -2,6 +2,7 @@
 
 // React/Next
 import { useEffect, useState } from 'react'
+import { SatoshiV2Icon } from '@bitcoin-design/bitcoin-icons-react/filled'
 
 // Components
 import {
@@ -184,7 +185,7 @@ export default function Page() {
               <Text size="small" color={theme.colors.gray50}>
                 Usuario:
               </Text>
-              <Heading as="h5">juanitalapistolera</Heading>
+              <Heading as="h3">juanitalapistolera</Heading>
             </Flex>
             <Divider y={16} />
             <Flex gap={4} direction="column">
@@ -192,8 +193,10 @@ export default function Page() {
                 Balance:
               </Text>
               <Flex align="center">
-                <Text size="small">$</Text>
-                <Heading as="h4">500,00</Heading>
+                <Icon size="small">
+                  <SatoshiV2Icon />
+                </Icon>
+                <Heading as="h3">500</Heading>
               </Flex>
             </Flex>
             <Divider y={16} />
