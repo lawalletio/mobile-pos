@@ -9,7 +9,8 @@ import Container from '@/components/Layout/Container'
 import {
   PantheonIcon,
   SharedWalletIcon,
-  CartIcon
+  CartIcon,
+  MinerIcon
 } from '@bitcoin-design/bitcoin-icons-react/filled'
 
 export default function Page() {
@@ -45,7 +46,7 @@ export default function Page() {
               </Link>
             </Card>
           </Flex>
-          <Flex>
+          <Flex gap={8}>
             <Card>
               <Link href="/cart">
                 <Icon>
@@ -56,6 +57,17 @@ export default function Page() {
                   <Text size="small">
                     Empeza a vender productos seleccionados.
                   </Text>
+                </Flex>
+              </Link>
+            </Card>
+            <Card color="secondary">
+              <Link href="/admin">
+                <Icon>
+                  <MinerIcon />
+                </Icon>
+                <Flex direction="column" gap={4}>
+                  <Heading as="h5">Admin</Heading>
+                  <Text size="small">Admin de tarjetas.</Text>
                 </Flex>
               </Link>
             </Card>
