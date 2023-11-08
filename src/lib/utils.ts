@@ -148,3 +148,15 @@ export function generateInternalTransactionEvent({
 
   return event
 }
+
+export function parseQueryParams(url: string): Record<string, string | null> {
+  const urlObj = new URL(url)
+  const queryParams = new URLSearchParams(urlObj.search)
+  const params: Record<string, string | null> = {}
+
+  queryParams.forEach((value, key) => {
+    params[key] = value
+  })
+
+  return params
+}
