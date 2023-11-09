@@ -61,6 +61,9 @@ const requestCardEndpoint = async (url: string, type: ScanAction) => {
   const response = await axios.get(url, {
     headers: headers
   })
+
+  alert(JSON.stringify(response.data))
+
   if (response.status < 200 && response.status >= 300) {
     // alert(JSON.stringify(response.data))
     throw new Error('Hubo un error: ' + JSON.stringify(response.data))
@@ -73,6 +76,7 @@ export default function Page() {
   const { isAvailable, scanURL, stop } = useCard()
   const [isTapping, setIsTapping] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [balance, setBalance] = useState(500)
 
   const [cardInfo, setCardInfo] = useState<InfoResponse>()
   const [targetData, setTargetData] = useState<CardUrlParams>()
@@ -175,17 +179,31 @@ export default function Page() {
             </Text>
             <Divider y={8} />
             <Flex gap={4}>
-              <MiniCard isActive={true} title="Init" />
-              <MiniCard isActive={true} title="Asociada." />
-              <MiniCard isActive={false} title="Activada" />
-              <MiniCard isActive={false} title="Delegada" />
+              <MiniCard
+                isActive={cardInfo?.info.status.initialized!}
+                title="Init"
+              />
+              <MiniCard
+                isActive={cardInfo?.info.status.associated!}
+                title="Asociada."
+              />
+              <MiniCard
+                isActive={cardInfo?.info.status.activated!}
+                title="Activada"
+              />
+              <MiniCard
+                isActive={cardInfo?.info.status.hasDelegation!}
+                title="Delegada"
+              />
             </Flex>
             <Divider y={16} />
             <Flex gap={4} direction="column">
               <Text size="small" color={theme.colors.gray50}>
                 Usuario:
               </Text>
-              <Heading as="h3">juanitalapistolera</Heading>
+              <Heading as="h3">
+                {cardInfo?.info.holder || 'Sin asociar'}
+              </Heading>
             </Flex>
             <Divider y={16} />
             <Flex gap={4} direction="column">
@@ -196,7 +214,7 @@ export default function Page() {
                 <Icon size="small">
                   <SatoshiV2Icon />
                 </Icon>
-                <Heading as="h3">500</Heading>
+                <Heading as="h3">{balance} (Sin implementar)</Heading>
               </Flex>
             </Flex>
             <Divider y={16} />
@@ -204,7 +222,9 @@ export default function Page() {
               <Text size="small" color={theme.colors.gray50}>
                 Diseño:
               </Text>
-              <Text isBold>LaBitconf</Text>
+              <Text isBold>
+                {cardInfo?.info.ntag424?.ok?.design.name || `Sin diseño`}
+              </Text>
             </Flex>
             <Divider y={16} />
           </>
