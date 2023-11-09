@@ -163,6 +163,7 @@ export function parseQueryParams(url: string): Record<string, string | null> {
 }
 
 export function normalizeLNURL(lnurl: string): string {
-  let url = removeLightningStandard(lnurl)
-  return utils.decodeUrlOrAddress(url)!
+  return isValidUrl(lnurl)
+    ? lnurl
+    : utils.decodeUrlOrAddress(removeLightningStandard(lnurl))!
 }
