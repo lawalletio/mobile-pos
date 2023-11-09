@@ -3,26 +3,27 @@ import { InfoResponse, ResetResponse } from '@/types/admin'
 export const getMockInfo = async (): Promise<InfoResponse> => {
   return {
     tag: 'laWallet:info',
-    status: {
+    info: {
+      status: {
       initialized: false,
       associated: false,
       activated: false,
       hasDelegation: false
     },
     ntag424:
-      // | {
-      //     ok: {
-      //       cid: string
-      //       ctr: number
-      //       ctrNew: number
-      //       otc: string | null
-      //       design: {
-      //         uuid: string
-      //         name: string
-      //       }
-      //     }
-      //   }
-      { error: 'string' },
+      {
+          ok: {
+            cid: "string",
+            ctr: 12312,
+            ctrNew: 332423,
+            otc: "324234234",
+            design: {
+              uuid: "asddasdsasda",
+              name: "sdfsfdfsdfsdf",
+            }
+          }
+        },
+      // { error: 'string' },
     // | null
 
     card:
@@ -51,7 +52,7 @@ export const getMockInfo = async (): Promise<InfoResponse> => {
       //     }
       //   }
       { error: 'string' }
-    // | null
+    // | null}
   }
 }
 
