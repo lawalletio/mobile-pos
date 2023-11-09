@@ -11,8 +11,7 @@ export enum ScanAction {
   INFO = 'info',
   RESET = 'reset',
   IDENTITY_QUERY = 'identityQuery',
-  EXTENDED_SCAN = 'extendedScan',
-  DEFAULT = 'default'
+  EXTENDED_SCAN = 'extendedScan'
 }
 
 export interface CardUrlParams {

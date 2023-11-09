@@ -25,18 +25,25 @@ export type CardReturns = {
 
 const FEDERATION_ID = process.env.NEXT_PUBLIC_FEDERATION_ID!
 
-const requestLNURL = async (url: string, type: ScanAction) => {
+const requestLNURL = async (url: string, type?: ScanAction) => {
   const normalizedUrl = normalizeLNURL(url)
-  const headers = {
-    'Content-Type': 'application/json',
-    'X-LaWallet-Action': type,
-    'X-LaWallet-Param': `federationId=${FEDERATION_ID}, tokens=BTC`
+  const headers = type
+    ? {
+        'Content-Type': 'application/json',
+        'X-LaWallet-Action': type,
+        'X-LaWallet-Param': `federationId=${FEDERATION_ID}, tokens=BTC`
+      }
+    : { 'Content-Type': 'application/json' }
+
+  let response
+  try {
+    response = await axios.get(normalizedUrl, {
+      headers: headers
+    })
+  } catch (e) {
+    throw new Error('RESPONSE: ' + JSON.stringify((e as Error).message))
   }
 
-  // alert('headers: ' + JSON.stringify(headers))
-  const response = await axios.get(normalizedUrl, {
-    headers: headers
-  })
   if (response.status < 200 && response.status >= 300) {
     // alert(JSON.stringify(response.data))
     throw new Error('Hubo un error: ' + JSON.stringify(response.data))
@@ -66,9 +73,7 @@ export const useCard = (): CardReturns => {
     return decoder.decode(record.data)
   }, [read])
 
-  const scan = async (
-    type: ScanAction = ScanAction.DEFAULT
-  ): Promise<LNURLResponse> => {
+  const scan = async (type?: ScanAction): Promise<LNURLResponse> => {
     setStatus(ScanCardStatus.SCANNING)
     let url = ''
     try {
