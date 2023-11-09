@@ -27,7 +27,7 @@ export interface InfoResponse {
         enabled: boolean
       }
     } | null
-    holder: {
+    holder?: {
       ok: {
         pubKey: string
         delegations: {
@@ -39,7 +39,7 @@ export interface InfoResponse {
           delegationToken: string
         }[]
       }
-    } | null
+    }
   }
 }
 
