@@ -133,7 +133,7 @@ export default function Page() {
 
   const startRead = useCallback(async () => {
     try {
-      const lnurlResponse = await scan(ScanAction.DEFAULT)
+      const lnurlResponse = await scan()
       // const lnurlResponse = await scan(
       //   lud06?.accountPubKey ? ScanAction.EXTENDED_SCAN : ScanAction.DEFAULT
       // )
@@ -144,7 +144,7 @@ export default function Page() {
         await processRegularPayment(lnurlResponse)
       }
     } catch (e) {
-      alert('Error con la tarjeta')
+      alert(`Error con la tarjeta ${(e as Error).message}}`)
       setCardStatus(LNURLWStatus.ERROR)
       setError((e as Error).message)
     }

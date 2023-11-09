@@ -31,6 +31,7 @@ export interface INostrContext {
   localPrivateKey?: string
   relays?: string[]
   ndk: NDK
+  getBalance: (pubkey: string) => Promise<number>
   generateZapEvent?: (amountMillisats: number, postEventId?: string) => NDKEvent
   subscribeZap?: (eventId: string) => NDKSubscription
   subscribeInternalTransaction?: (eventId: string) => NDKSubscription
@@ -39,6 +40,7 @@ export interface INostrContext {
 }
 
 const NOSTR_RELAY = process.env.NEXT_PUBLIC_NOSTR_RELAY!
+const LEDGER_PUBKEY = process.env.NEXT_PUBLIC_LEDGER_PUBKEY!
 
 const relays = [
   NOSTR_RELAY,
@@ -53,7 +55,12 @@ const ndk = new NDK({
   explicitRelayUrls: relays
 })
 
-export const NostrContext = createContext<INostrContext>({ ndk })
+export const NostrContext = createContext<INostrContext>({
+  ndk,
+  getBalance: function (pubkey: string): Promise<number> {
+    throw new Error('Function not implemented.')
+  }
+})
 
 // Component Props
 interface INostrProviderProps {
@@ -105,6 +112,20 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
     [zapEmitterPubKey, privateKey, publicKey]
   )
 
+  const getBalance = async (pubkey: string): Promise<number> => {
+    const balance = await ndk.fetchEvent({
+      authors: [LEDGER_PUBKEY!],
+      kinds: [31111 as NDKKind],
+      '#d': [`balance:BTC:${pubkey}`]
+    })
+
+    if (!balance) {
+      return 0
+    }
+    return (parseInt(balance.tagValue('amount')!) as number) / 1000
+  }
+
+  /** Subscriptions */
   const subscribeZap = (eventId: string): NDKSubscription => {
     console.info(`Listening for zap (${eventId})...`)
     console.info(`Recipient pubkey: ${zapEmitterPubKey}`)
@@ -185,6 +206,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
         localPrivateKey: privateKey,
         relays,
         ndk,
+        getBalance,
         generateZapEvent,
         subscribeZap,
         subscribeInternalTransaction,

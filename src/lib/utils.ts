@@ -15,6 +15,7 @@ import { ProductData, ProductQtyData } from '@/types/product'
 import { requestPayServiceParams } from 'lnurl-pay'
 import { LNURLResponse } from '@/types/lnurl'
 import { NDKKind } from '@nostr-dev-kit/ndk'
+import { utils } from 'lnurl-pay'
 
 export const parseOrderDescription = (event: Event): IOrderEventContent => {
   return JSON.parse(
@@ -147,4 +148,22 @@ export function generateInternalTransactionEvent({
   }
 
   return event
+}
+
+export function parseQueryParams(url: string): Record<string, string | null> {
+  const urlObj = new URL(url)
+  const queryParams = new URLSearchParams(urlObj.search)
+  const params: Record<string, string | null> = {}
+
+  queryParams.forEach((value, key) => {
+    params[key] = value
+  })
+
+  return params
+}
+
+export function normalizeLNURL(lnurl: string): string {
+  return isValidUrl(lnurl)
+    ? lnurl
+    : utils.decodeUrlOrAddress(removeLightningStandard(lnurl))!
 }

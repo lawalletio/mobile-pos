@@ -2,7 +2,7 @@ import { Card } from './style'
 
 interface ComponentProps {
   children: any
-  color?: 'primary' | 'secondary'
+  color?: 'primary' | 'secondary' | 'error'
 }
 
 export default function Component(props: ComponentProps) {

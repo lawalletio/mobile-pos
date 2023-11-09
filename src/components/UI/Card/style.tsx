@@ -3,7 +3,7 @@ import { styled } from 'styled-components'
 import theme from '@/styles/theme'
 
 interface CardProps {
-  $color: 'primary' | 'secondary'
+  $color: 'primary' | 'secondary' | 'error'
 }
 
 export const Card = styled.div<CardProps>`

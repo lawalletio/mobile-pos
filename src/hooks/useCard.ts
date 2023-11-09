@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react'
 
 // Thirdparty
 import axios from 'axios'
+import { normalizeLNURL } from '@/lib/utils'
 
 // Types
 import { ScanCardStatus, ScanAction } from '@/types/card'
@@ -16,23 +17,33 @@ export type CardReturns = {
   isAvailable: boolean
   permission: string
   status: ScanCardStatus
+  requestLNURL: (url: string, type: ScanAction) => Promise<LNURLResponse>
+  scanURL: () => Promise<string>
   scan: (type?: ScanAction) => Promise<LNURLResponse>
   stop: () => void
 }
 
 const FEDERATION_ID = process.env.NEXT_PUBLIC_FEDERATION_ID!
 
-const requestLNURL = async (url: string, type: ScanAction) => {
-  const headers = {
-    'Content-Type': 'application/json',
-    'X-LaWallet-Action': type,
-    'X-LaWallet-Param': `federationId=${FEDERATION_ID}, tokens=BTC`
+const requestLNURL = async (url: string, type?: ScanAction) => {
+  const normalizedUrl = normalizeLNURL(url)
+  const headers = type
+    ? {
+        'Content-Type': 'application/json',
+        'X-LaWallet-Action': type,
+        'X-LaWallet-Param': `federationId=${FEDERATION_ID}, tokens=BTC`
+      }
+    : { 'Content-Type': 'application/json' }
+
+  let response
+  try {
+    response = await axios.get(normalizedUrl, {
+      headers: headers
+    })
+  } catch (e) {
+    throw new Error('RESPONSE: ' + JSON.stringify((e as Error).message))
   }
 
-  // alert('headers: ' + JSON.stringify(headers))
-  const response = await axios.get(url, {
-    headers: headers
-  })
   if (response.status < 200 && response.status >= 300) {
     // alert(JSON.stringify(response.data))
     throw new Error('Hubo un error: ' + JSON.stringify(response.data))
@@ -62,17 +73,11 @@ export const useCard = (): CardReturns => {
     return decoder.decode(record.data)
   }, [read])
 
-  const scan = async (
-    type: ScanAction = ScanAction.DEFAULT
-  ): Promise<LNURLResponse> => {
+  const scan = async (type?: ScanAction): Promise<LNURLResponse> => {
     setStatus(ScanCardStatus.SCANNING)
     let url = ''
     try {
-      console.info('USING Injected')
-      const response = await (isInjectedAvailable
-        ? readInjected()
-        : readNative())
-      url = response.replace('lnurlw://', 'https://')
+      url = await scanURL()
     } catch (error) {
       alert('ALERT on reading: ' + JSON.stringify(error))
       console.log('ERROR ', error)
@@ -87,11 +92,19 @@ export const useCard = (): CardReturns => {
     return response
   }
 
+  const scanURL = async (): Promise<string> => {
+    console.info('USING Injected')
+    const response = await (isInjectedAvailable ? readInjected() : readNative())
+    return response.replace('lnurlw://', 'https://')
+  }
+
   return {
     isAvailable: isInjectedAvailable || !!isNDEFAvailable,
     permission,
     status,
+    requestLNURL,
     scan,
+    scanURL,
     stop: isInjectedAvailable ? abortReadInjectedCtrl : abortReadNativeCtrl
   }
 }
