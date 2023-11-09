@@ -1,8 +1,8 @@
-import Page from '../page'
 import lud06 from '@/constants/lud06/green.json'
+import Menu from '../components/menu'
 
-export const GreenMenu = () => {
-  return <Page name="green" title="Green Food" lud06={lud06} />
+const GreenMenu = () => {
+  return <Menu name="green" title="Green Store" lud06={lud06} />
 }
 
 export default GreenMenu

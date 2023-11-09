@@ -36,17 +36,17 @@ import theme from '@/styles/theme'
 import { aggregateProducts, fetchLNURL } from '@/lib/utils'
 import { LNURLResponse } from '@/types/lnurl'
 
-interface PageProps {
+interface MenuProps {
   name?: string
   title?: string
   lud06: LNURLResponse
 }
 
-export default function Page({
+export default function Menu({
   name: pageName = 'coffee',
   title: pageTitle = 'Carrito de Café',
   lud06
-}: PageProps) {
+}: MenuProps) {
   // Hooks
   const { setLUD06 } = useLN()
   const {
