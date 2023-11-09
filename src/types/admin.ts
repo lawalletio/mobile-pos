@@ -6,6 +6,7 @@ export interface InfoResponse {
       associated: boolean
       activated: boolean
       hasDelegation: boolean
+      hasIdentity: boolean
     }
     ntag424: {
       ok: {
@@ -39,6 +40,9 @@ export interface InfoResponse {
           delegationToken: string
         }[]
       }
+    }
+    identity?: {
+      name: string
     }
   }
 }
