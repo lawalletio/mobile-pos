@@ -30,16 +30,23 @@ import Navbar from '@/components/Layout/Navbar'
 
 // MOCK
 import categories from '@/constants/categories.json'
-import products from '@/constants/products.json'
 
 // Style
 import theme from '@/styles/theme'
 import { aggregateProducts, fetchLNURL } from '@/lib/utils'
+import { LNURLResponse } from '@/types/lnurl'
 
-// Constants
-const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
+interface MenuProps {
+  name?: string
+  title?: string
+  lud06: LNURLResponse
+}
 
-export default function Page() {
+export default function Menu({
+  name: pageName = 'coffee',
+  title: pageTitle = 'Carrito de Café',
+  lud06
+}: MenuProps) {
   // Hooks
   const { setLUD06 } = useLN()
   const {
@@ -53,6 +60,11 @@ export default function Page() {
   const { publish } = useNostr()
   const router = useRouter()
   const { convertCurrency } = useCurrencyConverter()
+
+  const [menuProducts, setMenuProducts] = useState<ProductData[]>([])
+  const [groupedProducts, setGroupedProducts] = useState<{
+    [categoryId: number]: ProductData[]
+  }>([])
 
   // Sheet
   const [showSheet, setShowSheet] = useState(false)
@@ -109,15 +121,23 @@ export default function Page() {
     return totalPrice
   }, [cart])
 
-  const groupedProducts: { [categoryId: number]: ProductData[] } = {}
+  const loadMenu = useCallback(async (name: string) => {
+    const products = (await import(`@/constants/menus/${name}.json`))
+      .default as ProductData[]
+    const _groupedProducts: {
+      [categoryId: number]: ProductData[]
+    } = {}
+    products.forEach(product => {
+      const categoryId = product.category_id
+      if (!_groupedProducts[categoryId]) {
+        _groupedProducts[categoryId] = []
+      }
+      _groupedProducts[categoryId].push(product)
+    })
 
-  products.forEach(product => {
-    const categoryId = product.category_id
-    if (!groupedProducts[categoryId]) {
-      groupedProducts[categoryId] = []
-    }
-    groupedProducts[categoryId].push(product)
-  })
+    setGroupedProducts(_groupedProducts)
+    setMenuProducts(products)
+  }, [])
 
   const handleClearCart = useCallback(() => {
     setCart([])
@@ -146,9 +166,13 @@ export default function Page() {
 
   useEffect(() => {
     clearOrder()
-    fetchLNURL(DESTINATION_LNURL).then(setLUD06)
+    loadMenu(pageName)
+    setLUD06(lud06)
+    // fetchLNURL(DESTINATION_LNURL).then(setLUD06)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [lud06])
+
+  useEffect(() => {}, [])
 
   useEffect(() => {
     setAmount(convertCurrency(getTotalPrice(), 'ARS', 'SAT'))
@@ -159,30 +183,34 @@ export default function Page() {
   return (
     <>
       <Navbar showBackPage={true}>
-        <Heading as="h5">Carrito de compras</Heading>
+        <Heading as="h5">{pageTitle}</Heading>
       </Navbar>
       <Container size="small">
         <Divider y={24} />
         <Flex direction="column" gap={24}>
-          {categories.map(category => (
-            <Flex key={category.id} direction="column">
-              <Text size="small" color={theme.colors.gray50}>
-                {category.name}
-              </Text>
-              <Flex direction="column">
-                {groupedProducts[category.id]?.map(product => (
-                  <Product
-                    key={product.id}
-                    data={product}
-                    onAddToCart={() => addToCart(product)}
-                    quantityInCart={productQuantities[product.id] || 0}
-                    onRemoveOne={() => removeFromCart(product)}
-                    onAddOne={() => addToCart(product)}
-                  />
-                ))}
+          {categories.map(category =>
+            groupedProducts[category.id] ? (
+              <Flex key={category.id} direction="column">
+                <Text size="small" color={theme.colors.gray50}>
+                  {category.name}
+                </Text>
+                <Flex direction="column">
+                  {groupedProducts[category.id]?.map(product => (
+                    <Product
+                      key={product.id}
+                      data={product}
+                      onAddToCart={() => addToCart(product)}
+                      quantityInCart={productQuantities[product.id] || 0}
+                      onRemoveOne={() => removeFromCart(product)}
+                      onAddOne={() => addToCart(product)}
+                    />
+                  ))}
+                </Flex>
               </Flex>
-            </Flex>
-          ))}
+            ) : (
+              <></>
+            )
+          )}
         </Flex>
         <Divider y={64} />
         {cart.length > 0 && (
@@ -222,7 +250,9 @@ export default function Page() {
               const id = Number(product[0])
               const quantities = Number(product[1])
 
-              const localProduct = products.find(product => product.id === id)
+              const localProduct = menuProducts.find(
+                product => product.id === id
+              )
 
               if (quantities > 0 && localProduct) {
                 return (
