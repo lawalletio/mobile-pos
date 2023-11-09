@@ -35,16 +35,12 @@ import categories from '@/constants/categories.json'
 import theme from '@/styles/theme'
 import { aggregateProducts, fetchLNURL } from '@/lib/utils'
 import { LNURLResponse } from '@/types/lnurl'
-import { set } from 'date-fns'
 
 interface PageProps {
   name?: string
   title?: string
   lud06: LNURLResponse
 }
-
-// Constants
-const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
 
 export default function Page({
   name: pageName = 'coffee',
@@ -192,25 +188,29 @@ export default function Page({
       <Container size="small">
         <Divider y={24} />
         <Flex direction="column" gap={24}>
-          {categories.map(category => (
-            <Flex key={category.id} direction="column">
-              <Text size="small" color={theme.colors.gray50}>
-                {category.name}
-              </Text>
-              <Flex direction="column">
-                {groupedProducts[category.id]?.map(product => (
-                  <Product
-                    key={product.id}
-                    data={product}
-                    onAddToCart={() => addToCart(product)}
-                    quantityInCart={productQuantities[product.id] || 0}
-                    onRemoveOne={() => removeFromCart(product)}
-                    onAddOne={() => addToCart(product)}
-                  />
-                ))}
+          {categories.map(category =>
+            groupedProducts[category.id] ? (
+              <Flex key={category.id} direction="column">
+                <Text size="small" color={theme.colors.gray50}>
+                  {category.name}
+                </Text>
+                <Flex direction="column">
+                  {groupedProducts[category.id]?.map(product => (
+                    <Product
+                      key={product.id}
+                      data={product}
+                      onAddToCart={() => addToCart(product)}
+                      quantityInCart={productQuantities[product.id] || 0}
+                      onRemoveOne={() => removeFromCart(product)}
+                      onAddOne={() => addToCart(product)}
+                    />
+                  ))}
+                </Flex>
               </Flex>
-            </Flex>
-          ))}
+            ) : (
+              <></>
+            )
+          )}
         </Flex>
         <Divider y={64} />
         {cart.length > 0 && (
