@@ -30,16 +30,25 @@ import Navbar from '@/components/Layout/Navbar'
 
 // MOCK
 import categories from '@/constants/categories.json'
-import products from '@/constants/products.json'
 
 // Style
 import theme from '@/styles/theme'
 import { aggregateProducts, fetchLNURL } from '@/lib/utils'
+import { LNURLResponse } from '@/types/lnurl'
+
+interface PageProps {
+  name: string
+  title: string
+  lud06: LNURLResponse
+}
 
 // Constants
 const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
 
-export default function Page() {
+export default function Page({
+  name: pageName = 'coffee',
+  title: pageTitle = 'Carrito de Café'
+}: PageProps) {
   // Hooks
   const { setLUD06 } = useLN()
   const {
@@ -53,6 +62,11 @@ export default function Page() {
   const { publish } = useNostr()
   const router = useRouter()
   const { convertCurrency } = useCurrencyConverter()
+
+  const [menuProducts, setMenuProducts] = useState<ProductData[]>([])
+  const [groupedProducts, setGroupedProducts] = useState<{
+    [categoryId: number]: ProductData[]
+  }>([])
 
   // Sheet
   const [showSheet, setShowSheet] = useState(false)
@@ -109,15 +123,28 @@ export default function Page() {
     return totalPrice
   }, [cart])
 
-  const groupedProducts: { [categoryId: number]: ProductData[] } = {}
+  const loadMenu = useCallback(async (name: string) => {
+    alert(name)
 
-  products.forEach(product => {
-    const categoryId = product.category_id
-    if (!groupedProducts[categoryId]) {
-      groupedProducts[categoryId] = []
-    }
-    groupedProducts[categoryId].push(product)
-  })
+    const products = (await import(`@/constants/menus/${name}.json`))
+      .default as ProductData[]
+
+    console.info('^^^^^^^ PRODUCTS ^^^^^^^')
+    console.dir(products)
+    const _groupedProducts: {
+      [categoryId: number]: ProductData[]
+    } = {}
+    products.forEach(product => {
+      const categoryId = product.category_id
+      if (!_groupedProducts[categoryId]) {
+        _groupedProducts[categoryId] = []
+      }
+      _groupedProducts[categoryId].push(product)
+    })
+
+    setGroupedProducts(_groupedProducts)
+    setMenuProducts(products)
+  }, [])
 
   const handleClearCart = useCallback(() => {
     setCart([])
@@ -147,6 +174,7 @@ export default function Page() {
   useEffect(() => {
     clearOrder()
     fetchLNURL(DESTINATION_LNURL).then(setLUD06)
+    loadMenu(pageName)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -159,7 +187,7 @@ export default function Page() {
   return (
     <>
       <Navbar showBackPage={true}>
-        <Heading as="h5">Carrito de compras</Heading>
+        <Heading as="h5">{pageTitle}</Heading>
       </Navbar>
       <Container size="small">
         <Divider y={24} />
@@ -222,7 +250,9 @@ export default function Page() {
               const id = Number(product[0])
               const quantities = Number(product[1])
 
-              const localProduct = products.find(product => product.id === id)
+              const localProduct = menuProducts.find(
+                product => product.id === id
+              )
 
               if (quantities > 0 && localProduct) {
                 return (
