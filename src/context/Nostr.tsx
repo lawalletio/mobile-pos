@@ -122,7 +122,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
     if (!balance) {
       return 0
     }
-    return (parseInt(balance.tagValue('balance')!) as number) / 1000
+    return (parseInt(balance.tagValue('amount')!) as number) / 1000
   }
 
   /** Subscriptions */
