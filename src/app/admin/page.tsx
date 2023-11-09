@@ -5,33 +5,30 @@ import { useEffect, useState } from 'react'
 import { SatoshiV2Icon } from '@bitcoin-design/bitcoin-icons-react/filled'
 
 // Components
-import {
-  Flex,
-  Heading,
-  Text,
-  Divider,
-  Button,
-  Keyboard,
-  Card,
-  Icon
-} from '@/components/UI'
+import { Flex, Heading, Text, Divider, Button, Icon } from '@/components/UI'
 import Container from '@/components/Layout/Container'
 import Navbar from '@/components/Layout/Navbar'
+import { BtnLoader } from '@/components/Loader/Loader'
 
 // Contexts and Hooks
 import { useCard } from '@/hooks/useCard'
+import { useNostr } from '@/context/Nostr'
+
+// Types
 import { CardUrlParams, ScanAction } from '@/types/card'
-import { InfoResponse } from '@/types/admin'
-import { getMockInfo, getMockReset } from '@/lib/mocks'
-import { parseQueryParams } from '@/lib/utils'
-import { BtnLoader } from '@/components/Loader/Loader'
+import { InfoResponse, ResetResponse } from '@/types/admin'
 
 // Internal components
 import MiniCard from './components/MiniCard'
 
 // Thirdparty
 import axios from 'axios'
+import { formatter } from '@/lib/formatter'
 import theme from '@/styles/theme'
+import { parseQueryParams } from '@/lib/utils'
+
+// Mocks
+import { getMockInfo, getMockReset } from '@/lib/mocks'
 
 const FEDERATION_ID = process.env.NEXT_PUBLIC_FEDERATION_ID!
 
@@ -74,11 +71,14 @@ const requestCardEndpoint = async (url: string, type: ScanAction) => {
 export default function Page() {
   // Hooks
   const { isAvailable, scanURL, stop } = useCard()
+  const { getBalance } = useNostr()
   const [isTapping, setIsTapping] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [balance, setBalance] = useState(500)
 
   const [cardInfo, setCardInfo] = useState<InfoResponse>()
+  const [balance, setBalance] = useState<number>()
+  const [qrData, setQrData] = useState<ResetResponse>()
+  const [identity, setIdentity] = useState<string>()
   const [targetData, setTargetData] = useState<CardUrlParams>()
 
   // Local states
@@ -120,9 +120,12 @@ export default function Page() {
       const tapUrl = await getTapUrl() // Being MOCKED
       const tapInfo = await requestCardEndpoint(tapUrl, ScanAction.INFO) // Being MOCKED
 
-      console.dir(tapInfo)
+      console.info('##### tapInfo #####')
       setCardInfo(tapInfo)
+      setIdentity(tapInfo?.info.identity?.name)
       setCardTapped(true)
+
+      setBalance((await getBalance(tapInfo.info.holder?.ok.pubKey!)) || 0)
     } catch (e) {
       alert('Error trying to getTapInfo: ' + JSON.stringify(e))
     }
@@ -146,10 +149,13 @@ export default function Page() {
 
   const clear = () => {
     setCardInfo(undefined)
+    setQrData(undefined)
+    setIdentity(undefined)
+    setTargetData(undefined)
     setCardTapped(false)
     setIsTapping(false)
-    setTargetData(undefined)
     setIsLoading(false)
+    setBalance(0)
   }
 
   /** useEffects */
@@ -202,7 +208,7 @@ export default function Page() {
                 Usuario:
               </Text>
               <Heading as="h3">
-                {cardInfo?.info.holder || 'Sin asociar'}
+                {identity ? `${identity}@lawallet.ar` : `Sin usuario`}
               </Heading>
             </Flex>
             <Divider y={16} />
@@ -214,7 +220,9 @@ export default function Page() {
                 <Icon size="small">
                   <SatoshiV2Icon />
                 </Icon>
-                <Heading as="h3">{balance} (Sin implementar)</Heading>
+                <Heading as="h3">
+                  {formatter(0, 0, 'SAT').format(balance!)}
+                </Heading>
               </Flex>
             </Flex>
             <Divider y={16} />
@@ -227,6 +235,14 @@ export default function Page() {
               </Text>
             </Flex>
             <Divider y={16} />
+            <Flex gap={4} direction="column">
+              <Text size="small" color={theme.colors.gray50}>
+                NONCE:
+              </Text>
+              <Text isBold>
+                {cardInfo?.info.ntag424?.ok?.otc || `Sin Nonce`}
+              </Text>
+            </Flex>
           </>
         ) : (
           <Flex direction="column" align="center" justify="center" flex={1}>
