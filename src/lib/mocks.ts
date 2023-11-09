@@ -5,54 +5,53 @@ export const getMockInfo = async (): Promise<InfoResponse> => {
     tag: 'laWallet:info',
     info: {
       status: {
-      initialized: false,
-      associated: false,
-      activated: false,
-      hasDelegation: false
-    },
-    ntag424:
-      {
-          ok: {
-            cid: "string",
-            ctr: 12312,
-            ctrNew: 332423,
-            otc: "324234234",
-            design: {
-              uuid: "asddasdsasda",
-              name: "sdfsfdfsdfsdf",
-            }
+        initialized: true,
+        associated: true,
+        activated: true,
+        hasDelegation: true,
+        hasIdentity: true
+      },
+      ntag424: {
+        ok: {
+          cid: 'CIDCARD',
+          ctr: 1,
+          ctrNew: 4,
+          otc: '324234234',
+          design: {
+            uuid: 'asddasdsasda',
+            name: 'LABITCONF'
           }
-        },
-      // { error: 'string' },
-    // | null
+        }
+      },
 
-    card:
-      // | {
-      //     ok: {
-      //       uuid: string
-      //       name: string
-      //       description: string
-      //       enabled: boolean
-      //     }
-      //   }
-      { error: 'string' },
-    // | null
-    holder:
-      // | {
-      //     ok: {
-      //       pubKey: string
-      //       delegations: {
-      //         kind: number | null
-      //         since: string
-      //         until: string
-      //         isCurrent: boolean
-      //         delegationConditions: string
-      //         delegationToken: string
-      //       }[]
-      //     }
-      //   }
-      { error: 'string' }
-    // | null}
+      card: {
+        ok: {
+          uuid: 'string',
+          name: 'string',
+          description: 'string',
+          enabled: true
+        }
+      },
+      holder: {
+        ok: {
+          pubKey:
+            '8e74cf71a9d756f514e57a0c6392b032e832a936525a6298258187d94c5c90ea',
+          delegations: [
+            {
+              kind: 1112,
+              since: 'string',
+              until: 'string',
+              isCurrent: true,
+              delegationConditions: 'string',
+              delegationToken: 'string'
+            }
+          ]
+        }
+      },
+      identity: {
+        name: 'CHUCHIOOO'
+      }
+    }
   }
 }
 
