@@ -2,9 +2,19 @@
 
 // React/Next
 import { useEffect, useState } from 'react'
+import { SatoshiV2Icon } from '@bitcoin-design/bitcoin-icons-react/filled'
 
 // Components
-import { Flex, Heading, Text, Divider, Button, Keyboard } from '@/components/UI'
+import {
+  Flex,
+  Heading,
+  Text,
+  Divider,
+  Button,
+  Keyboard,
+  Card,
+  Icon
+} from '@/components/UI'
 import Container from '@/components/Layout/Container'
 import Navbar from '@/components/Layout/Navbar'
 
@@ -16,8 +26,12 @@ import { getMockInfo, getMockReset } from '@/lib/mocks'
 import { parseQueryParams } from '@/lib/utils'
 import { BtnLoader } from '@/components/Loader/Loader'
 
+// Internal components
+import MiniCard from './components/MiniCard'
+
 // Thirdparty
 import axios from 'axios'
+import theme from '@/styles/theme'
 
 const FEDERATION_ID = process.env.NEXT_PUBLIC_FEDERATION_ID!
 
@@ -153,17 +167,78 @@ export default function Page() {
         <Heading as="h5">Modo Admin</Heading>
       </Navbar>
       <Container size="small">
-        <Divider y={24} />
-        <Flex direction="column" gap={8} flex={1} justify="center">
-          {cardTapped ? (
-            <>
-              <Flex justify="center" align="center" gap={4}>
-                <Heading>Info</Heading>
-                <Text>{JSON.stringify(cardInfo)}</Text>
+        {cardTapped ? (
+          <>
+            {/* <Text>{JSON.stringify(cardInfo)}</Text> */}
+            <Text size="small" color={theme.colors.gray50}>
+              Estados:
+            </Text>
+            <Divider y={8} />
+            <Flex gap={4}>
+              <MiniCard isActive={true} title="Fabrica" />
+              <MiniCard isActive={true} title="Init." />
+              <MiniCard isActive={false} title="Asociada" />
+              <MiniCard isActive={false} title="Activada" />
+            </Flex>
+            <Divider y={16} />
+            <Flex gap={4} direction="column">
+              <Text size="small" color={theme.colors.gray50}>
+                Usuario:
+              </Text>
+              <Heading as="h3">juanitalapistolera</Heading>
+            </Flex>
+            <Divider y={16} />
+            <Flex gap={4} direction="column">
+              <Text size="small" color={theme.colors.gray50}>
+                Balance:
+              </Text>
+              <Flex align="center">
+                <Icon size="small">
+                  <SatoshiV2Icon />
+                </Icon>
+                <Heading as="h3">500</Heading>
               </Flex>
-              <Divider y={16} />
-              {targetData ? (
-                <Flex>
+            </Flex>
+            <Divider y={16} />
+            <Flex gap={4} direction="column">
+              <Text size="small" color={theme.colors.gray50}>
+                Diseño:
+              </Text>
+              <Text isBold>LaBitconf</Text>
+            </Flex>
+            <Divider y={16} />
+            <Flex gap={4} direction="column">
+              <Text size="small" color={theme.colors.gray50}>
+                Delegacion:
+              </Text>
+              <Text isBold>LaCrypta</Text>
+            </Flex>
+            <Divider y={16} />
+          </>
+        ) : (
+          <Flex direction="column" align="center" justify="center" flex={1}>
+            <Flex>
+              <Button disabled={isLoading} onClick={() => getTapInfo()}>
+                {isLoading ? <BtnLoader /> : 'Simular tapeo'}
+              </Button>
+            </Flex>
+            {isTapping && (
+              <>
+                <Heading as="h3">Escaneando receptor...</Heading>
+                <Text align="center">Acerca la tarjeta para analizar.</Text>
+              </>
+            )}
+          </Flex>
+        )}
+        <Divider y={24} />
+      </Container>
+      <Flex>
+        <Container size="small">
+          <Divider y={16} />
+          <Flex gap={8}>
+            {cardTapped ? (
+              <>
+                {targetData ? (
                   <Button
                     color="error"
                     disabled={isLoading}
@@ -171,37 +246,23 @@ export default function Page() {
                   >
                     {isLoading ? <BtnLoader /> : 'Formatear tarjeta'}
                   </Button>
-                </Flex>
-              ) : (
-                <Flex>
+                ) : (
                   <Button
-                    color="error"
+                    color="secondary"
                     disabled={isLoading}
                     onClick={() => handleGetSecurityTap()}
                   >
                     {isLoading ? <BtnLoader /> : 'Simular tapeo de seguridad'}
                   </Button>
-                </Flex>
-              )}
-            </>
-          ) : (
-            <Flex direction="column" align="center">
-              <Flex>
-                <Button disabled={isLoading} onClick={() => getTapInfo()}>
-                  {isLoading ? <BtnLoader /> : 'Simular tapeo'}
-                </Button>
-              </Flex>
-              {isTapping && (
-                <>
-                  <Heading as="h3">Escaneando receptor...</Heading>
-                  <Text align="center">Acerca la tarjeta para analizar.</Text>
-                </>
-              )}
-            </Flex>
-          )}
-        </Flex>
-        <Divider y={24} />
-      </Container>
+                )}
+              </>
+            ) : (
+              <></>
+            )}
+          </Flex>
+          <Divider y={32} />
+        </Container>
+      </Flex>
     </>
   )
 }
