@@ -35,10 +35,11 @@ import categories from '@/constants/categories.json'
 import theme from '@/styles/theme'
 import { aggregateProducts, fetchLNURL } from '@/lib/utils'
 import { LNURLResponse } from '@/types/lnurl'
+import { set } from 'date-fns'
 
 interface PageProps {
-  name: string
-  title: string
+  name?: string
+  title?: string
   lud06: LNURLResponse
 }
 
@@ -47,7 +48,8 @@ const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
 
 export default function Page({
   name: pageName = 'coffee',
-  title: pageTitle = 'Carrito de Café'
+  title: pageTitle = 'Carrito de Café',
+  lud06
 }: PageProps) {
   // Hooks
   const { setLUD06 } = useLN()
@@ -124,13 +126,8 @@ export default function Page({
   }, [cart])
 
   const loadMenu = useCallback(async (name: string) => {
-    alert(name)
-
     const products = (await import(`@/constants/menus/${name}.json`))
       .default as ProductData[]
-
-    console.info('^^^^^^^ PRODUCTS ^^^^^^^')
-    console.dir(products)
     const _groupedProducts: {
       [categoryId: number]: ProductData[]
     } = {}
@@ -173,10 +170,13 @@ export default function Page({
 
   useEffect(() => {
     clearOrder()
-    fetchLNURL(DESTINATION_LNURL).then(setLUD06)
     loadMenu(pageName)
+    setLUD06(lud06)
+    // fetchLNURL(DESTINATION_LNURL).then(setLUD06)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [lud06])
+
+  useEffect(() => {}, [])
 
   useEffect(() => {
     setAmount(convertCurrency(getTotalPrice(), 'ARS', 'SAT'))
