@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react'
 
 // Thirdparty
 import axios from 'axios'
+import { normalizeLNURL } from '@/lib/utils'
 
 // Types
 import { ScanCardStatus, ScanAction } from '@/types/card'
@@ -25,6 +26,7 @@ export type CardReturns = {
 const FEDERATION_ID = process.env.NEXT_PUBLIC_FEDERATION_ID!
 
 const requestLNURL = async (url: string, type: ScanAction) => {
+  const normalizedUrl = normalizeLNURL(url)
   const headers = {
     'Content-Type': 'application/json',
     'X-LaWallet-Action': type,
@@ -32,7 +34,7 @@ const requestLNURL = async (url: string, type: ScanAction) => {
   }
 
   // alert('headers: ' + JSON.stringify(headers))
-  const response = await axios.get(url, {
+  const response = await axios.get(normalizedUrl, {
     headers: headers
   })
   if (response.status < 200 && response.status >= 300) {
