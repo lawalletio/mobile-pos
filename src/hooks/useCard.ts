@@ -44,7 +44,7 @@ const requestLNURL = async (url: string, type?: ScanAction) => {
     throw new Error('RESPONSE: ' + JSON.stringify((e as Error).message))
   }
 
-  if (response.status < 200 && response.status >= 300) {
+  if (response.status < 200 || response.status >= 300) {
     // alert(JSON.stringify(response.data))
     throw new Error('Hubo un error: ' + JSON.stringify(response.data))
   }
