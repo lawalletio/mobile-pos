@@ -37,7 +37,8 @@ import theme from '@/styles/theme'
 import { parseQueryParams } from '@/lib/utils'
 
 // Mocks
-import { getMockInfo, getMockReset } from '@/lib/mocks'
+// import { getMockInfo, getMockReset } from '@/lib/mocks'
+import { useRouter } from 'next/navigation'
 
 const FEDERATION_ID = process.env.NEXT_PUBLIC_FEDERATION_ID!
 
@@ -49,26 +50,26 @@ const requestCardEndpoint = async (url: string, type: ScanAction) => {
     'X-LaWallet-Param': `federationId=${FEDERATION_ID}, tokens=BTC`
   }
 
-  switch (type) {
-    case ScanAction.INFO:
-      return getMockInfo()
-      break
+  // switch (type) {
+  //   case ScanAction.INFO:
+  //     return getMockInfo()
+  //     break
 
-    case ScanAction.RESET:
-      return getMockReset()
-      break
+  //   case ScanAction.RESET:
+  //     return getMockReset()
+  //     break
 
-    default:
-      throw new Error('Invalid ScanAction')
-      break
-  }
+  //   default:
+  //     throw new Error('Invalid ScanAction')
+  //     break
+  // }
 
   // alert('headers: ' + JSON.stringify(headers))
   const response = await axios.get(url, {
     headers: headers
   })
 
-  alert(JSON.stringify(response.data))
+  // alert(JSON.stringify(response.data))
 
   if (response.status < 200 && response.status >= 300) {
     // alert(JSON.stringify(response.data))
@@ -77,12 +78,35 @@ const requestCardEndpoint = async (url: string, type: ScanAction) => {
   return response.data
 }
 
-type SheetType = 'tap' | 'qr'
+const requestCardFormat = async (
+  url: string,
+  target: CardUrlParams,
+  admin: CardUrlParams
+): Promise<ResetResponse> => {
+  const response = await axios.post(url, {
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: {
+      target_p: target.p,
+      target_c: target.c,
+      admin_p: admin.p,
+      admin_c: admin.c
+    }
+  })
+
+  // alert(JSON.stringify(response.data))
+
+  return response.data
+
+  // return getMockReset()
+}
 
 export default function Page() {
   // Hooks
   const { isAvailable, scanURL, stop } = useCard()
   const { getBalance } = useNostr()
+  const router = useRouter()
   const [isTapping, setIsTapping] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -94,7 +118,6 @@ export default function Page() {
 
   // Sheet admin
   const [showSheet, setShowSheet] = useState<boolean>(false)
-  const [sheetStep, setSheetStep] = useState<SheetType>('tap')
 
   // Local states
   const [cardTapped, setCardTapped] = useState<boolean>(false)
@@ -102,9 +125,12 @@ export default function Page() {
   /** Functions */
 
   const handleFormat = async () => {
+    setQrData(undefined)
     setIsLoading(true)
     setShowSheet(true)
-    // alert('Ahora viene la parte del admin')
+    const qrData = await getAdminTap()
+    alert(JSON.stringify(qrData))
+    setQrData(qrData)
     setIsLoading(false)
   }
 
@@ -115,12 +141,14 @@ export default function Page() {
     setIsLoading(false)
   }
 
+  const handleCloseSheet = () => {
+    router.push('/')
+  }
+
   const getTapUrl = async (): Promise<string> => {
-    return 'https://mockurl.com/scan?p=ABABABABABA&c=121212121212'
     setIsTapping(true)
     try {
       const url = await scanURL()
-      alert(JSON.stringify(url))
       return url
     } catch (e) {
       console.error(e)
@@ -148,10 +176,11 @@ export default function Page() {
   }
 
   const getSecurityTap = async (): Promise<CardUrlParams> => {
+    alert('Getting security tap')
     setIsTapping(true)
     try {
-      const tapUrl = await getTapUrl() // Being MOCKED
-      const queryParams = parseQueryParams(tapUrl)
+      const targetUrl = await scanURL()
+      const queryParams = parseQueryParams(targetUrl)
       setIsTapping(false)
       return {
         p: queryParams.p!,
@@ -159,8 +188,24 @@ export default function Page() {
       }
     } catch (e) {
       setIsTapping(false)
+      alert(JSON.stringify(e))
       throw new Error('Error trying to getSecurityTap: ' + JSON.stringify(e))
     }
+  }
+
+  const getAdminTap = async (): Promise<ResetResponse> => {
+    alert('Getting admin tap')
+    const tapUrl = await getTapUrl()
+    setIsTapping(false)
+    const queryParams = parseQueryParams(tapUrl)
+
+    const adminData = {
+      p: queryParams.p!,
+      c: queryParams.c!
+    }
+    const qrData = await requestCardFormat(tapUrl, targetData!, adminData)
+
+    return qrData
   }
 
   const clear = () => {
@@ -184,13 +229,26 @@ export default function Page() {
         stop()
       }
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAvailable])
 
-  const handleCloseSheet = () => {
-    setShowSheet(false)
-    setSheetStep('tap')
-  }
+  // On cardInfo change
+  useEffect(() => {
+    if (!cardInfo) {
+      return
+    }
+  }, [cardInfo])
+
+  // On targetData change
+  useEffect(() => {
+    if (!targetData) {
+      return
+    }
+
+    // handleFormat()
+    // alert('DEBERÍA requerir el format')
+  }, [targetData])
 
   return (
     <>
@@ -275,24 +333,20 @@ export default function Page() {
               flex={1}
             >
               <Loader />
-              <Text size="small" color={theme.colors.gray50} align="center">
-                Escaneá una tarjeta para obtener su información y{' '}
-                <strong>RECORDÁ preguntar por su username</strong>.
-              </Text>
+              {isAvailable && (
+                <Text size="small" color={theme.colors.gray50} align="center">
+                  Escaneá una tarjeta para obtener su información y{' '}
+                  <strong>RECORDÁ preguntar por su username</strong>.
+                </Text>
+              )}
             </Flex>
             {/* POC: removed flex and button */}
-            <Flex>
+            {/* <Flex>
               <Button disabled={isLoading} onClick={() => getTapInfo()}>
                 {isLoading ? <BtnLoader /> : 'Simular tapeo'}
               </Button>
-            </Flex>
+            </Flex> */}
             {/* end POC */}
-            {isTapping && (
-              <>
-                <Heading as="h3">Escaneando receptor...</Heading>
-                <Text align="center">Acerca la tarjeta para analizar.</Text>
-              </>
-            )}
           </Flex>
         )}
         <Divider y={24} />
@@ -313,25 +367,27 @@ export default function Page() {
                   </Button>
                 ) : (
                   <>
-                    <Flex
-                      direction="column"
-                      justify="center"
-                      align="center"
-                      gap={8}
-                      flex={1}
-                    >
-                      <Loader />
-                      <Text
-                        size="small"
-                        color={theme.colors.gray50}
+                    {isTapping && (
+                      <Flex
+                        direction="column"
+                        justify="center"
                         align="center"
+                        gap={8}
+                        flex={1}
                       >
-                        Escaneá nuevamente la tarjeta en caso de que la
-                        información proporcionada sea correcta.
-                      </Text>
-                    </Flex>
+                        <Loader />
+                        <Text
+                          size="small"
+                          color={theme.colors.gray50}
+                          align="center"
+                        >
+                          Escaneá nuevamente la tarjeta en caso de que la
+                          información proporcionada sea correcta.
+                        </Text>
+                      </Flex>
+                    )}
                     {/* POC: removed flex and button */}
-                    <Flex>
+                    {/* <Flex>
                       <Button
                         color="secondary"
                         disabled={isLoading}
@@ -343,7 +399,7 @@ export default function Page() {
                           'Simular tapeo de seguridad'
                         )}
                       </Button>
-                    </Flex>
+                    </Flex> */}
                     {/* end POC */}
                   </>
                 )}
@@ -356,11 +412,11 @@ export default function Page() {
         </Container>
       </Flex>
       <Sheet
-        title="Cambiame, forro"
+        title="Escanea el usuario"
         isOpen={showSheet}
         onClose={handleCloseSheet}
       >
-        {sheetStep === 'tap' ? (
+        {!qrData ? (
           <Container size="small">
             <Flex
               direction="column"
@@ -377,13 +433,6 @@ export default function Page() {
                 Se necesita de una persona con el rango de administrador para
                 confirmar la acción.
               </Text>
-              {/* POC: removed flex and button */}
-              <Flex justify="center">
-                <Button size="small" onClick={() => setSheetStep('qr')}>
-                  Generar tapeo
-                </Button>
-              </Flex>
-              {/* end POC */}
             </Flex>
           </Container>
         ) : (
