@@ -2,7 +2,7 @@
   {
     "id": 1,
     "category_id": 1,
-    "name": "Fernet",
+    "name": "Café",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 2000,
@@ -11,8 +11,8 @@
   },
   {
     "id": 2,
-    "category_id": 1,
-    "name": "Gin Tonic",
+    "category_id": 7,
+    "name": "Cookies",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 1500,
@@ -21,9 +21,9 @@
   },
   {
     "id": 3,
-    "category_id": 1,
-    "name": "Cerveza",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
+    "category_id": 7,
+    "name": "Patisserie",
+    "description": "(m/cake en lingote)",
     "price": {
       "value": 1000,
       "currency": "ARS"
@@ -31,8 +31,8 @@
   },
   {
     "id": 4,
-    "category_id": 2,
-    "name": "Shawarma",
+    "category_id": 7,
+    "name": "Muffins",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 3400,
@@ -41,8 +41,8 @@
   },
   {
     "id": 5,
-    "category_id": 2,
-    "name": "Papa fritas",
+    "category_id": 7,
+    "name": "Budines",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 2400,
@@ -51,8 +51,8 @@
   },
   {
     "id": 6,
-    "category_id": 2,
-    "name": "Pancho",
+    "category_id": 7,
+    "name": "Medialunas",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 2400,
@@ -61,8 +61,18 @@
   },
   {
     "id": 7,
-    "category_id": 1,
-    "name": "Champagne",
+    "category_id": 7,
+    "name": "Cuadrados dulces",
+    "description": "(pastaflora, brownie, coco & dulce de leche)",
+    "price": {
+      "value": 1500,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 8,
+    "category_id": 6,
+    "name": "Dulces sin TACC",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 1500,
@@ -71,8 +81,8 @@
   },
   {
     "id": 9,
-    "category_id": 1,
-    "name": "Licor de melon",
+    "category_id": 2,
+    "name": "Helados",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 1500,
@@ -81,9 +91,9 @@
   },
   {
     "id": 10,
-    "category_id": 3,
-    "name": "Remera",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
+    "category_id": 5,
+    "name": "Snacks",
+    "description": "(Saladix/Papas Fritas)",
     "price": {
       "value": 1500,
       "currency": "ARS"
@@ -91,8 +101,8 @@
   },
   {
     "id": 11,
-    "category_id": 3,
-    "name": "Gorra",
+    "category_id": 5,
+    "name": "Barrita de Cereal",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 1500,
@@ -101,8 +111,8 @@
   },
   {
     "id": 12,
-    "category_id": 3,
-    "name": "Medias",
+    "category_id": 5,
+    "name": "Chicles/Pastillas",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 1500,

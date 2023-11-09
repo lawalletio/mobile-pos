@@ -2,7 +2,7 @@
   {
     "id": 1,
     "category_id": 1,
-    "name": "Fernet",
+    "name": "Gaseosas línea Coca Cola",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 2000,
@@ -11,8 +11,8 @@
   },
   {
     "id": 2,
-    "category_id": 1,
-    "name": "Gin Tonic",
+    "category_id": 2,
+    "name": "Cono chico de papas fritas",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 1500,
@@ -21,8 +21,8 @@
   },
   {
     "id": 3,
-    "category_id": 1,
-    "name": "Cerveza",
+    "category_id": 2,
+    "name": "Cono grande de papas fritas con topping",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 1000,
@@ -32,7 +32,7 @@
   {
     "id": 4,
     "category_id": 2,
-    "name": "Shawarma",
+    "name": "Hamburguesa cacera con cheddar y panceta",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 3400,
@@ -42,7 +42,7 @@
   {
     "id": 5,
     "category_id": 2,
-    "name": "Papa fritas",
+    "name": "Hamburguesa vegana con cheddar vegano",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 2400,
@@ -52,7 +52,7 @@
   {
     "id": 6,
     "category_id": 2,
-    "name": "Pancho",
+    "name": "Bites de espinaca",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 2400,
@@ -61,8 +61,18 @@
   },
   {
     "id": 7,
-    "category_id": 1,
-    "name": "Champagne",
+    "category_id": 2,
+    "name": "Muzzarelitas crocantes",
+    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
+    "price": {
+      "value": 1500,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 8,
+    "category_id": 2,
+    "name": "Pancho alemán con guacamole, queso graten y papas paille",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 1500,
@@ -71,8 +81,8 @@
   },
   {
     "id": 9,
-    "category_id": 1,
-    "name": "Licor de melon",
+    "category_id": 2,
+    "name": "Bondiola ahumada c/salsa barbacoa",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 1500,
@@ -81,28 +91,8 @@
   },
   {
     "id": 10,
-    "category_id": 3,
-    "name": "Remera",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
-    "price": {
-      "value": 1500,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 11,
-    "category_id": 3,
-    "name": "Gorra",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
-    "price": {
-      "value": 1500,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 12,
-    "category_id": 3,
-    "name": "Medias",
+    "category_id": 2,
+    "name": "Tapas de asado braseada con cebolla caramelizada",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 1500,

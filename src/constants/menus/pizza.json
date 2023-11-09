@@ -2,7 +2,7 @@
   {
     "id": 1,
     "category_id": 1,
-    "name": "Fernet",
+    "name": "Agua / aguas saborizadas",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 2000,
@@ -12,7 +12,7 @@
   {
     "id": 2,
     "category_id": 1,
-    "name": "Gin Tonic",
+    "name": "Gaseosas línea Coca Cola",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 1500,
@@ -21,8 +21,8 @@
   },
   {
     "id": 3,
-    "category_id": 1,
-    "name": "Cerveza",
+    "category_id": 2,
+    "name": "Empanadas de carne cortada cuchillo/verdura/jamón y queso",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 1000,
@@ -32,80 +32,10 @@
   {
     "id": 4,
     "category_id": 2,
-    "name": "Shawarma",
+    "name": "Pizza Margarita estilo napolitana",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 3400,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 5,
-    "category_id": 2,
-    "name": "Papa fritas",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
-    "price": {
-      "value": 2400,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 6,
-    "category_id": 2,
-    "name": "Pancho",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
-    "price": {
-      "value": 2400,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 7,
-    "category_id": 1,
-    "name": "Champagne",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
-    "price": {
-      "value": 1500,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 9,
-    "category_id": 1,
-    "name": "Licor de melon",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
-    "price": {
-      "value": 1500,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 10,
-    "category_id": 3,
-    "name": "Remera",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
-    "price": {
-      "value": 1500,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 11,
-    "category_id": 3,
-    "name": "Gorra",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
-    "price": {
-      "value": 1500,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 12,
-    "category_id": 3,
-    "name": "Medias",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
-    "price": {
-      "value": 1500,
       "currency": "ARS"
     }
   }

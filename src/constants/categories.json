@@ -10,5 +10,21 @@
   {
     "id": 3,
     "name": "Merch"
+  },
+  {
+    "id": 4,
+    "name": "Vegano"
+  },
+  {
+    "id": 5,
+    "name": "Snack"
+  },
+  {
+    "id": 6,
+    "name": "Sin TACC"
+  },
+  {
+    "id": 7,
+    "name": "Panificacíon"
   }
 ]
