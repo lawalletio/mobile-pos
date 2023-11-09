@@ -5,10 +5,19 @@ import { useEffect, useState } from 'react'
 import { SatoshiV2Icon } from '@bitcoin-design/bitcoin-icons-react/filled'
 
 // Components
-import { Flex, Heading, Text, Divider, Button, Icon } from '@/components/UI'
+import {
+  Flex,
+  Heading,
+  Text,
+  Divider,
+  Button,
+  Icon,
+  Sheet,
+  QRCode
+} from '@/components/UI'
 import Container from '@/components/Layout/Container'
 import Navbar from '@/components/Layout/Navbar'
-import { BtnLoader } from '@/components/Loader/Loader'
+import { BtnLoader, Loader } from '@/components/Loader/Loader'
 
 // Contexts and Hooks
 import { useCard } from '@/hooks/useCard'
@@ -68,6 +77,8 @@ const requestCardEndpoint = async (url: string, type: ScanAction) => {
   return response.data
 }
 
+type SheetType = 'tap' | 'qr'
+
 export default function Page() {
   // Hooks
   const { isAvailable, scanURL, stop } = useCard()
@@ -81,6 +92,10 @@ export default function Page() {
   const [identity, setIdentity] = useState<string>()
   const [targetData, setTargetData] = useState<CardUrlParams>()
 
+  // Sheet admin
+  const [showSheet, setShowSheet] = useState<boolean>(false)
+  const [sheetStep, setSheetStep] = useState<SheetType>('tap')
+
   // Local states
   const [cardTapped, setCardTapped] = useState<boolean>(false)
 
@@ -88,7 +103,8 @@ export default function Page() {
 
   const handleFormat = async () => {
     setIsLoading(true)
-    alert('Ahora viene la parte del admin')
+    setShowSheet(true)
+    // alert('Ahora viene la parte del admin')
     setIsLoading(false)
   }
 
@@ -171,6 +187,11 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAvailable])
 
+  const handleCloseSheet = () => {
+    setShowSheet(false)
+    setSheetStep('tap')
+  }
+
   return (
     <>
       <Navbar showBackPage={true}>
@@ -246,11 +267,26 @@ export default function Page() {
           </>
         ) : (
           <Flex direction="column" align="center" justify="center" flex={1}>
+            <Flex
+              direction="column"
+              justify="center"
+              align="center"
+              gap={8}
+              flex={1}
+            >
+              <Loader />
+              <Text size="small" color={theme.colors.gray50} align="center">
+                Escaneá una tarjeta para obtener su información y{' '}
+                <strong>RECORDÁ preguntar por su username</strong>.
+              </Text>
+            </Flex>
+            {/* POC: removed flex and button */}
             <Flex>
               <Button disabled={isLoading} onClick={() => getTapInfo()}>
                 {isLoading ? <BtnLoader /> : 'Simular tapeo'}
               </Button>
             </Flex>
+            {/* end POC */}
             {isTapping && (
               <>
                 <Heading as="h3">Escaneando receptor...</Heading>
@@ -261,10 +297,10 @@ export default function Page() {
         )}
         <Divider y={24} />
       </Container>
-      <Flex>
+      <Flex flex={1}>
         <Container size="small">
           <Divider y={16} />
-          <Flex gap={8}>
+          <Flex gap={8} direction="column">
             {cardTapped ? (
               <>
                 {targetData ? (
@@ -276,13 +312,40 @@ export default function Page() {
                     {isLoading ? <BtnLoader /> : 'Formatear tarjeta'}
                   </Button>
                 ) : (
-                  <Button
-                    color="secondary"
-                    disabled={isLoading}
-                    onClick={() => handleGetSecurityTap()}
-                  >
-                    {isLoading ? <BtnLoader /> : 'Simular tapeo de seguridad'}
-                  </Button>
+                  <>
+                    <Flex
+                      direction="column"
+                      justify="center"
+                      align="center"
+                      gap={8}
+                      flex={1}
+                    >
+                      <Loader />
+                      <Text
+                        size="small"
+                        color={theme.colors.gray50}
+                        align="center"
+                      >
+                        Escaneá nuevamente la tarjeta en caso de que la
+                        información proporcionada sea correcta.
+                      </Text>
+                    </Flex>
+                    {/* POC: removed flex and button */}
+                    <Flex>
+                      <Button
+                        color="secondary"
+                        disabled={isLoading}
+                        onClick={() => handleGetSecurityTap()}
+                      >
+                        {isLoading ? (
+                          <BtnLoader />
+                        ) : (
+                          'Simular tapeo de seguridad'
+                        )}
+                      </Button>
+                    </Flex>
+                    {/* end POC */}
+                  </>
                 )}
               </>
             ) : (
@@ -292,6 +355,51 @@ export default function Page() {
           <Divider y={32} />
         </Container>
       </Flex>
+      <Sheet
+        title="Cambiame, forro"
+        isOpen={showSheet}
+        onClose={handleCloseSheet}
+      >
+        {sheetStep === 'tap' ? (
+          <Container size="small">
+            <Flex
+              direction="column"
+              justify="center"
+              align="center"
+              gap={8}
+              flex={1}
+            >
+              <div>
+                <Loader />
+              </div>
+              <Heading as="h3">Esperando un admin...</Heading>
+              <Text size="small" color={theme.colors.gray50} align="center">
+                Se necesita de una persona con el rango de administrador para
+                confirmar la acción.
+              </Text>
+              {/* POC: removed flex and button */}
+              <Flex justify="center">
+                <Button size="small" onClick={() => setSheetStep('qr')}>
+                  Generar tapeo
+                </Button>
+              </Flex>
+              {/* end POC */}
+            </Flex>
+          </Container>
+        ) : (
+          <>
+            <QRCode size={325} value={`alguito`} />
+            <Divider y={24} />
+            <Container size="small">
+              <Flex flex={1}>
+                <Button variant="bezeled" onClick={handleCloseSheet}>
+                  Cerrar
+                </Button>
+              </Flex>
+            </Container>
+          </>
+        )}
+      </Sheet>
     </>
   )
 }
