@@ -1,0 +1,18 @@
+{
+  "status": "OK",
+  "tag": "payRequest",
+  "commentAllowed": 255,
+  "callback": "https://api.lawallet.ar/lnurlp/8e74cf71a9d756f514e57a0c6392b032e832a936525a6298258187d94c5c90ea/callback",
+  "metadata": "[[\"text/plain\", \"lawallet\"]]",
+  "minSendable": 1000,
+  "maxSendable": 10000000000,
+  "payerData": {
+    "name": { "mandatory": false },
+    "email": { "mandatory": false },
+    "pubkey": { "mandatory": false }
+  },
+  "nostrPubkey": "e17feb5f2cf83546bcf7fd9c8237b05275be958bd521543c2285ffc6c2d654b3",
+  "allowsNostr": true,
+  "federationId": "lawallet.ar",
+  "accountPubKey": "8e74cf71a9d756f514e57a0c6392b032e832a936525a6298258187d94c5c90ea"
+}
