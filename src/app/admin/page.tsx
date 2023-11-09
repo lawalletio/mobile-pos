@@ -175,10 +175,10 @@ export default function Page() {
             </Text>
             <Divider y={8} />
             <Flex gap={4}>
-              <MiniCard isActive={true} title="Fabrica" />
-              <MiniCard isActive={true} title="Init." />
-              <MiniCard isActive={false} title="Asociada" />
+              <MiniCard isActive={true} title="Init" />
+              <MiniCard isActive={true} title="Asociada." />
               <MiniCard isActive={false} title="Activada" />
+              <MiniCard isActive={false} title="Delegada" />
             </Flex>
             <Divider y={16} />
             <Flex gap={4} direction="column">
@@ -205,13 +205,6 @@ export default function Page() {
                 Diseño:
               </Text>
               <Text isBold>LaBitconf</Text>
-            </Flex>
-            <Divider y={16} />
-            <Flex gap={4} direction="column">
-              <Text size="small" color={theme.colors.gray50}>
-                Delegacion:
-              </Text>
-              <Text isBold>LaCrypta</Text>
             </Flex>
             <Divider y={16} />
           </>
