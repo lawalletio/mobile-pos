@@ -10,7 +10,7 @@ import axios from 'axios'
 // Types
 import { LNURLResponse, LNURLWStatus } from '@/types/lnurl'
 import { ScanAction, ScanCardStatus } from '@/types/card'
-import type { NDKEvent } from '@nostr-dev-kit/ndk'
+import type { NDKEvent, NDKKind } from '@nostr-dev-kit/ndk'
 
 // Contexts and Hooks
 import { useOrder } from '@/context/Order'
@@ -121,13 +121,13 @@ export default function Page() {
         const _response = await axios.post(url, event)
         setCardStatus(LNURLWStatus.DONE)
         const events: Set<NDKEvent> = await ndk.fetchEvents({
-          kinds: [ 1112 ],
-          authors: [ process.env.NEXT_PUBLIC_LEDGER_PUBKEY! ],
+          kinds: [1112 as NDKKind],
+          authors: [process.env.NEXT_PUBLIC_LEDGER_PUBKEY!],
           '#e': [event.id],
-          '#t': ['internal-transaction-ok', 'internal-transaction-error'],
+          '#t': ['internal-transaction-ok', 'internal-transaction-error']
         })
         const resultEvent: NDKEvent = events.values().next().value
-        const tValue = resultEvent.tags.find((t: string[]) => t[0] === 't')[1]
+        const tValue = resultEvent.tags.find((t: string[]) => t[0] === 't')![1]
         switch (tValue) {
           case 'internal-transaction-ok':
             setIsPaid!(true)
