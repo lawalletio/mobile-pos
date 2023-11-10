@@ -5,7 +5,7 @@
     "name": "Gaseosas línea Coca Cola",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
-      "value": 1500,
+      "value": 1350,
       "currency": "ARS"
     }
   },
@@ -15,7 +15,7 @@
     "name": "Cono chico de papas fritas",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
-      "value": 2500,
+      "value": 2250,
       "currency": "ARS"
     }
   },
@@ -25,7 +25,7 @@
     "name": "Cono grande de papas fritas con topping",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
-      "value": 4500,
+      "value": 4050,
       "currency": "ARS"
     }
   },
@@ -35,7 +35,7 @@
     "name": "Hamburguesa cacera con cheddar y panceta",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
-      "value": 4500,
+      "value": 4050,
       "currency": "ARS"
     }
   },
@@ -45,7 +45,7 @@
     "name": "Hamburguesa vegana con cheddar vegano",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
-      "value": 4500,
+      "value": 4050,
       "currency": "ARS"
     }
   },
@@ -55,7 +55,7 @@
     "name": "Bites de espinaca",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
-      "value": 3000,
+      "value": 2700,
       "currency": "ARS"
     }
   },
@@ -65,7 +65,7 @@
     "name": "Muzzarelitas crocantes",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
-      "value": 3000,
+      "value": 2700,
       "currency": "ARS"
     }
   },
@@ -75,7 +75,7 @@
     "name": "Pancho alemán con guacamole, queso graten y papas paille",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
-      "value": 2500,
+      "value": 2250,
       "currency": "ARS"
     }
   },
@@ -85,7 +85,7 @@
     "name": "Bondiola ahumada c/salsa barbacoa",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
-      "value": 5000,
+      "value": 4500,
       "currency": "ARS"
     }
   },
@@ -95,7 +95,7 @@
     "name": "Tapas de asado braseada con cebolla caramelizada",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
-      "value": 5500,
+      "value": 4950,
       "currency": "ARS"
     }
   }
