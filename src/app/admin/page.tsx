@@ -172,7 +172,7 @@ export default function Page() {
 
       console.info('##### tapInfo #####')
       setCardInfo(tapInfo)
-      setIdentity(tapInfo?.info.identity?.name)
+      setIdentity(tapInfo?.info.identity?.ok.name)
       setCardTapped(true)
 
       setBalance((await getBalance(tapInfo.info.holder?.ok.pubKey!)) || 0)
