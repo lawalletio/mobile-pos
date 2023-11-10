@@ -81,19 +81,20 @@ export const useCard = (): CardReturns => {
     } catch (error) {
       alert('ALERT on reading: ' + JSON.stringify(error))
       console.log('ERROR ', error)
+      setStatus(ScanCardStatus.ERROR)
+      throw error
     }
 
     setStatus(ScanCardStatus.REQUESTING)
     const response = await requestLNURL(url, type)
     setStatus(ScanCardStatus.DONE)
-    if (response.status === 'ERROR') {
+    if (response?.status === 'ERROR') {
       throw new Error(response.reason)
     }
     return response
   }
 
   const scanURL = async (): Promise<string> => {
-    console.info('USING Injected')
     const response = await (isInjectedAvailable ? readInjected() : readNative())
     return response.replace('lnurlw://', 'https://')
   }
