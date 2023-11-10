@@ -1,7 +1,7 @@
 'use client'
 
 // React/Next
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { SatoshiV2Icon } from '@bitcoin-design/bitcoin-icons-react/filled'
 
 // Components
@@ -47,7 +47,7 @@ const requestCardEndpoint = async (url: string, type: ScanAction) => {
   const headers = {
     'Content-Type': 'application/json',
     'X-LaWallet-Action': type,
-    'X-LaWallet-Param': `federationId=${FEDERATION_ID}, tokens=BTC`
+    'X-LaWallet-Param': `federationId=${FEDERATION_ID}`
   }
 
   // switch (type) {
@@ -69,9 +69,7 @@ const requestCardEndpoint = async (url: string, type: ScanAction) => {
     headers: headers
   })
 
-  // alert(JSON.stringify(response.data))
-
-  if (response.status < 200 && response.status >= 300) {
+  if (response.status < 200 || response.status >= 300) {
     // alert(JSON.stringify(response.data))
     throw new Error('Hubo un error: ' + JSON.stringify(response.data))
   }
@@ -79,27 +77,19 @@ const requestCardEndpoint = async (url: string, type: ScanAction) => {
 }
 
 const requestCardFormat = async (
-  url: string,
   target: CardUrlParams,
   admin: CardUrlParams
 ): Promise<ResetResponse> => {
-  const response = await axios.post(url, {
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: {
-      target_p: target.p,
-      target_c: target.c,
-      admin_p: admin.p,
-      admin_c: admin.c
-    }
-  })
+  const url = `https://api.lawallet.ar/card/reset/request`
 
-  // alert(JSON.stringify(response.data))
-
+  const body = {
+    target_p: target.p,
+    target_c: target.c,
+    admin_p: admin.p,
+    admin_c: admin.c
+  }
+  const response = await axios.post(url, body)
   return response.data
-
-  // return getMockReset()
 }
 
 export default function Page() {
@@ -128,10 +118,15 @@ export default function Page() {
     setQrData(undefined)
     setIsLoading(true)
     setShowSheet(true)
-    const qrData = await getAdminTap()
-    alert(JSON.stringify(qrData))
-    setQrData(qrData)
-    setIsLoading(false)
+    try {
+      const qrData = await getAdminTap()
+      alert(JSON.stringify(qrData))
+      setQrData(qrData)
+      setIsLoading(false)
+    } catch (e) {
+      alert(JSON.stringify(e))
+      alert(JSON.stringify((e as unknown as any).response.data))
+    }
   }
 
   const handleGetSecurityTap = async () => {
@@ -161,12 +156,12 @@ export default function Page() {
   const getTapInfo = async () => {
     clear()
     try {
-      const tapUrl = await getTapUrl() // Being MOCKED
-      const tapInfo = await requestCardEndpoint(tapUrl, ScanAction.INFO) // Being MOCKED
+      const tapUrl = await getTapUrl()
+      const tapInfo = await requestCardEndpoint(tapUrl, ScanAction.INFO)
 
       console.info('##### tapInfo #####')
       setCardInfo(tapInfo)
-      setIdentity(tapInfo?.info.identity?.name)
+      setIdentity(tapInfo?.info.identity?.ok.name)
       setCardTapped(true)
 
       setBalance((await getBalance(tapInfo.info.holder?.ok.pubKey!)) || 0)
@@ -175,8 +170,8 @@ export default function Page() {
     }
   }
 
-  const getSecurityTap = async (): Promise<CardUrlParams> => {
-    alert('Getting security tap')
+  const getSecurityTap = useCallback(async (): Promise<CardUrlParams> => {
+    // alert('Getting security tap')
     setIsTapping(true)
     try {
       const targetUrl = await scanURL()
@@ -191,10 +186,9 @@ export default function Page() {
       alert(JSON.stringify(e))
       throw new Error('Error trying to getSecurityTap: ' + JSON.stringify(e))
     }
-  }
+  }, [scanURL])
 
   const getAdminTap = async (): Promise<ResetResponse> => {
-    alert('Getting admin tap')
     const tapUrl = await getTapUrl()
     setIsTapping(false)
     const queryParams = parseQueryParams(tapUrl)
@@ -203,7 +197,7 @@ export default function Page() {
       p: queryParams.p!,
       c: queryParams.c!
     }
-    const qrData = await requestCardFormat(tapUrl, targetData!, adminData)
+    const qrData = await requestCardFormat(targetData!, adminData)
 
     return qrData
   }
@@ -340,13 +334,6 @@ export default function Page() {
                 </Text>
               )}
             </Flex>
-            {/* POC: removed flex and button */}
-            {/* <Flex>
-              <Button disabled={isLoading} onClick={() => getTapInfo()}>
-                {isLoading ? <BtnLoader /> : 'Simular tapeo'}
-              </Button>
-            </Flex> */}
-            {/* end POC */}
           </Flex>
         )}
         <Divider y={24} />
@@ -387,19 +374,15 @@ export default function Page() {
                       </Flex>
                     )}
                     {/* POC: removed flex and button */}
-                    {/* <Flex>
+                    <Flex>
                       <Button
                         color="secondary"
                         disabled={isLoading}
                         onClick={() => handleGetSecurityTap()}
                       >
-                        {isLoading ? (
-                          <BtnLoader />
-                        ) : (
-                          'Simular tapeo de seguridad'
-                        )}
+                        {isLoading ? <BtnLoader /> : 'Iniciar Formateo'}
                       </Button>
-                    </Flex> */}
+                    </Flex>
                     {/* end POC */}
                   </>
                 )}
@@ -437,7 +420,10 @@ export default function Page() {
           </Container>
         ) : (
           <>
-            <QRCode size={325} value={`alguito`} />
+            <QRCode
+              size={325}
+              value={`https://app.lawallet.ar/reset?n=${qrData.nonce}`}
+            />
             <Divider y={24} />
             <Container size="small">
               <Flex flex={1}>
