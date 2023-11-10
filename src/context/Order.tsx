@@ -40,6 +40,7 @@ export interface IOrderContext {
   orderEvent: Event | undefined
   loadOrder: (orderId: string) => boolean
   setIsPrinted?: Dispatch<SetStateAction<boolean>>
+  setIsPaid?: Dispatch<SetStateAction<boolean>>
   setProducts: Dispatch<SetStateAction<ProductQtyData[]>>
   clear: () => void
   setMemo: Dispatch<SetStateAction<unknown>>
@@ -95,7 +96,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   const { relays, localPublicKey, localPrivateKey, generateZapEvent } =
     useNostr()
   const { lud06, zapEmitterPubKey, requestInvoice, setLUD06 } = useLN()
-  const { subscribeZap, subscribeInternalTransaction, publish } = useNostr()
+  const { subscribeZap, publish } = useNostr()
 
   // Local states
   const [orderId, setOrderId] = useState<string>()
@@ -257,11 +258,6 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     [handlePaymentReceived, zapEmitterPubKey]
   )
 
-  const onInternalTransaction = useCallback((event: NDKEvent) => {
-    console.info('event')
-    console.dir(event)
-  }, [])
-
   const clear = useCallback(() => {
     setOrderId(undefined)
     setOrderEvent(undefined)
@@ -301,16 +297,12 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     console.info(`Subscribing for ${orderId}...`)
 
     const subZap = subscribeZap!(orderId)
-    const subInternal = subscribeInternalTransaction!(orderId)
 
     subZap.addListener('event', onZap)
-    subInternal.addListener('event', onInternalTransaction)
 
     return () => {
       subZap.removeAllListeners()
-      subInternal.removeAllListeners()
       subZap.stop()
-      subInternal.stop()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId, zapEmitterPubKey, zapEmitterPubKey, isPaid])
@@ -345,6 +337,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         orderEvent,
         loadOrder,
         setIsPrinted,
+        setIsPaid,
         setProducts,
         clear,
         setMemo,
