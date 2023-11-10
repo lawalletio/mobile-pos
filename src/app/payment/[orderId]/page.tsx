@@ -10,6 +10,7 @@ import axios from 'axios'
 // Types
 import { LNURLResponse, LNURLWStatus } from '@/types/lnurl'
 import { ScanAction, ScanCardStatus } from '@/types/card'
+import type { NDKEvent } from '@nostr-dev-kit/ndk'
 
 // Contexts and Hooks
 import { useOrder } from '@/context/Order'
@@ -49,7 +50,7 @@ export default function Page() {
   const [error, setError] = useState<string>()
 
   const { convertCurrency } = useCurrencyConverter()
-  const { zapEmitterPubKey, lud06 } = useLN()
+  const { zapEmitterPubKey, lud06, destinationPubKey } = useLN()
   const {
     orderId,
     amount,
@@ -58,10 +59,11 @@ export default function Page() {
     isPrinted,
     currentInvoice: invoice,
     setIsPrinted,
+    setIsPaid,
     loadOrder
   } = useOrder()
   const { isAvailable, permission, status: scanStatus, scan, stop } = useCard()
-  const { localPrivateKey, relays } = useNostr()
+  const { localPrivateKey, relays, ndk } = useNostr()
   const { print } = usePrint()
 
   const { userConfig } = useContext(LaWalletContext)
@@ -107,36 +109,50 @@ export default function Page() {
       setCardStatus(LNURLWStatus.CALLBACK)
       const url = response.callback
 
-      alert('LUD06')
-      alert(JSON.stringify(lud06))
-
       const event = generateInternalTransactionEvent({
         amount: amount * 1000,
-        destinationPubKey: lud06!.accountPubKey!,
+        destinationPubKey: destinationPubKey!,
         k1: response.k1!,
         privateKey: localPrivateKey!,
         relays: relays!
       })
 
-      alert(JSON.stringify(event))
-
       try {
         const _response = await axios.post(url, event)
-        alert('Vamooooosssss')
-
         setCardStatus(LNURLWStatus.DONE)
+        const events: Set<NDKEvent> = await ndk.fetchEvents({
+          kinds: [ 1112 ],
+          authors: [ process.env.NEXT_PUBLIC_LEDGER_PUBKEY! ],
+          '#e': [event.id],
+          '#t': ['internal-transaction-ok', 'internal-transaction-error'],
+        })
+        const resultEvent: NDKEvent = events.values().next().value
+        const tValue = resultEvent.tags.find((t: string[]) => t[0] === 't')[1]
+        switch (tValue) {
+          case 'internal-transaction-ok':
+            setIsPaid!(true)
+            break
+          case 'internal-transaction-error':
+            setCardStatus(LNURLWStatus.ERROR)
+            setError(JSON.parse(resultEvent.content).messages[0])
+            setIsPaid!(false)
+            break
+          default:
+            setCardStatus(LNURLWStatus.ERROR)
+            setError('No se puedo recibir evento de confirmación')
+            setIsPaid!(false)
+        }
+
         return _response
       } catch (e) {}
     },
-    [amount, localPrivateKey, lud06, relays]
+    [amount, localPrivateKey, destinationPubKey, relays, ndk, setIsPaid]
   )
 
   const startRead = useCallback(async () => {
     try {
-      const lnurlResponse = await scan()
-      // const lnurlResponse = await scan(
-      //   lud06?.accountPubKey ? ScanAction.EXTENDED_SCAN : ScanAction.DEFAULT
-      // )
+      //const lnurlResponse = await scan()
+      const lnurlResponse = await scan(ScanAction.EXTENDED_SCAN)
 
       if (lnurlResponse.tag === 'laWallet:withdrawRequest') {
         await processExtendedPayment(lnurlResponse)
