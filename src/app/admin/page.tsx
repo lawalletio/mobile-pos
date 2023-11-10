@@ -88,19 +88,8 @@ const requestCardFormat = async (
     admin_p: admin.p,
     admin_c: admin.c
   }
-  alert(JSON.stringify(body))
-  const response = await axios.post(url, {
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: body
-  })
-
-  // alert(JSON.stringify(response.data))
-
+  const response = await axios.post(url, body)
   return response.data
-
-  // return getMockReset()
 }
 
 export default function Page() {
@@ -433,7 +422,7 @@ export default function Page() {
           <>
             <QRCode
               size={325}
-              value={`https://app.lawallet.ar/reset?n=${qrData.nonce}&name${qrData.name}`}
+              value={`https://app.lawallet.ar/reset?n=${qrData.nonce}`}
             />
             <Divider y={24} />
             <Container size="small">
