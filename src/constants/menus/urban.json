@@ -2,17 +2,7 @@
   {
     "id": 1,
     "category_id": 1,
-    "name": "Fernet",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
-    "price": {
-      "value": 2000,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 2,
-    "category_id": 1,
-    "name": "Gin Tonic",
+    "name": "Gaseosas línea Coca Cola",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 1500,
@@ -20,92 +10,92 @@
     }
   },
   {
-    "id": 3,
-    "category_id": 1,
-    "name": "Cerveza",
+    "id": 2,
+    "category_id": 2,
+    "name": "Cono chico de papas fritas",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
-      "value": 1000,
+      "value": 2500,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 3,
+    "category_id": 2,
+    "name": "Cono grande de papas fritas con topping",
+    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
+    "price": {
+      "value": 4500,
       "currency": "ARS"
     }
   },
   {
     "id": 4,
     "category_id": 2,
-    "name": "Shawarma",
+    "name": "Hamburguesa cacera con cheddar y panceta",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
-      "value": 3400,
+      "value": 4500,
       "currency": "ARS"
     }
   },
   {
     "id": 5,
     "category_id": 2,
-    "name": "Papa fritas",
+    "name": "Hamburguesa vegana con cheddar vegano",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
-      "value": 2400,
+      "value": 4500,
       "currency": "ARS"
     }
   },
   {
     "id": 6,
     "category_id": 2,
-    "name": "Pancho",
+    "name": "Bites de espinaca",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
-      "value": 2400,
+      "value": 3000,
       "currency": "ARS"
     }
   },
   {
     "id": 7,
-    "category_id": 1,
-    "name": "Champagne",
+    "category_id": 2,
+    "name": "Muzzarelitas crocantes",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
-      "value": 1500,
+      "value": 3000,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 8,
+    "category_id": 2,
+    "name": "Pancho alemán con guacamole, queso graten y papas paille",
+    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
+    "price": {
+      "value": 2500,
       "currency": "ARS"
     }
   },
   {
     "id": 9,
-    "category_id": 1,
-    "name": "Licor de melon",
+    "category_id": 2,
+    "name": "Bondiola ahumada c/salsa barbacoa",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
-      "value": 1500,
+      "value": 5000,
       "currency": "ARS"
     }
   },
   {
     "id": 10,
-    "category_id": 3,
-    "name": "Remera",
+    "category_id": 2,
+    "name": "Tapas de asado braseada con cebolla caramelizada",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
-      "value": 1500,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 11,
-    "category_id": 3,
-    "name": "Gorra",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
-    "price": {
-      "value": 1500,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 12,
-    "category_id": 3,
-    "name": "Medias",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
-    "price": {
-      "value": 1500,
+      "value": 5500,
       "currency": "ARS"
     }
   }
