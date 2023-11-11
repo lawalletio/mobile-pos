@@ -109,6 +109,18 @@ export default function Page() {
                 </Flex>
               </Link>
             </Card>
+
+            <Card color="error">
+              <Link href="/extract">
+                <Icon>
+                  <MinerIcon />
+                </Icon>
+                <Flex direction="column" gap={4}>
+                  <Heading as="h5">Extract</Heading>
+                  <Text size="small">Extract.</Text>
+                </Flex>
+              </Link>
+            </Card>
           </Flex>
         </Flex>
         <Divider y={24} />
