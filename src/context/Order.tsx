@@ -38,6 +38,7 @@ export interface IOrderContext {
   isPaid?: boolean
   isPrinted?: boolean
   orderEvent: Event | undefined
+  paymentsCache?: IPaymentCache
   loadOrder: (orderId: string) => boolean
   setIsPrinted?: Dispatch<SetStateAction<boolean>>
   setIsPaid?: Dispatch<SetStateAction<boolean>>
@@ -83,7 +84,8 @@ export const OrderContext = createContext<IOrderContext>({
   loadOrder: function (orderId: string): boolean {
     throw new Error('Function not implemented.')
   },
-  orderEvent: undefined
+  orderEvent: undefined,
+  paymentsCache: undefined
 })
 
 // Component Props
@@ -335,6 +337,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         isPaid,
         isPrinted,
         orderEvent,
+        paymentsCache,
         loadOrder,
         setIsPrinted,
         setIsPaid,
