@@ -1,26 +1,33 @@
 'use client'
 
-// React/Next
-import { useCallback, useContext, useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useOrder } from '@/context/Order'
-
 // Utils
+import axios from 'axios'
 
 // Components
 import Navbar from '@/components/Layout/Navbar'
 import Container from '@/components/Layout/Container'
 import { Flex, Heading, Divider, Button, Text } from '@/components/UI'
-import axios from 'axios'
 
 // Contexts and Hooks
+import { useOrder } from '@/context/Order'
 
 export default function Page() {
   // Hooks
   const { paymentsCache } = useOrder()
 
   const handleExtractOrders = () => {
-    axios.post('https://lacrypta.masize.com/api/extract', paymentsCache)
+    const log = Object.entries(paymentsCache!).filter(([key, value]) => {
+      return value.isPaid
+    })
+
+    const result = log.map(([key, payment]) => {
+      return {
+        items: payment.items,
+        amount: payment.amount,
+        isPrinted: payment.isPrinted
+      }
+    })
+    axios.post('https://lacrypta.masize.com/api/extract', result)
   }
 
   return (
