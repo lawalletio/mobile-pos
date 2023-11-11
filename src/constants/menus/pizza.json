@@ -38,5 +38,15 @@
       "value": 2250,
       "currency": "ARS"
     }
+  },
+  {
+    "id": 5,
+    "category_id": 2,
+    "name": "Empanada de verdura",
+    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
+    "price": {
+      "value": 900,
+      "currency": "ARS"
+    }
   }
 ]

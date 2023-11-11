@@ -92,26 +92,6 @@
   {
     "id": 10,
     "category_id": 2,
-    "name": "Bondiola ahumada c/salsa barbacoa",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
-    "price": {
-      "value": 4500,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 11,
-    "category_id": 2,
-    "name": "Tapas de asado braseada con cebolla caramelizada",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
-    "price": {
-      "value": 4950,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 12,
-    "category_id": 2,
     "name": "Combo 1 (c/descuento)",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
@@ -120,7 +100,7 @@
     }
   },
   {
-    "id": 13,
+    "id": 11,
     "category_id": 2,
     "name": "Combo 2 (c/descuento)",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
@@ -130,7 +110,7 @@
     }
   },
   {
-    "id": 14,
+    "id": 12,
     "category_id": 2,
     "name": "Combo 3 (c/descuento)",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
