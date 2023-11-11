@@ -33,7 +33,7 @@ export default function Page() {
               </Link>
             </Card>
             <Card>
-              <Link href="/cart/green">
+              <Link href="/cart/urban">
                 <Icon>
                   <CartIcon />
                 </Icon>
