@@ -98,5 +98,35 @@
       "value": 4950,
       "currency": "ARS"
     }
+  },
+  {
+    "id": 11,
+    "category_id": 2,
+    "name": "Combo 1 (c/descuento)",
+    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
+    "price": {
+      "value": 6750,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 12,
+    "category_id": 2,
+    "name": "Combo 2 (c/descuento)",
+    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
+    "price": {
+      "value": 5400,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 13,
+    "category_id": 2,
+    "name": "Combo 3 (c/descuento)",
+    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
+    "price": {
+      "value": 5400,
+      "currency": "ARS"
+    }
   }
 ]
