@@ -2,7 +2,7 @@
   {
     "id": 1,
     "category_id": 1,
-    "name": "Gaseosas línea Coca Cola",
+    "name": "Agua",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
       "value": 1350,
@@ -11,6 +11,16 @@
   },
   {
     "id": 2,
+    "category_id": 1,
+    "name": "Gaseosas línea Coca Cola",
+    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
+    "price": {
+      "value": 1350,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 3,
     "category_id": 2,
     "name": "Cono chico de papas fritas",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
@@ -20,7 +30,7 @@
     }
   },
   {
-    "id": 3,
+    "id": 4,
     "category_id": 2,
     "name": "Cono grande de papas fritas con topping",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
@@ -30,7 +40,7 @@
     }
   },
   {
-    "id": 4,
+    "id": 5,
     "category_id": 2,
     "name": "Hamburguesa casera con cheddar y panceta",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
@@ -40,7 +50,7 @@
     }
   },
   {
-    "id": 5,
+    "id": 6,
     "category_id": 2,
     "name": "Hamburguesa vegana con cheddar vegano",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
@@ -50,7 +60,7 @@
     }
   },
   {
-    "id": 6,
+    "id": 7,
     "category_id": 2,
     "name": "Bites de espinaca",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
@@ -60,7 +70,7 @@
     }
   },
   {
-    "id": 7,
+    "id": 8,
     "category_id": 2,
     "name": "Muzzarelitas crocantes",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
@@ -70,7 +80,7 @@
     }
   },
   {
-    "id": 8,
+    "id": 9,
     "category_id": 2,
     "name": "Pancho alemán con guacamole, queso graten y papas paille",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
@@ -80,7 +90,7 @@
     }
   },
   {
-    "id": 9,
+    "id": 10,
     "category_id": 2,
     "name": "Bondiola ahumada c/salsa barbacoa",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
@@ -90,7 +100,7 @@
     }
   },
   {
-    "id": 10,
+    "id": 11,
     "category_id": 2,
     "name": "Tapas de asado braseada con cebolla caramelizada",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
@@ -100,7 +110,7 @@
     }
   },
   {
-    "id": 11,
+    "id": 12,
     "category_id": 2,
     "name": "Combo 1 (c/descuento)",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
@@ -110,7 +120,7 @@
     }
   },
   {
-    "id": 12,
+    "id": 13,
     "category_id": 2,
     "name": "Combo 2 (c/descuento)",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
@@ -120,7 +130,7 @@
     }
   },
   {
-    "id": 13,
+    "id": 14,
     "category_id": 2,
     "name": "Combo 3 (c/descuento)",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",

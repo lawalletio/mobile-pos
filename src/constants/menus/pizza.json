@@ -22,16 +22,6 @@
   {
     "id": 3,
     "category_id": 2,
-    "name": "Empanadas de carne cortada cuchillo/verdura/jamón y queso",
-    "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
-    "price": {
-      "value": 900,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 4,
-    "category_id": 2,
     "name": "Pizza Margarita estilo napolitana",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
     "price": {
@@ -40,7 +30,7 @@
     }
   },
   {
-    "id": 5,
+    "id": 4,
     "category_id": 1,
     "name": "Cerveza",
     "description": "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Minus, incidunt!",
