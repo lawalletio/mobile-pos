@@ -19,7 +19,7 @@ export default function Page() {
       <Container size="small">
         <Divider y={24} />
         <Flex direction="column" gap={8} flex={1} justify="center">
-          <Heading as="h4">Selecciona un modo:</Heading>
+          <Heading as="h4">Selecciona un modo (v0.0.7)</Heading>
           <Flex gap={8}>
             <Card>
               <Link href="/cart/pizza">
