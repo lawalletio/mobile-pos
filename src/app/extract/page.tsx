@@ -12,6 +12,7 @@ import { Flex, Heading, Divider, Button, Text } from '@/components/UI'
 import { useOrder } from '@/context/Order'
 import { usePrint } from '@/hooks/usePrint'
 import useCurrencyConverter from '@/hooks/useCurrencyConverter'
+import { useCallback, useEffect, useState } from 'react'
 
 export default function Page() {
   // Hooks
@@ -19,7 +20,39 @@ export default function Page() {
   const { print } = usePrint()
   const { convertCurrency } = useCurrencyConverter()
 
-  const handleExtractOrders = () => {
+  const [printedOrders, setPrintedOrders] = useState<any[]>([])
+
+  const printExtract = useCallback(
+    (products: { amount: number }[]) => {
+      const amount = products.reduce((acc, product) => {
+        return acc + product.amount
+      }, 0)
+
+      const printOrder = {
+        total: convertCurrency(amount, 'SAT', 'ARS'),
+        totalSats: amount,
+        currency: 'ARS',
+        items: products.map(product => ({
+          name: 'Caja',
+          price: product.amount,
+          qty: 1
+        }))
+      }
+
+      console.dir(printOrder)
+      print(printOrder)
+    },
+    [convertCurrency, print]
+  )
+
+  const handleExtractOrders = useCallback(() => {
+    printExtract(printedOrders)
+    axios.post('https://lacrypta.masize.com/api/extract', {
+      orders: printedOrders
+    })
+  }, [printExtract, printedOrders])
+
+  useEffect(() => {
     const log = Object.entries(paymentsCache!).filter(([key, value]) => {
       return value.isPaid
     })
@@ -32,31 +65,9 @@ export default function Page() {
         lud06: payment.lud06
       }
     })
-    printExtract(orders)
-    axios.post('https://lacrypta.masize.com/api/extract', {
-      orders
-    })
-  }
 
-  const printExtract = (products: { amount: number }[]) => {
-    const amount = products.reduce((acc, product) => {
-      return acc + product.amount
-    }, 0)
-
-    const printOrder = {
-      total: convertCurrency(amount, 'SAT', 'ARS'),
-      totalSats: amount,
-      currency: 'ARS',
-      items: products.map(product => ({
-        name: 'Caja',
-        price: product.amount,
-        qty: 1
-      }))
-    }
-
-    console.dir(printOrder)
-    print(printOrder)
-  }
+    setPrintedOrders(orders)
+  }, [paymentsCache])
 
   return (
     <>
