@@ -26,6 +26,7 @@ export default function Page() {
     const orders = log.map(([_key, payment]) => {
       return {
         items: payment.items,
+        timestamp: payment.event.created_at,
         amount: payment.amount,
         isPrinted: payment.isPrinted,
         lud06: payment.lud06
