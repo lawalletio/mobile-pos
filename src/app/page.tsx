@@ -1,30 +1,62 @@
 'use client'
 
-// React/Next
-import Link from 'next/link'
-
 // Components
-import { Flex, Heading, Text, Divider, Icon, Card } from '@/components/UI'
+import { Flex, Heading, Divider, Card, Button } from '@/components/UI'
 import Container from '@/components/Layout/Container'
-import {
-  PantheonIcon,
-  SharedWalletIcon,
-  CartIcon,
-  MinerIcon
-} from '@bitcoin-design/bitcoin-icons-react/filled'
+import Input from '@/components/UI/Input'
+import { useCallback, useState } from 'react'
+import { fetchLNURL, validateEmail } from '@/lib/utils'
+import { BtnLoader } from '@/components/Loader/Loader'
+import { useRouter } from 'next/navigation'
 
 export default function Page() {
+  const router = useRouter()
+  const [destination, setDestination] = useState<string>('')
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+
+  const handleSetDestination = useCallback(async () => {
+    setIsLoading(true)
+
+    try {
+      await fetchLNURL(destination)
+      router.push(`/${destination}`)
+    } catch (e) {
+      alert((e as Error).message)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [destination, router])
+
   return (
     <>
       <Container size="small">
-        <Divider y={24} />
         <Flex direction="column" gap={8} flex={1} justify="center">
-          <Heading as="h4">Selecciona un modo (v0.0.8)</Heading>
+          <Heading as="h4">Custom POS (v0.0.8)</Heading>
           <Flex gap={8}>
-            <Card>Under construction</Card>
+            <Card>
+              <Divider y={12} />
+              <Flex gap={16} direction="column" flex={1} justify="center">
+                <Heading as="h5">Destinatario</Heading>
+
+                <Input
+                  value={destination}
+                  disabled={isLoading}
+                  onChange={e => setDestination(e.target.value)}
+                  placeholder="usuario@lawallet.ar"
+                />
+                <Flex direction="row">
+                  <Button
+                    disabled={!validateEmail(destination)}
+                    variant="bezeledGray"
+                    onClick={handleSetDestination}
+                  >
+                    {isLoading ? <BtnLoader /> : 'Configurar'}
+                  </Button>
+                </Flex>
+              </Flex>
+            </Card>
           </Flex>
         </Flex>
-        <Divider y={24} />
       </Container>
     </>
   )

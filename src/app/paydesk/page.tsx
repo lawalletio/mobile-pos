@@ -31,7 +31,7 @@ export default function Page() {
   const { generateOrderEvent, setAmount, setOrderEvent, clear } = useOrder()
   const { publish } = useNostr()
   const { setLUD06 } = useLN()
-  const { userConfig } = useContext(LaWalletContext)
+  const { userConfig, destinationLUD06 } = useContext(LaWalletContext)
   const numpadData = useNumpad(userConfig.props.currency)
 
   // Local states
@@ -58,7 +58,7 @@ export default function Page() {
     router.push('/payment/' + order.id)
   }
 
-  /** usEffects */
+  /** useEffects */
 
   useEffect(() => {
     setAmount(sats)
@@ -66,10 +66,14 @@ export default function Page() {
   }, [sats])
 
   useEffect(() => {
+    if (!destinationLUD06) {
+      console.info('No destinationLUD06')
+      return
+    }
     console.info('HACIENDO ESTO : ' + DESTINATION_LNURL)
-    fetchLNURL(DESTINATION_LNURL).then(setLUD06)
+    setLUD06(destinationLUD06)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [destinationLUD06])
 
   // on mount
   useEffect(() => {
