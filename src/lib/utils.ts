@@ -167,3 +167,15 @@ export function normalizeLNURL(lnurl: string): string {
     ? lnurl
     : utils.decodeUrlOrAddress(removeLightningStandard(lnurl))!
 }
+
+export function extractEmailParts(email: string): {
+  username: string | null
+  domain: string | null
+} {
+  const regex = /^([^@]+)@(.+)$/
+  const match = email.match(regex)
+  return {
+    username: match ? match[1] : null,
+    domain: match ? match[2] : null
+  }
+}
