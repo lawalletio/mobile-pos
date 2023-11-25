@@ -15,17 +15,19 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const handleSetDestination = useCallback(async () => {
+    if (isLoading) {
+      return
+    }
     setIsLoading(true)
 
     try {
       await fetchLNURL(destination)
       router.push(`/${destination}`)
     } catch (e) {
-      alert((e as Error).message)
-    } finally {
       setIsLoading(false)
+      alert((e as Error).message)
     }
-  }, [destination, router])
+  }, [destination, router, isLoading])
 
   return (
     <>
