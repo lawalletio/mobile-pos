@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "category_id": 1,
+    "name": "Fernet con Cola",
+    "description": "",
+    "price": {
+      "value": 1800,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 2,
+    "category_id": 1,
+    "name": "Gin Tonic",
+    "description": "",
+    "price": {
+      "value": 1500,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 3,
+    "category_id": 1,
+    "name": "Destornillador",
+    "description": "",
+    "price": {
+      "value": 1400,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 4,
+    "category_id": 2,
+    "name": "Cerveza 350ml",
+    "description": "",
+    "price": {
+      "value": 1000,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 5,
+    "category_id": 3,
+    "name": "Pepsi 350ml",
+    "description": "",
+    "price": {
+      "value": 800,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 6,
+    "category_id": 3,
+    "name": "Sprite 350ml",
+    "description": "",
+    "price": {
+      "value": 700,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 7,
+    "category_id": 3,
+    "name": "Agua 500ml",
+    "description": "",
+    "price": {
+      "value": 600,
+      "currency": "ARS"
+    }
+  }
+]

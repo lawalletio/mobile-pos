@@ -1,30 +1,18 @@
 [
   {
     "id": 1,
-    "name": "Bebidas"
+    "name": "Tragos"
   },
   {
     "id": 2,
-    "name": "Comidas"
+    "name": "Cerveza"
   },
   {
     "id": 3,
-    "name": "Merch"
+    "name": "Gaseosas"
   },
   {
     "id": 4,
-    "name": "Vegano"
-  },
-  {
-    "id": 5,
-    "name": "Snack"
-  },
-  {
-    "id": 6,
-    "name": "Sin TACC"
-  },
-  {
-    "id": 7,
-    "name": "Panificacíon"
+    "name": "Comida"
   }
 ]
