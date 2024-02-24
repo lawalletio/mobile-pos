@@ -98,6 +98,20 @@ export default function Page() {
           </Flex>
 
           <Flex gap={8}>
+            <Card>
+              <Link href="/cart/merch">
+                <Icon>
+                  <CartIcon />
+                </Icon>
+                <Flex direction="column" gap={4}>
+                  <Heading as="h5">Merch</Heading>
+                  <Text size="small">Merchandising</Text>
+                </Flex>
+              </Link>
+            </Card>
+          </Flex>
+
+          <Flex gap={8}>
             <Card color="error">
               <Link href="/admin">
                 <Icon>

@@ -14,5 +14,9 @@
   {
     "id": 4,
     "name": "Comida"
+  },
+  {
+    "id": 5,
+    "name": "Merch"
   }
 ]
