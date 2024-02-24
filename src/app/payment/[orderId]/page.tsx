@@ -395,7 +395,7 @@ export default function Page() {
                   <Button
                     variant="borderless"
                     onClick={() => {
-                      if (prompt('hola') === '5798') {
+                      if (prompt('Código') === '5798') {
                         handleEmergency()
                         handleBack()
                       }
