@@ -39,6 +39,8 @@ export interface IOrderContext {
   isPrinted?: boolean
   orderEvent: Event | undefined
   paymentsCache?: IPaymentCache
+  emergency: boolean
+  handleEmergency: () => void
   loadOrder: (orderId: string) => boolean
   setIsPrinted?: Dispatch<SetStateAction<boolean>>
   setIsPaid?: Dispatch<SetStateAction<boolean>>
@@ -85,7 +87,11 @@ export const OrderContext = createContext<IOrderContext>({
     throw new Error('Function not implemented.')
   },
   orderEvent: undefined,
-  paymentsCache: undefined
+  paymentsCache: undefined,
+  emergency: false,
+  handleEmergency: function (): void {
+    throw new Error('Function not implemented.')
+  }
 })
 
 // Component Props
@@ -111,6 +117,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   const [fiatAmount, setFiatAmount] = useState<number>(0)
   const [fiatCurrency, setFiatCurrency] = useState<string>('ARS')
   const [products, setProducts] = useState<ProductQtyData[]>([])
+  const [emergency, setEmergency] = useState<boolean>(false)
   const [paymentsCache, setPaymentsCache] = useLocalStorage<IPaymentCache>(
     'paymentsCache',
     {}
@@ -240,6 +247,11 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     [amount]
   )
 
+  const handleEmergency = () => {
+    setIsPaid(true)
+    alert('doneee')
+  }
+
   // Handle new incoming zap
   const onZap = useCallback(
     (event: NDKEvent) => {
@@ -270,6 +282,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     setIsPrinted(false)
     setProducts([])
     setMemo({})
+    setEmergency(false)
   }, [])
 
   /** useEffects */
@@ -320,6 +333,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         setCurrentInvoice!(_invoice)
       })
       .catch(() => {
+        setEmergency(true)
         alert("Couldn't generate invoice.")
       })
   }, [amount, orderId, zapEmitterPubKey, requestZapInvoice])
@@ -338,6 +352,8 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         isPrinted,
         orderEvent,
         paymentsCache,
+        emergency,
+        handleEmergency,
         loadOrder,
         setIsPrinted,
         setIsPaid,

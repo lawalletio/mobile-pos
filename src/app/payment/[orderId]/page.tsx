@@ -58,6 +58,8 @@ export default function Page() {
     isPaid,
     isPrinted,
     currentInvoice: invoice,
+    emergency,
+    handleEmergency,
     setIsPrinted,
     setIsPaid,
     loadOrder
@@ -244,6 +246,18 @@ export default function Page() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  if (emergency && !isPaid) {
+    return (
+      <Flex gap={8} direction="column">
+        <Flex>
+          <Button variant="bezeledGray" onClick={() => handleEmergency()}>
+            Emergency
+          </Button>
+        </Flex>
+      </Flex>
+    )
+  }
 
   if (!invoice)
     return (
