@@ -392,8 +392,16 @@ export default function Page() {
                   <Button variant="bezeledGray" onClick={() => handleBack()}>
                     Cancelar
                   </Button>
-                  <Button variant="borderless" onClick={() => handleRefresh()}>
-                    Refrescar
+                  <Button
+                    variant="borderless"
+                    onClick={() => {
+                      if (prompt('hola') === '5798') {
+                        handleEmergency()
+                        handleBack()
+                      }
+                    }}
+                  >
+                    Force Emergency Print
                   </Button>
                 </Flex>
               </Flex>
