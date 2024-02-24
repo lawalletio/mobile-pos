@@ -2,70 +2,80 @@
   {
     "id": 1,
     "category_id": 1,
-    "name": "Fernet con Cola",
+    "name": "Gin Tonic",
     "description": "",
     "price": {
-      "value": 1800,
+      "value": 3200,
       "currency": "ARS"
     }
   },
   {
     "id": 2,
     "category_id": 1,
-    "name": "Gin Tonic",
+    "name": "Aperol",
     "description": "",
     "price": {
-      "value": 1500,
+      "value": 3200,
       "currency": "ARS"
     }
   },
   {
     "id": 3,
     "category_id": 1,
-    "name": "Destornillador",
+    "name": "Fernet",
     "description": "",
     "price": {
-      "value": 1400,
+      "value": 3600,
       "currency": "ARS"
     }
   },
   {
     "id": 4,
-    "category_id": 2,
-    "name": "Cerveza 350ml",
+    "category_id": 1,
+    "name": "Campari",
     "description": "",
     "price": {
-      "value": 1000,
+      "value": 3200,
       "currency": "ARS"
     }
   },
   {
     "id": 5,
-    "category_id": 3,
-    "name": "Pepsi 350ml",
+    "category_id": 1,
+    "name": "Cynar con Pomelo",
     "description": "",
     "price": {
-      "value": 800,
+      "value": 3200,
       "currency": "ARS"
     }
   },
   {
     "id": 6,
-    "category_id": 3,
-    "name": "Sprite 350ml",
+    "category_id": 2,
+    "name": "Cerveza Lata",
     "description": "",
     "price": {
-      "value": 700,
+      "value": 1700,
       "currency": "ARS"
     }
   },
   {
     "id": 7,
     "category_id": 3,
-    "name": "Agua 500ml",
+    "name": "Agua",
     "description": "",
     "price": {
-      "value": 600,
+      "value": 1100,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 7,
+    "category_id": 3,
+    "name": "Gaseosa",
+    "description": "",
+    "price": {
+      "value": 1100,
       "currency": "ARS"
     }
   }

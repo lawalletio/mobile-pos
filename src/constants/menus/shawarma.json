@@ -5,7 +5,7 @@
     "name": "Shawarma de carne",
     "description": "",
     "price": {
-      "value": 5000,
+      "value": 6600,
       "currency": "ARS"
     }
   },
@@ -15,7 +15,7 @@
     "name": "Shawarma de falafel",
     "description": "",
     "price": {
-      "value": 2600,
+      "value": 4600,
       "currency": "ARS"
     }
   }
