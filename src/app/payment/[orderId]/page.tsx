@@ -255,6 +255,12 @@ export default function Page() {
             Emergency
           </Button>
         </Flex>
+
+        <Flex>
+          <Button variant="bezeledGray" onClick={() => handleBack()}>
+            Volver
+          </Button>
+        </Flex>
       </Flex>
     )
   }
