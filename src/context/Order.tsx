@@ -249,7 +249,6 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
   const handleEmergency = () => {
     setIsPaid(true)
-    alert('doneee')
   }
 
   // Handle new incoming zap

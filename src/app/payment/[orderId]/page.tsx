@@ -251,7 +251,13 @@ export default function Page() {
     return (
       <Flex gap={8} direction="column">
         <Flex>
-          <Button variant="bezeledGray" onClick={() => handleEmergency()}>
+          <Button
+            variant="bezeledGray"
+            onClick={() => {
+              handleEmergency()
+              handleBack()
+            }}
+          >
             Emergency
           </Button>
         </Flex>
