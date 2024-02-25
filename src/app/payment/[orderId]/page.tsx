@@ -395,10 +395,8 @@ export default function Page() {
                   <Button
                     variant="borderless"
                     onClick={() => {
-                      if (prompt('Código') === '5798') {
-                        handleEmergency()
-                        handleBack()
-                      }
+                      handleEmergency()
+                      handleBack()
                     }}
                   >
                     Force Emergency Print
