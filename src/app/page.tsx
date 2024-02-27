@@ -22,24 +22,24 @@ export default function Page() {
           <Heading as="h4">Selecciona un modo (v0.0.7)</Heading>
           <Flex gap={8}>
             <Card>
-              <Link href="/cart/pizza">
+              <Link href="/cart/barra">
                 <Icon>
                   <CartIcon />
                 </Icon>
                 <Flex direction="column" gap={4}>
-                  <Heading as="h5">Pizza</Heading>
-                  <Text size="small">Pizza Store</Text>
+                  <Heading as="h5">Barra</Heading>
+                  <Text size="small">Barra</Text>
                 </Flex>
               </Link>
             </Card>
             <Card>
-              <Link href="/cart/urban">
+              <Link href="/cart/shawarma">
                 <Icon>
                   <CartIcon />
                 </Icon>
                 <Flex direction="column" gap={4}>
-                  <Heading as="h5">Urban Store</Heading>
-                  <Text size="small">Urbano</Text>
+                  <Heading as="h5">Shawarma</Heading>
+                  <Text size="small">Shawarma</Text>
                 </Flex>
               </Link>
             </Card>
@@ -47,24 +47,24 @@ export default function Page() {
 
           <Flex gap={8}>
             <Card>
-              <Link href="/cart/coffee">
+              <Link href="/cart/barra_voluntarios">
                 <Icon>
                   <CartIcon />
                 </Icon>
                 <Flex direction="column" gap={4}>
-                  <Heading as="h5">Cafe</Heading>
-                  <Text size="small">Coffee Store</Text>
+                  <Heading as="h5">Barra (Voluntarios)</Heading>
+                  <Text size="small">Voluntarios</Text>
                 </Flex>
               </Link>
             </Card>
             <Card>
-              <Link href="/cart/green">
+              <Link href="/cart/shawarma_voluntarios">
                 <Icon>
                   <CartIcon />
                 </Icon>
                 <Flex direction="column" gap={4}>
-                  <Heading as="h5">Green Shop</Heading>
-                  <Text size="small">Shop Green</Text>
+                  <Heading as="h5">Shawarma (Voluntarios)</Heading>
+                  <Text size="small">Voluntarios</Text>
                 </Flex>
               </Link>
             </Card>
@@ -92,6 +92,20 @@ export default function Page() {
                   <Text size="small">
                     Transferi dinero de una tarjeta a otra.
                   </Text>
+                </Flex>
+              </Link>
+            </Card>
+          </Flex>
+
+          <Flex gap={8}>
+            <Card>
+              <Link href="/cart/merch">
+                <Icon>
+                  <CartIcon />
+                </Icon>
+                <Flex direction="column" gap={4}>
+                  <Heading as="h5">Merch</Heading>
+                  <Text size="small">Merchandising</Text>
                 </Flex>
               </Link>
             </Card>

@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "category_id": 5,
+    "name": "Vaso",
+    "description": "",
+    "price": {
+      "value": 2500,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 2,
+    "category_id": 5,
+    "name": "Remera",
+    "description": "",
+    "price": {
+      "value": 7500,
+      "currency": "ARS"
+    }
+  }
+]
