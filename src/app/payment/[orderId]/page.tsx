@@ -161,7 +161,7 @@ export default function Page() {
         await processRegularPayment(lnurlResponse)
       }
     } catch (e) {
-      alert(`Error con la tarjeta ${(e as Error).message}}`)
+      // alert(`Error con la tarjeta ${(e as Error).message}}`)
       setCardStatus(LNURLWStatus.ERROR)
       setError((e as Error).message)
     }

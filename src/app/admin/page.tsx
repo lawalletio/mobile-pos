@@ -105,12 +105,12 @@ export default function Page() {
     setShowSheet(true)
     try {
       const qrData = await getAdminTap()
-      alert(JSON.stringify(qrData))
+      // alert(JSON.stringify(qrData))
       setQrData(qrData)
       setIsLoading(false)
     } catch (e) {
-      alert(JSON.stringify(e))
-      alert(JSON.stringify((e as unknown as any).response.data))
+      // alert(JSON.stringify(e))
+      // alert(JSON.stringify((e as unknown as any).response.data))
     }
   }
 
@@ -151,7 +151,7 @@ export default function Page() {
 
       setBalance((await getBalance(tapInfo.info.holder?.ok.pubKey!)) || 0)
     } catch (e) {
-      alert('Error trying to getTapInfo: ' + JSON.stringify(e))
+      // alert('Error trying to getTapInfo: ' + JSON.stringify(e))
     }
   }
 
@@ -168,7 +168,7 @@ export default function Page() {
       }
     } catch (e) {
       setIsTapping(false)
-      alert(JSON.stringify(e))
+      // alert(JSON.stringify(e))
       throw new Error('Error trying to getSecurityTap: ' + JSON.stringify(e))
     }
   }, [scanURL])

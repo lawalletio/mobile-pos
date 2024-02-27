@@ -63,7 +63,7 @@ export default function Page() {
         setCardScanned(true)
       } catch (e) {
         console.error(e)
-        alert('what the hell?' + JSON.stringify(e))
+        // alert('what the hell?' + JSON.stringify(e))
       }
     },
     [setLUD06]
@@ -99,7 +99,7 @@ export default function Page() {
       setCardScanned(true)
     } catch (e) {
       console.error(e)
-      alert('what the hell?' + JSON.stringify(e))
+      // alert('what the hell?' + JSON.stringify(e))
     }
     setIsTapping(false)
   }
