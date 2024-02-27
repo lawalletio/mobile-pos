@@ -16,15 +16,15 @@ import { ProductData } from '@/types/product'
 // Components
 import { TrashIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import {
+  Container,
   Flex,
   Heading,
   Divider,
   Button,
-  Product,
   Text,
   Sheet
-} from '@/components/UI'
-import Container from '@/components/Layout/Container'
+} from '@lawallet/ui'
+import { Product } from '@/components/UI'
 import FooterCart from '@/components/Layout/FooterCart'
 import Navbar from '@/components/Layout/Navbar'
 
@@ -187,7 +187,7 @@ export default function Menu({
       </Navbar>
       <Container size="small">
         <Divider y={24} />
-        <Flex direction="column" gap={24}>
+        <Flex direction="column" gap={16}>
           {categories.map(category =>
             groupedProducts[category.id] ? (
               <Flex key={category.id} direction="column">

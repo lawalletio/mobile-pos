@@ -30,13 +30,12 @@ import {
   Text,
   Divider,
   Button,
-  QRCode,
-  Confetti,
   Icon,
-  Alert
-} from '@/components/UI'
-import Container from '@/components/Layout/Container'
-import { Loader } from '@/components/Loader/Loader'
+  Alert,
+  Container,
+  Loader
+} from '@lawallet/ui'
+import { QRCode, Confetti } from '@/components/UI'
 import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import theme from '@/styles/theme'
 import { generateInternalTransactionEvent } from '@/lib/utils'

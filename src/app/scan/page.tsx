@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation'
 
 // Components
 import QrScanner from '@/components/UI/Scanner/Scanner'
-import Container from '@/components/Layout/Container'
-import { Button, Divider, Flex, Heading } from '@/components/UI'
+import { Container, Button, Divider, Flex, Heading } from '@lawallet/ui'
 
 // Types
 import { TransferTypes } from '@/types/transaction'

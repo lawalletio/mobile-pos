@@ -3,7 +3,7 @@ import {
   CrossIcon
 } from '@bitcoin-design/bitcoin-icons-react/filled'
 
-import { Flex, Icon, Text } from '@/components/UI'
+import { Flex, Icon, Text } from '@lawallet/ui'
 
 import theme from '@/styles/theme'
 import { MiniCard } from './style'

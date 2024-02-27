@@ -1,7 +1,6 @@
 'use client'
 
-import Container from '@/components/Layout/Container'
-import { Flex, Button } from '@/components/UI'
+import { Container, Flex, Button } from '@lawallet/ui'
 
 import { TokenList } from './style'
 import { LaWalletContext } from '@/context/LaWalletContext'

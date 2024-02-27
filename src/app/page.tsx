@@ -4,8 +4,8 @@
 import Link from 'next/link'
 
 // Components
-import { Flex, Heading, Text, Divider, Icon, Card } from '@/components/UI'
-import Container from '@/components/Layout/Container'
+import { Card } from '@/components/UI'
+import { Container, Flex, Heading, Text, Divider, Icon } from '@lawallet/ui'
 import {
   PantheonIcon,
   SharedWalletIcon,

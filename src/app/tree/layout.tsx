@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 
 export const metadata: Metadata = {
   title: 'Arbolito - LaPOS'
@@ -9,5 +10,5 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <>{children}</>
+  return <Suspense>{children}</Suspense>
 }

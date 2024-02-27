@@ -1,8 +1,5 @@
 // Components
-import Heading from '../Heading'
-import Text from '../Text'
-import Flex from '../Flex'
-import Button from '../Button'
+import { Heading, Text, Flex, Button } from '@lawallet/ui'
 
 // Style
 import { Product } from './style'

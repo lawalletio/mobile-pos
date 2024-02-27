@@ -5,8 +5,7 @@ import axios from 'axios'
 
 // Components
 import Navbar from '@/components/Layout/Navbar'
-import Container from '@/components/Layout/Container'
-import { Flex, Heading, Divider, Button, Text } from '@/components/UI'
+import { Container, Flex, Heading, Divider, Button } from '@lawallet/ui'
 
 // Contexts and Hooks
 import { useOrder } from '@/context/Order'

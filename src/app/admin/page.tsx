@@ -5,6 +5,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { SatoshiV2Icon } from '@bitcoin-design/bitcoin-icons-react/filled'
 
 // Components
+import { QRCode } from '@/components/UI'
+import Navbar from '@/components/Layout/Navbar'
 import {
   Flex,
   Heading,
@@ -13,11 +15,10 @@ import {
   Button,
   Icon,
   Sheet,
-  QRCode
-} from '@/components/UI'
-import Container from '@/components/Layout/Container'
-import Navbar from '@/components/Layout/Navbar'
-import { BtnLoader, Loader } from '@/components/Loader/Loader'
+  Container,
+  BtnLoader,
+  Loader
+} from '@lawallet/ui'
 
 // Contexts and Hooks
 import { useCard } from '@/hooks/useCard'
@@ -50,27 +51,11 @@ const requestCardEndpoint = async (url: string, type: ScanAction) => {
     'X-LaWallet-Param': `federationId=${FEDERATION_ID}`
   }
 
-  // switch (type) {
-  //   case ScanAction.INFO:
-  //     return getMockInfo()
-  //     break
-
-  //   case ScanAction.RESET:
-  //     return getMockReset()
-  //     break
-
-  //   default:
-  //     throw new Error('Invalid ScanAction')
-  //     break
-  // }
-
-  // alert('headers: ' + JSON.stringify(headers))
   const response = await axios.get(url, {
     headers: headers
   })
 
   if (response.status < 200 || response.status >= 300) {
-    // alert(JSON.stringify(response.data))
     throw new Error('Hubo un error: ' + JSON.stringify(response.data))
   }
   return response.data

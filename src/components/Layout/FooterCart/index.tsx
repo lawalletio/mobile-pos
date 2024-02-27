@@ -1,5 +1,4 @@
-import Container from '../Container'
-import { Flex } from '@/components/UI'
+import { Flex, Container } from '@lawallet/ui'
 
 import { FooterCart } from './style'
 

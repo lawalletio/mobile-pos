@@ -1,26 +1,33 @@
 'use client'
 
 // React/Next
-import { useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useContext, useEffect, useState } from 'react'
 
 // Contexts and Hooks
-import { LaWalletContext } from '@/context/LaWalletContext'
-import { useNumpad } from '@/hooks/useNumpad'
-import { useOrder } from '@/context/Order'
-import { useNostr } from '@/context/Nostr'
 import { useLN } from '@/context/LN'
+import { LaWalletContext } from '@/context/LaWalletContext'
+import { useNostr } from '@/context/Nostr'
+import { useOrder } from '@/context/Order'
+import { useNumpad } from '@/hooks/useNumpad'
 
 // Utils
 import { formatToPreference } from '@/lib/formatter'
 
 // Components
-import { Flex, Heading, Text, Divider, Button, Keyboard } from '@/components/UI'
-import Container from '@/components/Layout/Container'
 import Navbar from '@/components/Layout/Navbar'
 import TokenList from '@/components/TokenList'
-import { BtnLoader } from '@/components/Loader/Loader'
+import { Keyboard } from '@/components/UI'
 import { fetchLNURL } from '@/lib/utils'
+import {
+  BtnLoader,
+  Button,
+  Container,
+  Divider,
+  Flex,
+  Heading,
+  Text
+} from '@lawallet/ui'
 
 // Constants
 const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!

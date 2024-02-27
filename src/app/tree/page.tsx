@@ -8,8 +8,16 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { formatToPreference } from '@/lib/formatter'
 
 // Components
-import { Flex, Heading, Text, Divider, Button, Keyboard } from '@/components/UI'
-import Container from '@/components/Layout/Container'
+import {
+  Container,
+  BtnLoader,
+  Flex,
+  Heading,
+  Text,
+  Divider,
+  Button
+} from '@lawallet/ui'
+import { Keyboard } from '@/components/UI'
 import Navbar from '@/components/Layout/Navbar'
 import TokenList from '@/components/TokenList'
 
@@ -22,7 +30,6 @@ import { LaWalletContext } from '@/context/LaWalletContext'
 import { useCard } from '@/hooks/useCard'
 import { ScanAction } from '@/types/card'
 import { fetchLNURL } from '@/lib/utils'
-import { BtnLoader } from '@/components/Loader/Loader'
 
 export default function Page() {
   // Hooks
