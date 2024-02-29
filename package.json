@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@bitcoin-design/bitcoin-icons-react": "^0.1.10",
-    "@lawallet/ui": "^0.1.0",
+    "@lawallet/ui": "^0.1.1",
     "@nostr-dev-kit/ndk": "^2.5.0",
     "@serwist/next": "^8.4.4",
     "@serwist/precaching": "^8.4.4",

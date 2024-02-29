@@ -52,8 +52,7 @@ const Providers = (props: ProviderProps) => {
               <NostrProvider>
                 <OrderProvider>
                   <StyledComponentsRegistry>
-                    <GlobalStyles />
-                    <ThemeProvider theme={theme}>{children}</ThemeProvider>
+                    {children}
                   </StyledComponentsRegistry>
                 </OrderProvider>
               </NostrProvider>

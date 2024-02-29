@@ -26,8 +26,10 @@ import {
   Divider,
   Flex,
   Heading,
+  Icon,
   Text
 } from '@lawallet/ui'
+import { SatoshiV2Icon } from '@bitcoin-design/bitcoin-icons-react/filled'
 
 // Constants
 const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
@@ -93,7 +95,13 @@ export default function Page() {
         <Divider y={24} />
         <Flex direction="column" gap={8} flex={1} justify="center">
           <Flex justify="center" align="center" gap={4}>
-            {userConfig.props.currency !== 'SAT' && <Text>$</Text>}
+            {userConfig.props.currency !== 'SAT' ? (
+              <Text>$</Text>
+            ) : (
+              <Icon size="small">
+                <SatoshiV2Icon />
+              </Icon>
+            )}
             <Heading>
               {formatToPreference(
                 userConfig.props.currency,
