@@ -31,16 +31,13 @@ import {
 } from '@lawallet/ui'
 import Satoshi from '@/components/Icons/Satoshi'
 
-// Constants
-const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
-
 export default function Page() {
   // Hooks
   const router = useRouter()
   const { generateOrderEvent, setAmount, setOrderEvent, clear } = useOrder()
   const { publish } = useNostr()
   const { setLUD06 } = useLN()
-  const { userConfig } = useContext(LaWalletContext)
+  const { userConfig, destination } = useContext(LaWalletContext)
   const numpadData = useNumpad(userConfig.props.currency)
 
   // Local states
@@ -77,10 +74,15 @@ export default function Page() {
   }, [sats])
 
   useEffect(() => {
-    console.info('HACIENDO ESTO : ' + DESTINATION_LNURL)
-    fetchLNURL(DESTINATION_LNURL).then(setLUD06)
+    if (!destination || !destination.lud06) {
+      router.push('/')
+      console.info('No destination')
+      return
+    }
+
+    setLUD06(destination.lud06)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [destination])
 
   // on mount
   useEffect(() => {

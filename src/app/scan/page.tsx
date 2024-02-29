@@ -28,7 +28,6 @@ export default function Page() {
     if (!scanType) return
 
     if (scanType === TransferTypes.INVOICE) {
-      // router.push(`/tree?data=${cleanScan}`)
       return
     }
 
