@@ -29,7 +29,7 @@ import {
   Icon,
   Text
 } from '@lawallet/ui'
-import { SatoshiV2Icon } from '@bitcoin-design/bitcoin-icons-react/filled'
+import Satoshi from '@/components/Icons/Satoshi'
 
 // Constants
 const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
@@ -53,18 +53,20 @@ export default function Page() {
     if (sats === 0 || loading) return
 
     setLoading(true)
-    const order = generateOrderEvent!()
 
-    console.dir(order)
-    // console.info('Publishing order')
-    publish!(order).catch(e => {
+    try {
+      const order = generateOrderEvent!()
+
+      console.dir(order)
+      // console.info('Publishing order')
+      await publish!(order)
+      setOrderEvent!(order)
+      router.push('/payment/' + order.id)
+    } catch (e) {
       console.warn('Error publishing order')
       console.warn(e)
-    })
-
-    setOrderEvent!(order)
-    setLoading(false)
-    router.push('/payment/' + order.id)
+      setLoading(false)
+    }
   }
 
   /** usEffects */
@@ -93,15 +95,17 @@ export default function Page() {
       </Navbar>
       <Container size="small">
         <Divider y={24} />
+
         <Flex direction="column" gap={8} flex={1} justify="center">
           <Flex justify="center" align="center" gap={4}>
-            {userConfig.props.currency !== 'SAT' ? (
-              <Text>$</Text>
-            ) : (
+            {userConfig.props.currency === 'SAT' ? (
               <Icon size="small">
-                <SatoshiV2Icon />
+                <Satoshi />
               </Icon>
+            ) : (
+              <Text>$</Text>
             )}
+
             <Heading>
               {formatToPreference(
                 userConfig.props.currency,
@@ -113,7 +117,11 @@ export default function Page() {
         </Flex>
         <Divider y={24} />
         <Flex gap={8}>
-          <Button onClick={handleClick} disabled={loading || sats === 0}>
+          <Button
+            onClick={handleClick}
+            disabled={loading || sats === 0}
+            loading={loading}
+          >
             {loading ? <BtnLoader /> : 'Generar'}
           </Button>
         </Flex>

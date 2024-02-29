@@ -1,16 +1,12 @@
 'use client'
 
 import { ReactNode } from 'react'
-import { ThemeProvider } from 'styled-components'
-
 import { LaWalletProvider } from '@/context/LaWalletContext'
 
 import StyledComponentsRegistry from '@/lib/registry'
 import { AvailableLanguages, defaultLocale } from '@/translations'
 
-import theme from '@/styles/theme'
 import { fontSecondary } from '@/styles/fonts'
-import GlobalStyles from '@/styles/GlobalStyles'
 import { LNProvider } from '@/context/LN'
 import { NostrProvider } from '@/context/Nostr'
 import { OrderProvider } from '@/context/Order'
@@ -46,19 +42,17 @@ const Providers = (props: ProviderProps) => {
       </head>
 
       <body>
-        <InjectedNFCProvider>
-          <LaWalletProvider>
-            <LNProvider>
-              <NostrProvider>
-                <OrderProvider>
-                  <StyledComponentsRegistry>
-                    {children}
-                  </StyledComponentsRegistry>
-                </OrderProvider>
-              </NostrProvider>
-            </LNProvider>
-          </LaWalletProvider>
-        </InjectedNFCProvider>
+        <StyledComponentsRegistry>
+          <InjectedNFCProvider>
+            <LaWalletProvider>
+              <LNProvider>
+                <NostrProvider>
+                  <OrderProvider>{children}</OrderProvider>
+                </NostrProvider>
+              </LNProvider>
+            </LaWalletProvider>
+          </InjectedNFCProvider>
+        </StyledComponentsRegistry>
       </body>
     </html>
   )

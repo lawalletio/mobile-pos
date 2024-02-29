@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation'
 import { CaretLeftIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
-
 import { Container, Flex, Icon } from '@lawallet/ui'
 
 import { Navbar, BackButton } from './style'
