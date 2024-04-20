@@ -15,7 +15,7 @@
     "name": "Caricatura",
     "description": "",
     "price": {
-      "value": 3800,
+      "value": 3000,
       "currency": "ARS"
     }
   },
@@ -25,32 +25,22 @@
     "name": "Pool",
     "description": "",
     "price": {
-      "value": 3500,
+      "value": 1000,
       "currency": "ARS"
     }
   },
   {
     "id": 4,
     "category_id": 7,
-    "name": "Pump it up",
+    "name": "Tejo de aire",
     "description": "",
     "price": {
-      "value": 3500,
+      "value": 1000,
       "currency": "ARS"
     }
   },
   {
     "id": 5,
-    "category_id": 7,
-    "name": "Tejo de aire",
-    "description": "",
-    "price": {
-      "value": 2000,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 6,
     "category_id": 7,
     "name": "Metegol",
     "description": "",
