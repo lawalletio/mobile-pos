@@ -18,5 +18,13 @@
   {
     "id": 5,
     "name": "Merch"
+  },
+  {
+    "id": 6,
+    "name": "Empanadas"
+  },
+  {
+    "id": 7,
+    "name": "Entretenimiento"
   }
 ]

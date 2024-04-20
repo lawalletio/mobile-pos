@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "category_id": 7,
+    "name": "Sesión con la bruja",
+    "description": "",
+    "price": {
+      "value": 3500,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 2,
+    "category_id": 7,
+    "name": "Caricatura",
+    "description": "",
+    "price": {
+      "value": 3800,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 3,
+    "category_id": 7,
+    "name": "Pool",
+    "description": "",
+    "price": {
+      "value": 3500,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 4,
+    "category_id": 7,
+    "name": "Pump it up",
+    "description": "",
+    "price": {
+      "value": 3500,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 5,
+    "category_id": 7,
+    "name": "Tejo de aire",
+    "description": "",
+    "price": {
+      "value": 2000,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 6,
+    "category_id": 7,
+    "name": "Metegol",
+    "description": "",
+    "price": {
+      "value": 1000,
+      "currency": "ARS"
+    }
+  }
+]

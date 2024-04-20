@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "category_id": 6,
+    "name": "Empanada de carne",
+    "description": "",
+    "price": {
+      "value": 500,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 2,
+    "category_id": 6,
+    "name": "Empanada de jamón y queso",
+    "description": "",
+    "price": {
+      "value": 500,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 3,
+    "category_id": 6,
+    "name": "Empanada de jamón y queso",
+    "description": "",
+    "price": {
+      "value": 500,
+      "currency": "ARS"
+    }
+  }
+]

@@ -392,7 +392,7 @@ export default function Page() {
                   <Button variant="bezeledGray" onClick={() => handleBack()}>
                     Cancelar
                   </Button>
-                  <Button
+                  {/* <Button
                     variant="borderless"
                     onClick={() => {
                       handleEmergency()
@@ -400,7 +400,7 @@ export default function Page() {
                     }}
                   >
                     Force Emergency Print
-                  </Button>
+                  </Button> */}
                 </Flex>
               </Flex>
               <Divider y={24} />

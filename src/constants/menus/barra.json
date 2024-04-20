@@ -5,7 +5,7 @@
     "name": "Gin Tonic",
     "description": "",
     "price": {
-      "value": 3200,
+      "value": 3500,
       "currency": "ARS"
     }
   },
@@ -15,7 +15,7 @@
     "name": "Aperol",
     "description": "",
     "price": {
-      "value": 3200,
+      "value": 3500,
       "currency": "ARS"
     }
   },
@@ -25,7 +25,7 @@
     "name": "Fernet",
     "description": "",
     "price": {
-      "value": 3600,
+      "value": 3800,
       "currency": "ARS"
     }
   },
@@ -35,7 +35,7 @@
     "name": "Campari",
     "description": "",
     "price": {
-      "value": 3200,
+      "value": 3500,
       "currency": "ARS"
     }
   },
@@ -45,7 +45,7 @@
     "name": "Cynar con Pomelo",
     "description": "",
     "price": {
-      "value": 3200,
+      "value": 3500,
       "currency": "ARS"
     }
   },
@@ -55,7 +55,7 @@
     "name": "Cerveza Lata",
     "description": "",
     "price": {
-      "value": 1700,
+      "value": 2000,
       "currency": "ARS"
     }
   },
@@ -65,7 +65,7 @@
     "name": "Agua",
     "description": "",
     "price": {
-      "value": 1100,
+      "value": 1200,
       "currency": "ARS"
     }
   },
@@ -75,7 +75,7 @@
     "name": "Gaseosa",
     "description": "",
     "price": {
-      "value": 1100,
+      "value": 1200,
       "currency": "ARS"
     }
   }

@@ -10,7 +10,8 @@ import {
   PantheonIcon,
   SharedWalletIcon,
   CartIcon,
-  MinerIcon
+  MinerIcon,
+  StarIcon
 } from '@bitcoin-design/bitcoin-icons-react/filled'
 
 export default function Page() {
@@ -33,13 +34,13 @@ export default function Page() {
               </Link>
             </Card>
             <Card>
-              <Link href="/cart/shawarma">
+              <Link href="/cart/comida">
                 <Icon>
                   <CartIcon />
                 </Icon>
                 <Flex direction="column" gap={4}>
-                  <Heading as="h5">Shawarma</Heading>
-                  <Text size="small">Shawarma</Text>
+                  <Heading as="h5">Comida</Heading>
+                  <Text size="small">Comida</Text>
                 </Flex>
               </Link>
             </Card>
@@ -58,12 +59,12 @@ export default function Page() {
               </Link>
             </Card>
             <Card>
-              <Link href="/cart/shawarma_voluntarios">
+              <Link href="/cart/comida_voluntarios">
                 <Icon>
                   <CartIcon />
                 </Icon>
                 <Flex direction="column" gap={4}>
-                  <Heading as="h5">Shawarma (Voluntarios)</Heading>
+                  <Heading as="h5">Comida (Voluntarios)</Heading>
                   <Text size="small">Voluntarios</Text>
                 </Flex>
               </Link>
@@ -98,6 +99,18 @@ export default function Page() {
           </Flex>
 
           <Flex gap={8}>
+            <Card>
+              <Link href="/cart/entretenimiento">
+                <Icon>
+                  <StarIcon />
+                </Icon>
+                <Flex direction="column" gap={4}>
+                  <Heading as="h5">Entretenimiento</Heading>
+                  <Text size="small">Entretenimiento</Text>
+                </Flex>
+              </Link>
+            </Card>
+
             <Card>
               <Link href="/cart/merch">
                 <Icon>
