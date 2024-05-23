@@ -1,31 +1,21 @@
 [
   {
     "id": 1,
-    "category_id": 6,
-    "name": "Empanada de carne",
+    "category_id": 8,
+    "name": "Porción Muzzarella",
     "description": "",
     "price": {
-      "value": 1000,
+      "value": 1590,
       "currency": "ARS"
     }
   },
   {
     "id": 2,
-    "category_id": 6,
-    "name": "Empanada de jamón y queso",
+    "category_id": 8,
+    "name": "Porción jamón y morrones",
     "description": "",
     "price": {
-      "value": 1000,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 3,
-    "category_id": 6,
-    "name": "Empanada de calabaza y choclo",
-    "description": "",
-    "price": {
-      "value": 1000,
+      "value": 1990,
       "currency": "ARS"
     }
   }

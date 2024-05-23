@@ -2,80 +2,40 @@
   {
     "id": 1,
     "category_id": 1,
-    "name": "Gin Tonic",
+    "name": "Gaseosa",
     "description": "",
     "price": {
-      "value": 3500,
+      "value": 1490,
       "currency": "ARS"
     }
   },
   {
     "id": 2,
     "category_id": 1,
-    "name": "Aperol",
+    "name": "Cerveza",
     "description": "",
     "price": {
-      "value": 3500,
+      "value": 1990,
       "currency": "ARS"
     }
   },
   {
     "id": 3,
     "category_id": 1,
-    "name": "Fernet",
+    "name": "Agua",
     "description": "",
     "price": {
-      "value": 3800,
+      "value": 1190,
       "currency": "ARS"
     }
   },
   {
     "id": 4,
     "category_id": 1,
-    "name": "Campari",
+    "name": "Vaso",
     "description": "",
     "price": {
-      "value": 3500,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 5,
-    "category_id": 1,
-    "name": "Cynar con Pomelo",
-    "description": "",
-    "price": {
-      "value": 3500,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 6,
-    "category_id": 2,
-    "name": "Cerveza Lata",
-    "description": "",
-    "price": {
-      "value": 2000,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 7,
-    "category_id": 3,
-    "name": "Agua",
-    "description": "",
-    "price": {
-      "value": 1200,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 8,
-    "category_id": 3,
-    "name": "Gaseosa",
-    "description": "",
-    "price": {
-      "value": 1200,
+      "value": 90,
       "currency": "ARS"
     }
   }

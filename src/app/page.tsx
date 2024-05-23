@@ -48,31 +48,6 @@ export default function Page() {
 
           <Flex gap={8}>
             <Card>
-              <Link href="/cart/barra_voluntarios">
-                <Icon>
-                  <CartIcon />
-                </Icon>
-                <Flex direction="column" gap={4}>
-                  <Heading as="h5">Barra (Voluntarios)</Heading>
-                  <Text size="small">Voluntarios</Text>
-                </Flex>
-              </Link>
-            </Card>
-            <Card>
-              <Link href="/cart/comida_voluntarios">
-                <Icon>
-                  <CartIcon />
-                </Icon>
-                <Flex direction="column" gap={4}>
-                  <Heading as="h5">Comida (Voluntarios)</Heading>
-                  <Text size="small">Voluntarios</Text>
-                </Flex>
-              </Link>
-            </Card>
-          </Flex>
-
-          <Flex gap={8}>
-            <Card>
               <Link href="/paydesk">
                 <Icon>
                   <PantheonIcon />
@@ -100,13 +75,13 @@ export default function Page() {
 
           <Flex gap={8}>
             <Card>
-              <Link href="/cart/entretenimiento">
+              <Link href="/cart/barra_voluntarios">
                 <Icon>
-                  <StarIcon />
+                  <CartIcon />
                 </Icon>
                 <Flex direction="column" gap={4}>
-                  <Heading as="h5">Entretenimiento</Heading>
-                  <Text size="small">Entretenimiento</Text>
+                  <Heading as="h5">Barra (Voluntarios)</Heading>
+                  <Text size="small">Voluntarios</Text>
                 </Flex>
               </Link>
             </Card>

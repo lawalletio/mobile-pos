@@ -2,40 +2,80 @@
   {
     "id": 1,
     "category_id": 5,
-    "name": "Mate la crypta",
+    "name": "Mate de acero",
     "description": "",
     "price": {
-      "value": 15000,
+      "value": 14900,
       "currency": "ARS"
     }
   },
   {
     "id": 2,
     "category_id": 5,
-    "name": "Remera",
+    "name": "Llavero destapador",
     "description": "",
     "price": {
-      "value": 10000,
+      "value": 1490,
       "currency": "ARS"
     }
   },
   {
     "id": 3,
     "category_id": 5,
-    "name": "Vaso",
+    "name": "Popsocket celular",
     "description": "",
     "price": {
-      "value": 3000,
+      "value": 1990,
       "currency": "ARS"
     }
   },
   {
     "id": 4,
     "category_id": 5,
-    "name": "Popsocket para celular",
+    "name": "Taza",
     "description": "",
     "price": {
-      "value": 2000,
+      "value": 5900,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 5,
+    "category_id": 5,
+    "name": "Manta",
+    "description": "",
+    "price": {
+      "value": 15900,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 6,
+    "category_id": 5,
+    "name": "Remera",
+    "description": "",
+    "price": {
+      "value": 7900,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 7,
+    "category_id": 5,
+    "name": "Vaso",
+    "description": "",
+    "price": {
+      "value": 3990,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 8,
+    "category_id": 5,
+    "name": "Tabla para pizza",
+    "description": "",
+    "price": {
+      "value": 9900,
       "currency": "ARS"
     }
   }
