@@ -5,7 +5,7 @@
     "name": "Gaseosa",
     "description": "",
     "price": {
-      "value": 1490,
+      "value": 1990,
       "currency": "ARS"
     }
   },
@@ -15,7 +15,7 @@
     "name": "Cerveza",
     "description": "",
     "price": {
-      "value": 1990,
+      "value": 2490,
       "currency": "ARS"
     }
   },
@@ -25,7 +25,7 @@
     "name": "Agua",
     "description": "",
     "price": {
-      "value": 1190,
+      "value": 1490,
       "currency": "ARS"
     }
   },
