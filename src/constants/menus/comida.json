@@ -2,20 +2,20 @@
   {
     "id": 1,
     "category_id": 8,
-    "name": "Porción Muzzarella",
+    "name": "Super Pancho / Veggie",
     "description": "",
     "price": {
-      "value": 1590,
+      "value": 2490,
       "currency": "ARS"
     }
   },
   {
     "id": 2,
     "category_id": 8,
-    "name": "Porción jamón y morrones",
+    "name": "Bolsa Pochoclos",
     "description": "",
     "price": {
-      "value": 1990,
+      "value": 1490,
       "currency": "ARS"
     }
   }
