@@ -29,14 +29,6 @@
     "styled-components": "^6.1.0",
     "use-nfc-hook": "^1.0.4"
   },
-  "overrides": {
-    "nostr-tools": "npm:@lawallet/nostr-tools"
-  },
-  "pnpm": {
-    "overrides": {
-      "nostr-tools": "npm:@lawallet/nostr-tools"
-    }
-  },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
