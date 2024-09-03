@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "category_id": 8,
+    "category_id": 4,
     "name": "Super Pancho / Veggie",
     "description": "",
     "price": {
@@ -11,7 +11,7 @@
   },
   {
     "id": 2,
-    "category_id": 8,
+    "category_id": 4,
     "name": "Bolsa Pochoclos",
     "description": "",
     "price": {
