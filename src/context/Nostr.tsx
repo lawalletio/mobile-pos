@@ -140,6 +140,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
       })
     )
 
+    // TODO: subscribe with nostr-tools
     const sub = ndk.subscribe(
       [
         {

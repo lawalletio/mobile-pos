@@ -123,6 +123,7 @@ export default function Page() {
       try {
         const _response = await axios.post(url, event)
         setCardStatus(LNURLWStatus.DONE)
+        // TODO: use nostr tools to card payments
         const events: Set<NDKEvent> = await ndk.fetchEvents({
           kinds: [1112 as NDKKind],
           authors: [process.env.NEXT_PUBLIC_LEDGER_PUBKEY!],
