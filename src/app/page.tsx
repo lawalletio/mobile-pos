@@ -14,13 +14,15 @@ import {
   StarIcon
 } from '@bitcoin-design/bitcoin-icons-react/filled'
 
+import packageJson from '../../package.json'
+
 export default function Page() {
   return (
     <>
       <Container size="small">
         <Divider y={24} />
         <Flex direction="column" gap={8} flex={1} justify="center">
-          <Heading as="h4">Selecciona un modo (v0.0.7)</Heading>
+          <Heading as="h4">Selecciona un modo (v{packageJson.version})</Heading>
           <Flex gap={8}>
             <Card>
               <Link href="/cart/barra">
@@ -74,18 +76,6 @@ export default function Page() {
           </Flex>
 
           <Flex gap={8}>
-            <Card>
-              <Link href="/cart/barra_voluntarios">
-                <Icon>
-                  <CartIcon />
-                </Icon>
-                <Flex direction="column" gap={4}>
-                  <Heading as="h5">Barra (Voluntarios)</Heading>
-                  <Text size="small">Voluntarios</Text>
-                </Flex>
-              </Link>
-            </Card>
-
             <Card>
               <Link href="/cart/merch">
                 <Icon>
