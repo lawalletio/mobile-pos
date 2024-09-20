@@ -13,7 +13,7 @@ import {
 import type { Dispatch, SetStateAction } from 'react'
 import type { Event, UnsignedEvent } from 'nostr-tools'
 import { useLN } from './LN'
-import type { NDKEvent } from '@nostr-dev-kit/ndk'
+import { NDKEvent } from '@nostr-dev-kit/ndk'
 import { ProductQtyData } from '@/types/product'
 import { IPayment, IPaymentCache } from '@/types/order'
 
@@ -40,6 +40,7 @@ export interface IOrderContext {
   orderEvent: Event | undefined
   paymentsCache?: IPaymentCache
   emergency: boolean
+  isCheckEmergencyEvent: boolean
   handleEmergency: () => void
   loadOrder: (orderId: string) => boolean
   setIsPrinted?: Dispatch<SetStateAction<boolean>>
@@ -89,6 +90,7 @@ export const OrderContext = createContext<IOrderContext>({
   orderEvent: undefined,
   paymentsCache: undefined,
   emergency: false,
+  isCheckEmergencyEvent: false,
   handleEmergency: function (): void {
     throw new Error('Function not implemented.')
   }
@@ -104,7 +106,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   const { relays, localPublicKey, localPrivateKey, generateZapEvent } =
     useNostr()
   const { lud06, zapEmitterPubKey, requestInvoice, setLUD06 } = useLN()
-  const { subscribeZap, publish } = useNostr()
+  const { ndk, filter, subscribeZap, publish } = useNostr()
 
   // Local states
   const [orderId, setOrderId] = useState<string>()
@@ -122,6 +124,8 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     'paymentsCache',
     {}
   )
+  const [isCheckEmergencyEvent, setCheckEmergencyEvent] =
+    useState<boolean>(false)
 
   const generateOrderEvent = useCallback((): Event => {
     const unsignedEvent: UnsignedEvent = {
@@ -247,8 +251,36 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     [amount]
   )
 
-  const handleEmergency = () => {
-    setIsPaid(true)
+  const handleEmergency = async () => {
+    console.dir('[EMERGENCY] handleEmergency in Order.tsx')
+
+    const options = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: filter
+    }
+
+    try {
+      const response = await fetch(
+        'https://api.lawallet.ar/nostr/fetch',
+        options
+      )
+      const data = await response.json()
+
+      if (!data || data.length === 0) {
+        console.error('No event received')
+        setCheckEmergencyEvent(true)
+        return
+      }
+
+      const event = new NDKEvent(ndk, data[0])
+
+      console.info('Emergency event: ', await event.toNostrEvent())
+
+      onZap(event)
+    } catch (err) {
+      console.error('Error en fetch:', err)
+    }
   }
 
   // Handle new incoming zap
@@ -282,6 +314,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     setProducts([])
     setMemo({})
     setEmergency(false)
+    setCheckEmergencyEvent(false)
   }, [])
 
   /** useEffects */
@@ -352,6 +385,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         orderEvent,
         paymentsCache,
         emergency,
+        isCheckEmergencyEvent,
         handleEmergency,
         loadOrder,
         setIsPrinted,
