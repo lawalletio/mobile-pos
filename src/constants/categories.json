@@ -30,5 +30,17 @@
   {
     "id": 8,
     "name": "Pizza"
+  },
+  {
+    "id": 9,
+    "name": "Con Alcohol"
+  },
+  {
+    "id": 10,
+    "name": "Sin Alcohol"
+  },
+  {
+    "id": 11,
+    "name": "Sandwiches"
   }
 ]
