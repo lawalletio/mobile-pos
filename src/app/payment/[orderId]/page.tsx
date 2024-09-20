@@ -59,6 +59,7 @@ export default function Page() {
     isPrinted,
     currentInvoice: invoice,
     emergency,
+    isCheckEmergencyEvent,
     handleEmergency,
     setIsPrinted,
     setIsPaid,
@@ -122,6 +123,7 @@ export default function Page() {
       try {
         const _response = await axios.post(url, event)
         setCardStatus(LNURLWStatus.DONE)
+        // TODO: use nostr tools to card payments
         const events: Set<NDKEvent> = await ndk.fetchEvents({
           kinds: [1112 as NDKKind],
           authors: [process.env.NEXT_PUBLIC_LEDGER_PUBKEY!],
@@ -307,7 +309,44 @@ export default function Page() {
         isOpen={cardStatus === LNURLWStatus.ERROR}
       />
 
-      {isPaid ? (
+      {isCheckEmergencyEvent ? (
+        <>
+          <Container size="small">
+            <Divider y={24} />
+            <Flex
+              direction="column"
+              justify="center"
+              align="center"
+              gap={8}
+              flex={1}
+            >
+              <Heading>Event not found</Heading>
+              <Text>Try check envent again or create new invoice</Text>
+            </Flex>
+            <Divider y={24} />
+          </Container>
+
+          <Flex>
+            <Container size="small">
+              <Divider y={16} />
+              <Flex gap={8} direction="column">
+                <Flex gap={8}>
+                  <Button variant="bezeledGray" onClick={() => handleBack()}>
+                    Back
+                  </Button>
+                  <Button
+                    variant="bezeledGray"
+                    onClick={() => handleEmergency()}
+                  >
+                    Check event
+                  </Button>
+                </Flex>
+              </Flex>
+              <Divider y={24} />
+            </Container>
+          </Flex>
+        </>
+      ) : isPaid ? (
         <>
           <Confetti />
           <Container size="small">
@@ -382,7 +421,7 @@ export default function Page() {
             <Container size="small">
               <Divider y={16} />
               <Flex gap={8} direction="column">
-                <Flex>
+                <Flex gap={8}>
                   {isAvailable && permission === 'prompt' && (
                     <Button variant="bezeledGray" onClick={() => startRead()}>
                       Solicitar NFC
@@ -392,15 +431,14 @@ export default function Page() {
                   <Button variant="bezeledGray" onClick={() => handleBack()}>
                     Cancelar
                   </Button>
-                  {/* <Button
-                    variant="borderless"
+                  <Button
+                    variant="bezeledGray"
                     onClick={() => {
                       handleEmergency()
-                      handleBack()
                     }}
                   >
-                    Force Emergency Print
-                  </Button> */}
+                    Check event
+                  </Button>
                 </Flex>
               </Flex>
               <Divider y={24} />
