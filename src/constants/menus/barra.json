@@ -1,28 +1,28 @@
 [
   {
     "id": 1,
-    "category_id": 1,
+    "category_id": 10,
     "name": "Gaseosa",
     "description": "",
     "price": {
-      "value": 1990,
+      "value": 2190,
       "currency": "ARS"
     }
   },
   {
     "id": 2,
-    "category_id": 1,
-    "name": "Cerveza",
+    "category_id": 10,
+    "name": "Agua",
     "description": "",
     "price": {
-      "value": 2490,
+      "value": 1690,
       "currency": "ARS"
     }
   },
   {
     "id": 3,
-    "category_id": 1,
-    "name": "Agua",
+    "category_id": 10,
+    "name": "Vaso",
     "description": "",
     "price": {
       "value": 1490,
@@ -31,11 +31,61 @@
   },
   {
     "id": 4,
-    "category_id": 1,
-    "name": "Vaso",
+    "category_id": 9,
+    "name": "Gin Tonic",
     "description": "",
     "price": {
-      "value": 90,
+      "value": 3890,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 5,
+    "category_id": 9,
+    "name": "Aperol",
+    "description": "",
+    "price": {
+      "value": 3890,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 6,
+    "category_id": 9,
+    "name": "Fernet",
+    "description": "",
+    "price": {
+      "value": 4190,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 7,
+    "category_id": 9,
+    "name": "Campari",
+    "description": "",
+    "price": {
+      "value": 3890,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 8,
+    "category_id": 9,
+    "name": "Cynar Pomelo",
+    "description": "",
+    "price": {
+      "value": 3890,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 9,
+    "category_id": 9,
+    "name": "Cerveza",
+    "description": "",
+    "price": {
+      "value": 2990,
       "currency": "ARS"
     }
   }

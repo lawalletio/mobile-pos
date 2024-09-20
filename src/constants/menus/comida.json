@@ -1,21 +1,21 @@
 [
   {
     "id": 1,
-    "category_id": 4,
-    "name": "Super Pancho / Veggie",
+    "category_id": 11,
+    "name": "Sandwich de cerdo/ternera",
     "description": "",
     "price": {
-      "value": 2490,
+      "value": 2190,
       "currency": "ARS"
     }
   },
   {
     "id": 2,
-    "category_id": 4,
-    "name": "Bolsa Pochoclos",
+    "category_id": 11,
+    "name": "Medallón veggie",
     "description": "",
     "price": {
-      "value": 1490,
+      "value": 2190,
       "currency": "ARS"
     }
   }
