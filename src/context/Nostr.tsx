@@ -31,6 +31,7 @@ export interface INostrContext {
   localPrivateKey?: string
   relays?: string[]
   ndk: NDK
+  filter?: string
   getBalance: (pubkey: string) => Promise<number>
   generateZapEvent?: (amountMillisats: number, postEventId?: string) => NDKEvent
   subscribeZap?: (eventId: string) => NDKSubscription
@@ -78,6 +79,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
   // const [privateKey, setPrivateKey] = useState<string>()
   const [privateKey] = useLocalStorage('nostrPrivateKey', generatePrivateKey())
   const [publicKey, setPublicKey] = useState<string>()
+  const [filter, setFilter] = useState<string>()
 
   /** Functions */
   const generateZapEvent = useCallback(
@@ -128,6 +130,16 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
   const subscribeZap = (eventId: string): NDKSubscription => {
     console.info(`Listening for zap (${eventId})...`)
     console.info(`Recipient pubkey: ${zapEmitterPubKey}`)
+
+    setFilter(
+      JSON.stringify({
+        kinds: [9735],
+        authors: [zapEmitterPubKey!],
+        '#e': [eventId],
+        since: 1693157776
+      })
+    )
+
     const sub = ndk.subscribe(
       [
         {
@@ -184,6 +196,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
         localPrivateKey: privateKey,
         relays,
         ndk,
+        filter,
         getBalance,
         generateZapEvent,
         subscribeZap,
