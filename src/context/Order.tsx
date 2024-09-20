@@ -272,6 +272,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         setCheckEmergencyEvent(true)
         return
       }
+      setCheckEmergencyEvent(false)
 
       const event = new NDKEvent(ndk, data[0])
 
