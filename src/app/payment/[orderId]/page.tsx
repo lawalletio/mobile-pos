@@ -61,6 +61,7 @@ export default function Page() {
     emergency,
     isCheckEmergencyEvent,
     handleEmergency,
+    setCheckEmergencyEvent,
     setIsPrinted,
     setIsPaid,
     loadOrder
@@ -241,21 +242,33 @@ export default function Page() {
     }
   }, [scanStatus])
 
-  // on Mount
   useEffect(() => {
+    const interval = setInterval(() => {
+      console.info('Checking for events...')
+      if (!isPaid) {
+        console.info('No paid, checking for emergency event...')
+        handleEmergency()
+      } else {
+        console.info('Paid, stopping interval...')
+        clearInterval(interval)
+      }
+    }, 2000)
+
     return () => {
       stop()
+      clearInterval(interval)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [isPaid, handleEmergency])
 
   if (emergency && !isPaid) {
     return (
       <Flex gap={8} direction="column">
         <Flex>
+          caca
           <Button
             variant="bezeledGray"
             onClick={() => {
+              setCheckEmergencyEvent(true)
               handleEmergency()
               handleBack()
             }}
@@ -336,7 +349,9 @@ export default function Page() {
                   </Button>
                   <Button
                     variant="bezeledGray"
-                    onClick={() => handleEmergency()}
+                    onClick={() => {
+                      handleEmergency()
+                    }}
                   >
                     Check event
                   </Button>
@@ -434,6 +449,7 @@ export default function Page() {
                   <Button
                     variant="bezeledGray"
                     onClick={() => {
+                      setCheckEmergencyEvent(true)
                       handleEmergency()
                     }}
                   >
