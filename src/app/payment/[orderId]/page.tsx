@@ -255,7 +255,6 @@ export default function Page() {
     }, 2000)
 
     return () => {
-      stop()
       clearInterval(interval)
     }
   }, [isPaid, handleEmergency])
