@@ -259,6 +259,14 @@ export default function Page() {
     }
   }, [isPaid, handleEmergency])
 
+  // on Mount
+  useEffect(() => {
+    return () => {
+      stop()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   if (emergency && !isPaid) {
     return (
       <Flex gap={8} direction="column">
