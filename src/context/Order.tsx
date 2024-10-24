@@ -42,6 +42,7 @@ export interface IOrderContext {
   emergency: boolean
   isCheckEmergencyEvent: boolean
   handleEmergency: () => void
+  setCheckEmergencyEvent: Dispatch<SetStateAction<boolean>>
   loadOrder: (orderId: string) => boolean
   setIsPrinted?: Dispatch<SetStateAction<boolean>>
   setIsPaid?: Dispatch<SetStateAction<boolean>>
@@ -92,6 +93,9 @@ export const OrderContext = createContext<IOrderContext>({
   emergency: false,
   isCheckEmergencyEvent: false,
   handleEmergency: function (): void {
+    throw new Error('Function not implemented.')
+  },
+  setCheckEmergencyEvent: function (): void {
     throw new Error('Function not implemented.')
   }
 })
@@ -269,7 +273,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
       if (!data || data.length === 0) {
         console.error('No event received')
-        setCheckEmergencyEvent(true)
+        // setCheckEmergencyEvent(true)
         return
       }
       setCheckEmergencyEvent(false)
@@ -388,6 +392,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         emergency,
         isCheckEmergencyEvent,
         handleEmergency,
+        setCheckEmergencyEvent,
         loadOrder,
         setIsPrinted,
         setIsPaid,

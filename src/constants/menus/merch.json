@@ -25,7 +25,7 @@
     "name": "Popsocket celular",
     "description": "",
     "price": {
-      "value": 2190,
+      "value": 2410,
       "currency": "ARS"
     }
   },
@@ -35,7 +35,7 @@
     "name": "Taza",
     "description": "",
     "price": {
-      "value": 7590,
+      "value": 8690,
       "currency": "ARS"
     }
   },
@@ -55,7 +55,7 @@
     "name": "Remera",
     "description": "",
     "price": {
-      "value": 10990,
+      "value": 25300,
       "currency": "ARS"
     }
   },
@@ -70,7 +70,7 @@
     }
   },
   {
-    "id": 7,
+    "id": 8,
     "category_id": 5,
     "name": "Tote Bags",
     "description": "",
@@ -80,7 +80,7 @@
     }
   },
   {
-    "id": 7,
+    "id": 9,
     "category_id": 5,
     "name": "Gorras",
     "description": "",
@@ -90,7 +90,7 @@
     }
   },
   {
-    "id": 8,
+    "id": 10,
     "category_id": 5,
     "name": "Buzos",
     "description": "",
@@ -100,12 +100,12 @@
     }
   },
   {
-    "id": 9,
+    "id": 11,
     "category_id": 5,
     "name": "Tabla para pizza",
     "description": "",
     "price": {
-      "value": 9900,
+      "value": 11990,
       "currency": "ARS"
     }
   }

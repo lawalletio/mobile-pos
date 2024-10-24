@@ -2,7 +2,27 @@
   {
     "id": 1,
     "category_id": 11,
-    "name": "Sandwich de cerdo/ternera",
+    "name": "Shawarma",
+    "description": "",
+    "price": {
+      "value": 7690,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 2,
+    "category_id": 11,
+    "name": "Falafel",
+    "description": "",
+    "price": {
+      "value": 7690,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 3,
+    "category_id": 11,
+    "name": "Choripán",
     "description": "",
     "price": {
       "value": 2190,
@@ -10,9 +30,9 @@
     }
   },
   {
-    "id": 2,
+    "id": 4,
     "category_id": 11,
-    "name": "Medallón veggie",
+    "name": "Hamburguesa Veggie",
     "description": "",
     "price": {
       "value": 2190,
