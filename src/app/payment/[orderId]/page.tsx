@@ -69,6 +69,8 @@ export default function Page() {
   const { isAvailable, permission, status: scanStatus, scan, stop } = useCard()
   const { localPrivateKey, relays, ndk } = useNostr()
   const { print } = usePrint()
+  const [filterInternalEmergency, setFilterInternalEmergency] =
+    useState<string>()
 
   const { userConfig } = useContext(LaWalletContext)
 
@@ -125,6 +127,16 @@ export default function Page() {
         const _response = await axios.post(url, event)
         setCardStatus(LNURLWStatus.DONE)
         // TODO: use nostr tools to card payments
+
+        const filterInternalEmergency = JSON.stringify({
+          kinds: [1112 as NDKKind],
+          authors: [process.env.NEXT_PUBLIC_LEDGER_PUBKEY!],
+          '#e': [event.id],
+          '#t': ['internal-transaction-ok']
+        })
+
+        setFilterInternalEmergency(filterInternalEmergency)
+
         const events: Set<NDKEvent> = await ndk.fetchEvents({
           kinds: [1112 as NDKKind],
           authors: [process.env.NEXT_PUBLIC_LEDGER_PUBKEY!],
@@ -247,7 +259,7 @@ export default function Page() {
       console.info('Checking for events...')
       if (!isPaid) {
         console.info('No paid, checking for emergency event...')
-        handleEmergency()
+        handleEmergency(filterInternalEmergency!)
       } else {
         console.info('Paid, stopping interval...')
         clearInterval(interval)
@@ -276,7 +288,7 @@ export default function Page() {
             variant="bezeledGray"
             onClick={() => {
               setCheckEmergencyEvent(true)
-              handleEmergency()
+              handleEmergency(filterInternalEmergency!)
               handleBack()
             }}
           >
@@ -357,7 +369,7 @@ export default function Page() {
                   <Button
                     variant="bezeledGray"
                     onClick={() => {
-                      handleEmergency()
+                      handleEmergency(filterInternalEmergency!)
                     }}
                   >
                     Check event
@@ -457,7 +469,7 @@ export default function Page() {
                     variant="bezeledGray"
                     onClick={() => {
                       setCheckEmergencyEvent(true)
-                      handleEmergency()
+                      handleEmergency(filterInternalEmergency!)
                     }}
                   >
                     Check event

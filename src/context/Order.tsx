@@ -41,7 +41,7 @@ export interface IOrderContext {
   paymentsCache?: IPaymentCache
   emergency: boolean
   isCheckEmergencyEvent: boolean
-  handleEmergency: () => void
+  handleEmergency: (filter: string) => void
   setCheckEmergencyEvent: Dispatch<SetStateAction<boolean>>
   loadOrder: (orderId: string) => boolean
   setIsPrinted?: Dispatch<SetStateAction<boolean>>
@@ -92,7 +92,7 @@ export const OrderContext = createContext<IOrderContext>({
   paymentsCache: undefined,
   emergency: false,
   isCheckEmergencyEvent: false,
-  handleEmergency: function (): void {
+  handleEmergency: function (filter: string): void {
     throw new Error('Function not implemented.')
   },
   setCheckEmergencyEvent: function (): void {
@@ -255,9 +255,10 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     [amount]
   )
 
-  const handleEmergency = async () => {
+  const handleEmergency = async (filterInternal: string) => {
     console.dir('[EMERGENCY] handleEmergency in Order.tsx')
 
+    // ZapReceipt
     const options = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -276,9 +277,29 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         // setCheckEmergencyEvent(true)
         return
       }
+
+      // Internal transaction
+      const optionsI = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: filterInternal
+      }
+
+      const responseI = await fetch(
+        'https://api.lawallet.ar/nostr/fetch',
+        options
+      )
+      const dataI = await responseI.json()
+
+      if (!data || data.length === 0 || !dataI || dataI.length === 0) {
+        console.error('No event received')
+        // setCheckEmergencyEvent(true)
+        return
+      }
+
       setCheckEmergencyEvent(false)
 
-      const event = new NDKEvent(ndk, data[0])
+      const event = new NDKEvent(ndk, data[0] || dataI[0])
 
       console.info('Emergency event: ', await event.toNostrEvent())
 
