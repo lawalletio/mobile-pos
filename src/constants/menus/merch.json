@@ -108,5 +108,35 @@
       "value": 11990,
       "currency": "ARS"
     }
+  },
+  {
+    "id": 12,
+    "category_id": 5,
+    "name": "Moneda BTC La Crypta",
+    "description": "",
+    "price": {
+      "value": 11990,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 13,
+    "category_id": 5,
+    "name": "Sesión con la bruja",
+    "description": "",
+    "price": {
+      "value": 1100,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 14,
+    "category_id": 5,
+    "name": "Sesión con la tarot",
+    "description": "",
+    "price": {
+      "value": 1100,
+      "currency": "ARS"
+    }
   }
 ]
