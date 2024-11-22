@@ -45,10 +45,9 @@ const LEDGER_PUBKEY = process.env.NEXT_PUBLIC_LEDGER_PUBKEY!
 const relays = [
   NOSTR_RELAY,
   'wss://relay.damus.io',
-  'wss://nostr-pub.wellorder.net',
-  'wss://relay.nostr.info'
+  'wss://nostr-pub.wellorder.net'
 ]
-const relayPool = relayInit(NOSTR_RELAY)
+// const relayPool = relayInit(NOSTR_RELAY)
 
 // Context
 const ndk = new NDK({
@@ -70,8 +69,8 @@ interface INostrProviderProps {
 import NDK, {
   NDKEvent,
   NDKKind,
-  type NDKRelay,
-  type NDKSubscription
+  NDKSubscription,
+  type NDKRelay
 } from '@nostr-dev-kit/ndk'
 
 export const NostrProvider = ({ children }: INostrProviderProps) => {
@@ -131,30 +130,16 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
     console.info(`Listening for zap (${eventId})...`)
     console.info(`Recipient pubkey: ${zapEmitterPubKey}`)
 
-    setFilter(
-      JSON.stringify({
-        kinds: [9735],
-        authors: [zapEmitterPubKey!],
-        '#e': [eventId],
-        since: 1693157776
-      })
-    )
+    const zapFilters = {
+      kinds: [9735],
+      authors: [zapEmitterPubKey!],
+      '#e': [eventId],
+      since: 1693157776
+    }
 
-    // TODO: subscribe with nostr-tools
-    const sub = ndk.subscribe(
-      [
-        {
-          kinds: [9735],
-          authors: [zapEmitterPubKey!],
-          '#e': [eventId],
-          since: 1693157776
-        }
-      ],
-      {
-        closeOnEose: false,
-        groupableDelay: 0
-      }
-    )
+    setFilter(JSON.stringify(zapFilters))
+
+    const sub = new NDKSubscription(ndk, zapFilters, { closeOnEose: false })
     return sub
   }
 
@@ -179,7 +164,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
 
     return () => {
       console.info('Unsubscribed')
-      relayPool.close()
+      // relayPool.close()
     }
   }, [])
 

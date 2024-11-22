@@ -143,7 +143,9 @@ export default function Page() {
           '#e': [event.id],
           '#t': ['internal-transaction-ok', 'internal-transaction-error']
         })
-        const resultEvent: NDKEvent = events.values().next().value
+        const resultEvent: NDKEvent | undefined = events.values().next().value
+        if (!resultEvent) return
+
         const tValue = resultEvent.tags.find((t: string[]) => t[0] === 't')![1]
         switch (tValue) {
           case 'internal-transaction-ok':
@@ -254,22 +256,22 @@ export default function Page() {
     }
   }, [scanStatus])
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      console.info('Checking for events...')
-      if (!isPaid) {
-        console.info('No paid, checking for emergency event...')
-        handleEmergency(filterInternalEmergency!)
-      } else {
-        console.info('Paid, stopping interval...')
-        clearInterval(interval)
-      }
-    }, 2000)
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     console.info('Checking for events...')
+  //     if (!isPaid) {
+  //       console.info('No paid, checking for emergency event...')
+  //       handleEmergency(filterInternalEmergency!)
+  //     } else {
+  //       console.info('Paid, stopping interval...')
+  //       clearInterval(interval)
+  //     }
+  //   }, 2000)
 
-    return () => {
-      clearInterval(interval)
-    }
-  }, [isPaid, handleEmergency])
+  //   return () => {
+  //     clearInterval(interval)
+  //   }
+  // }, [isPaid, handleEmergency])
 
   // on Mount
   useEffect(() => {

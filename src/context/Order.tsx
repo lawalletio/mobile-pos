@@ -13,7 +13,7 @@ import {
 import type { Dispatch, SetStateAction } from 'react'
 import type { Event, UnsignedEvent } from 'nostr-tools'
 import { useLN } from './LN'
-import { NDKEvent } from '@nostr-dev-kit/ndk'
+import { NDKEvent, NDKRelay, NDKSubscription } from '@nostr-dev-kit/ndk'
 import { ProductQtyData } from '@/types/product'
 import { IPayment, IPaymentCache } from '@/types/order'
 
@@ -113,6 +113,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   const { ndk, filter, subscribeZap, publish } = useNostr()
 
   // Local states
+  const [subZap, setSubZap] = useState<NDKSubscription | undefined>(undefined)
   const [orderId, setOrderId] = useState<string>()
   const [isPaid, setIsPaid] = useState<boolean>(false)
   const [isPrinted, setIsPrinted] = useState<boolean>(false)
@@ -341,6 +342,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     setMemo({})
     setEmergency(false)
     setCheckEmergencyEvent(false)
+    setSubZap(undefined)
   }, [])
 
   /** useEffects */
@@ -363,19 +365,22 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
   // Subscribe for zaps
   useEffect(() => {
-    if (!orderId || !zapEmitterPubKey || isPaid) {
+    if (!orderId || !zapEmitterPubKey || isPaid || subZap) {
       return
     }
 
     console.info(`Subscribing for ${orderId}...`)
 
-    const subZap = subscribeZap!(orderId)
+    const sub = subscribeZap!(orderId)
 
-    subZap.addListener('event', onZap)
+    sub.addListener('event', onZap)
+    sub.start()
+    setSubZap(sub)
 
     return () => {
-      subZap.removeAllListeners()
-      subZap.stop()
+      sub.removeAllListeners()
+      sub.stop()
+      setSubZap(undefined)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId, zapEmitterPubKey, zapEmitterPubKey, isPaid])
@@ -395,6 +400,23 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         alert("Couldn't generate invoice.")
       })
   }, [amount, orderId, zapEmitterPubKey, requestZapInvoice])
+
+  const handleResubscription = useCallback(
+    (relay: NDKRelay) => {
+      if (relay && subZap && filter) {
+        relay.subscribe(subZap, [JSON.parse(filter)])
+      }
+    },
+    [subZap, filter]
+  )
+
+  useEffect(() => {
+    ndk.pool.on('relay:connect', handleResubscription)
+
+    return () => {
+      ndk.pool.off('relay:connect', handleResubscription)
+    }
+  }, [handleResubscription])
 
   return (
     <OrderContext.Provider
