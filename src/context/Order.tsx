@@ -416,7 +416,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     return () => {
       ndk.pool.off('relay:connect', handleResubscription)
     }
-  }, [handleResubscription])
+  }, [handleResubscription, ndk.pool])
 
   return (
     <OrderContext.Provider
