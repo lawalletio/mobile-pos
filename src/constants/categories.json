@@ -42,5 +42,9 @@
   {
     "id": 11,
     "name": "Sandwiches"
+  },
+  {
+    "id": 12,
+    "name": "Hardware wallets"
   }
 ]
