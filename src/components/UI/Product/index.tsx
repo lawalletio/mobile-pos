@@ -42,7 +42,7 @@ export default function Component(props: ComponentProps) {
             {price?.currency !== 'SAT' && <Text size="small">$</Text>}
             <Heading as="h5">{price?.value}</Heading>
           </Flex>
-          {price?.currency !== 'SAT' && <Text size="small">ARS</Text>}
+          <Text size="small">{price?.currency}</Text>
         </Flex>
       </Flex>
       <Flex align="center" justify="end" gap={8} flex={1}>

@@ -1,3 +1,5 @@
+import { AvailableCurrencies } from './config'
+
 export interface ProductData {
   id: number
   category_id: number
@@ -5,7 +7,7 @@ export interface ProductData {
   description: string
   price: {
     value: number
-    currency: string
+    currency: AvailableCurrencies
   }
 }
 
