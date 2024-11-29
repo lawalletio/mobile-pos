@@ -6,7 +6,7 @@
     "description": "",
     "price": {
       "value": 1990,
-      "currency": "ARS"
+      "currency": "SAT"
     }
   },
   {
@@ -16,7 +16,7 @@
     "description": "",
     "price": {
       "value": 1990,
-      "currency": "ARS"
+      "currency": "SAT"
     }
   }
 ]
