@@ -5,7 +5,7 @@
     "name": "Gaseosa",
     "description": "",
     "price": {
-      "value": 2190,
+      "value": 1990,
       "currency": "ARS"
     }
   },
@@ -15,17 +15,7 @@
     "name": "Agua",
     "description": "",
     "price": {
-      "value": 1640,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 3,
-    "category_id": 10,
-    "name": "Vaso",
-    "description": "",
-    "price": {
-      "value": 100,
+      "value": 1490,
       "currency": "ARS"
     }
   },
@@ -35,7 +25,7 @@
     "name": "Cerveza",
     "description": "",
     "price": {
-      "value": 3290,
+      "value": 2990,
       "currency": "ARS"
     }
   },
@@ -45,7 +35,7 @@
     "name": "Gin Tonic",
     "description": "",
     "price": {
-      "value": 3290,
+      "value": 3490,
       "currency": "ARS"
     }
   },
@@ -55,7 +45,7 @@
     "name": "Aperol",
     "description": "",
     "price": {
-      "value": 3290,
+      "value": 3490,
       "currency": "ARS"
     }
   },
@@ -65,7 +55,7 @@
     "name": "Fernet",
     "description": "",
     "price": {
-      "value": 3290,
+      "value": 3490,
       "currency": "ARS"
     }
   },
@@ -75,7 +65,7 @@
     "name": "Campari",
     "description": "",
     "price": {
-      "value": 3290,
+      "value": 3490,
       "currency": "ARS"
     }
   },
@@ -85,7 +75,7 @@
     "name": "Cynar",
     "description": "",
     "price": {
-      "value": 3290,
+      "value": 3490,
       "currency": "ARS"
     }
   },
@@ -95,7 +85,7 @@
     "name": "Negroni",
     "description": "",
     "price": {
-      "value": 3290,
+      "value": 3490,
       "currency": "ARS"
     }
   },
@@ -105,7 +95,7 @@
     "name": "Caipiroska",
     "description": "",
     "price": {
-      "value": 3290,
+      "value": 3490,
       "currency": "ARS"
     }
   }

@@ -5,7 +5,7 @@
     "name": "Mate de acero",
     "description": "",
     "price": {
-      "value": 16390,
+      "value": 14990,
       "currency": "ARS"
     }
   },
@@ -15,7 +15,7 @@
     "name": "Llavero destapador",
     "description": "",
     "price": {
-      "value": 1650,
+      "value": 1490,
       "currency": "ARS"
     }
   },
@@ -25,7 +25,7 @@
     "name": "Popsocket celular",
     "description": "",
     "price": {
-      "value": 2410,
+      "value": 2190,
       "currency": "ARS"
     }
   },
@@ -35,7 +35,7 @@
     "name": "Taza",
     "description": "",
     "price": {
-      "value": 8690,
+      "value": 7900,
       "currency": "ARS"
     }
   },
@@ -45,7 +45,7 @@
     "name": "Manta",
     "description": "",
     "price": {
-      "value": 17490,
+      "value": 15900,
       "currency": "ARS"
     }
   },
@@ -55,7 +55,7 @@
     "name": "Remera",
     "description": "",
     "price": {
-      "value": 25300,
+      "value": 22900,
       "currency": "ARS"
     }
   },
@@ -65,7 +65,7 @@
     "name": "Vaso térmico",
     "description": "",
     "price": {
-      "value": 4390,
+      "value": 3990,
       "currency": "ARS"
     }
   },
@@ -75,7 +75,7 @@
     "name": "Tote Bags",
     "description": "",
     "price": {
-      "value": 8690,
+      "value": 7900,
       "currency": "ARS"
     }
   },
@@ -85,7 +85,7 @@
     "name": "Gorras",
     "description": "",
     "price": {
-      "value": 11990,
+      "value": 10900,
       "currency": "ARS"
     }
   },
@@ -95,7 +95,7 @@
     "name": "Buzos",
     "description": "",
     "price": {
-      "value": 43990,
+      "value": 39900,
       "currency": "ARS"
     }
   },
@@ -105,7 +105,7 @@
     "name": "Tabla para pizza",
     "description": "",
     "price": {
-      "value": 11990,
+      "value": 10900,
       "currency": "ARS"
     }
   },
@@ -121,21 +121,21 @@
   },
   {
     "id": 13,
-    "category_id": 5,
-    "name": "Sesión con la bruja",
+    "category_id": 12,
+    "name": "Trezor Safe 3",
     "description": "",
     "price": {
-      "value": 1100,
+      "value": 159900,
       "currency": "ARS"
     }
   },
   {
     "id": 14,
-    "category_id": 5,
-    "name": "Sesión con la tarot",
+    "category_id": 12,
+    "name": "Trezor Safe 5",
     "description": "",
     "price": {
-      "value": 1100,
+      "value": 389900,
       "currency": "ARS"
     }
   }
