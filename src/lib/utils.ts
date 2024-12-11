@@ -16,6 +16,10 @@ import { requestPayServiceParams } from 'lnurl-pay'
 import { LNURLResponse } from '@/types/lnurl'
 import { NDKKind } from '@nostr-dev-kit/ndk'
 import { utils } from 'lnurl-pay'
+import axios from 'axios'
+import { ScanAction } from '@/types/card'
+
+export const FEDERATION_ID = process.env.NEXT_PUBLIC_FEDERATION_ID!
 
 export const parseOrderDescription = (event: Event): IOrderEventContent => {
   return JSON.parse(
@@ -40,6 +44,40 @@ export const validateEmail = (email: string): RegExpMatchArray | null => {
   )
 }
 
+export const requestCardEndpoint = async (url: string, type: ScanAction) => {
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-LaWallet-Action': type,
+    'X-LaWallet-Param': `federationId=${FEDERATION_ID}`
+  }
+
+  // switch (type) {
+  //   case ScanAction.INFO:
+  //     return getMockInfo()
+  //     break
+
+  //   case ScanAction.RESET:
+  //     return getMockReset()
+  //     break
+
+  //   default:
+  //     throw new Error('Invalid ScanAction')
+  //     break
+  // }
+
+  // alert('headers: ' + JSON.stringify(headers))
+  const response = await axios.get(url, {
+    headers: headers
+  })
+
+  if (response.status < 200 || response.status >= 300) {
+    // alert(JSON.stringify(response.data))
+    throw new Error('Hubo un error: ' + JSON.stringify(response.data))
+  }
+
+  return response.data
+}
+
 export const detectTransferType = (data: string): TransferTypes | false => {
   const upperStr: string = data.toUpperCase()
   const isLUD16 = validateEmail(upperStr)
@@ -62,8 +100,8 @@ export const removeLightningStandard = (str: string) => {
   return lowStr.startsWith('lightning://')
     ? lowStr.replace('lightning://', '')
     : lowStr.startsWith('lightning:')
-    ? lowStr.replace('lightning:', '')
-    : lowStr
+      ? lowStr.replace('lightning:', '')
+      : lowStr
 }
 
 export const aggregateProducts = (

@@ -82,7 +82,7 @@ export default function Page() {
   const startTapping = async () => {
     setIsTapping(true)
     try {
-      const scanned = await scan(ScanAction.PAY_REQUEST)
+      const { lnurlResponse: scanned } = await scan(ScanAction.PAY_REQUEST)
       if (scanned.tag !== 'laWallet:payRequest') {
         alert('Compatible solo con tarjetas de LaWallet')
         setIsTapping(false)

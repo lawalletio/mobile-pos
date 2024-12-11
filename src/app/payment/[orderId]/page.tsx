@@ -39,7 +39,10 @@ import Container from '@/components/Layout/Container'
 import { Loader } from '@/components/Loader/Loader'
 import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import theme from '@/styles/theme'
-import { generateInternalTransactionEvent } from '@/lib/utils'
+import {
+  generateInternalTransactionEvent,
+  requestCardEndpoint
+} from '@/lib/utils'
 import { useNostr } from '@/context/Nostr'
 
 export default function Page() {
@@ -67,7 +70,7 @@ export default function Page() {
     loadOrder
   } = useOrder()
   const { isAvailable, permission, status: scanStatus, scan, stop } = useCard()
-  const { localPrivateKey, relays, ndk } = useNostr()
+  const { localPrivateKey, relays, ndk, getBalance } = useNostr()
   const { print } = usePrint()
   const [filterInternalEmergency, setFilterInternalEmergency] =
     useState<string>()
@@ -92,7 +95,7 @@ export default function Page() {
   }, [router])
 
   const processRegularPayment = useCallback(
-    async (response: LNURLResponse) => {
+    async (cardUrl: string, response: LNURLResponse) => {
       setCardStatus(LNURLWStatus.CALLBACK)
       const url = response.callback
       const _response = await axios.get(url, {
@@ -111,7 +114,7 @@ export default function Page() {
   )
 
   const processExtendedPayment = useCallback(
-    async (response: LNURLResponse) => {
+    async (cardUrl: string, response: LNURLResponse) => {
       setCardStatus(LNURLWStatus.CALLBACK)
       const url = response.callback
 
@@ -126,8 +129,8 @@ export default function Page() {
       try {
         const _response = await axios.post(url, event)
         setCardStatus(LNURLWStatus.DONE)
-        // TODO: use nostr tools to card payments
 
+        // TODO: use nostr tools to card payments
         const filterInternalEmergency = JSON.stringify({
           kinds: [1112 as NDKKind],
           authors: [process.env.NEXT_PUBLIC_LEDGER_PUBKEY!],
@@ -143,6 +146,7 @@ export default function Page() {
           '#e': [event.id],
           '#t': ['internal-transaction-ok', 'internal-transaction-error']
         })
+
         const resultEvent: NDKEvent | undefined = events.values().next().value
         if (!resultEvent) return
 
@@ -163,23 +167,42 @@ export default function Page() {
         }
 
         return _response
-      } catch (e) {}
+      } catch (e) {
+        const tapInfo = await requestCardEndpoint(cardUrl, ScanAction.INFO)
+
+        if (tapInfo) {
+          let balance = await getBalance(tapInfo.info.holder?.ok.pubKey!)
+
+          if (balance < amount * 1000) {
+            setCardStatus(LNURLWStatus.ERROR)
+            setError('Balance insuficiente')
+          }
+        } else {
+          throw e
+        }
+      }
     },
-    [amount, localPrivateKey, destinationPubKey, relays, ndk, setIsPaid]
+    [
+      amount,
+      localPrivateKey,
+      destinationPubKey,
+      relays,
+      ndk,
+      setIsPaid,
+      getBalance
+    ]
   )
 
   const startRead = useCallback(async () => {
     try {
-      //const lnurlResponse = await scan()
-      const lnurlResponse = await scan(ScanAction.EXTENDED_SCAN)
+      const { cardUrl, lnurlResponse } = await scan(ScanAction.EXTENDED_SCAN)
 
       if (lnurlResponse.tag === 'laWallet:withdrawRequest') {
-        await processExtendedPayment(lnurlResponse)
+        await processExtendedPayment(cardUrl, lnurlResponse)
       } else {
-        await processRegularPayment(lnurlResponse)
+        await processRegularPayment(cardUrl, lnurlResponse)
       }
     } catch (e) {
-      alert(`Error con la tarjeta ${(e as Error).message}}`)
       setCardStatus(LNURLWStatus.ERROR)
       setError((e as Error).message)
     }
