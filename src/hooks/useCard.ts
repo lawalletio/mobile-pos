@@ -84,7 +84,7 @@ export const useCard = (): CardReturns => {
     try {
       url = await scanURL()
     } catch (error) {
-      alert('ALERT on reading: ' + JSON.stringify(error))
+      // alert('ALERT on reading: ' + JSON.stringify(error))
       console.log('ERROR ', error)
       setStatus(ScanCardStatus.ERROR)
       throw error
