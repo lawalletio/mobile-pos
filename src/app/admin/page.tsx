@@ -34,47 +34,11 @@ import MiniCard from './components/MiniCard'
 import axios from 'axios'
 import { formatter } from '@/lib/formatter'
 import theme from '@/styles/theme'
-import { parseQueryParams } from '@/lib/utils'
+import { parseQueryParams, requestCardEndpoint } from '@/lib/utils'
 
 // Mocks
 // import { getMockInfo, getMockReset } from '@/lib/mocks'
 import { useRouter } from 'next/navigation'
-
-const FEDERATION_ID = process.env.NEXT_PUBLIC_FEDERATION_ID!
-
-// Util functions
-const requestCardEndpoint = async (url: string, type: ScanAction) => {
-  const headers = {
-    'Content-Type': 'application/json',
-    'X-LaWallet-Action': type,
-    'X-LaWallet-Param': `federationId=${FEDERATION_ID}`
-  }
-
-  // switch (type) {
-  //   case ScanAction.INFO:
-  //     return getMockInfo()
-  //     break
-
-  //   case ScanAction.RESET:
-  //     return getMockReset()
-  //     break
-
-  //   default:
-  //     throw new Error('Invalid ScanAction')
-  //     break
-  // }
-
-  // alert('headers: ' + JSON.stringify(headers))
-  const response = await axios.get(url, {
-    headers: headers
-  })
-
-  if (response.status < 200 || response.status >= 300) {
-    // alert(JSON.stringify(response.data))
-    throw new Error('Hubo un error: ' + JSON.stringify(response.data))
-  }
-  return response.data
-}
 
 const requestCardFormat = async (
   target: CardUrlParams,

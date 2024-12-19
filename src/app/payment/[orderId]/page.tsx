@@ -39,7 +39,10 @@ import Container from '@/components/Layout/Container'
 import { Loader } from '@/components/Loader/Loader'
 import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import theme from '@/styles/theme'
-import { generateInternalTransactionEvent } from '@/lib/utils'
+import {
+  generateInternalTransactionEvent,
+  requestCardEndpoint
+} from '@/lib/utils'
 import { useNostr } from '@/context/Nostr'
 
 export default function Page() {
@@ -58,13 +61,19 @@ export default function Page() {
     isPaid,
     isPrinted,
     currentInvoice: invoice,
+    emergency,
+    isCheckEmergencyEvent,
+    handleEmergency,
+    setCheckEmergencyEvent,
     setIsPrinted,
     setIsPaid,
     loadOrder
   } = useOrder()
   const { isAvailable, permission, status: scanStatus, scan, stop } = useCard()
-  const { localPrivateKey, relays, ndk } = useNostr()
+  const { localPrivateKey, relays, ndk, getBalance } = useNostr()
   const { print } = usePrint()
+  const [filterInternalEmergency, setFilterInternalEmergency] =
+    useState<string>()
 
   const { userConfig } = useContext(LaWalletContext)
 
@@ -86,7 +95,7 @@ export default function Page() {
   }, [router])
 
   const processRegularPayment = useCallback(
-    async (response: LNURLResponse) => {
+    async (cardUrl: string, response: LNURLResponse) => {
       setCardStatus(LNURLWStatus.CALLBACK)
       const url = response.callback
       const _response = await axios.get(url, {
@@ -105,7 +114,7 @@ export default function Page() {
   )
 
   const processExtendedPayment = useCallback(
-    async (response: LNURLResponse) => {
+    async (cardUrl: string, response: LNURLResponse) => {
       setCardStatus(LNURLWStatus.CALLBACK)
       const url = response.callback
 
@@ -120,13 +129,27 @@ export default function Page() {
       try {
         const _response = await axios.post(url, event)
         setCardStatus(LNURLWStatus.DONE)
+
+        // TODO: use nostr tools to card payments
+        const filterInternalEmergency = JSON.stringify({
+          kinds: [1112 as NDKKind],
+          authors: [process.env.NEXT_PUBLIC_LEDGER_PUBKEY!],
+          '#e': [event.id],
+          '#t': ['internal-transaction-ok']
+        })
+
+        setFilterInternalEmergency(filterInternalEmergency)
+
         const events: Set<NDKEvent> = await ndk.fetchEvents({
           kinds: [1112 as NDKKind],
           authors: [process.env.NEXT_PUBLIC_LEDGER_PUBKEY!],
           '#e': [event.id],
           '#t': ['internal-transaction-ok', 'internal-transaction-error']
         })
-        const resultEvent: NDKEvent = events.values().next().value
+
+        const resultEvent: NDKEvent | undefined = events.values().next().value
+        if (!resultEvent) return
+
         const tValue = resultEvent.tags.find((t: string[]) => t[0] === 't')![1]
         switch (tValue) {
           case 'internal-transaction-ok':
@@ -144,23 +167,42 @@ export default function Page() {
         }
 
         return _response
-      } catch (e) {}
+      } catch (e) {
+        const tapInfo = await requestCardEndpoint(cardUrl, ScanAction.INFO)
+
+        if (tapInfo) {
+          let balance = await getBalance(tapInfo.info.holder?.ok.pubKey!)
+
+          if (balance < amount * 1000) {
+            setCardStatus(LNURLWStatus.ERROR)
+            setError('Balance insuficiente')
+          }
+        } else {
+          throw e
+        }
+      }
     },
-    [amount, localPrivateKey, destinationPubKey, relays, ndk, setIsPaid]
+    [
+      amount,
+      localPrivateKey,
+      destinationPubKey,
+      relays,
+      ndk,
+      setIsPaid,
+      getBalance
+    ]
   )
 
   const startRead = useCallback(async () => {
     try {
-      //const lnurlResponse = await scan()
-      const lnurlResponse = await scan(ScanAction.EXTENDED_SCAN)
+      const { cardUrl, lnurlResponse } = await scan(ScanAction.EXTENDED_SCAN)
 
       if (lnurlResponse.tag === 'laWallet:withdrawRequest') {
-        await processExtendedPayment(lnurlResponse)
+        await processExtendedPayment(cardUrl, lnurlResponse)
       } else {
-        await processRegularPayment(lnurlResponse)
+        await processRegularPayment(cardUrl, lnurlResponse)
       }
     } catch (e) {
-      alert(`Error con la tarjeta ${(e as Error).message}}`)
       setCardStatus(LNURLWStatus.ERROR)
       setError((e as Error).message)
     }
@@ -237,6 +279,23 @@ export default function Page() {
     }
   }, [scanStatus])
 
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     console.info('Checking for events...')
+  //     if (!isPaid) {
+  //       console.info('No paid, checking for emergency event...')
+  //       handleEmergency(filterInternalEmergency!)
+  //     } else {
+  //       console.info('Paid, stopping interval...')
+  //       clearInterval(interval)
+  //     }
+  //   }, 2000)
+
+  //   return () => {
+  //     clearInterval(interval)
+  //   }
+  // }, [isPaid, handleEmergency])
+
   // on Mount
   useEffect(() => {
     return () => {
@@ -244,6 +303,32 @@ export default function Page() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  if (emergency && !isPaid) {
+    return (
+      <Flex gap={8} direction="column">
+        <Flex>
+          caca
+          <Button
+            variant="bezeledGray"
+            onClick={() => {
+              setCheckEmergencyEvent(true)
+              handleEmergency(filterInternalEmergency!)
+              handleBack()
+            }}
+          >
+            Emergency
+          </Button>
+        </Flex>
+
+        <Flex>
+          <Button variant="bezeledGray" onClick={() => handleBack()}>
+            Volver
+          </Button>
+        </Flex>
+      </Flex>
+    )
+  }
 
   if (!invoice)
     return (
@@ -281,7 +366,46 @@ export default function Page() {
         isOpen={cardStatus === LNURLWStatus.ERROR}
       />
 
-      {isPaid ? (
+      {isCheckEmergencyEvent ? (
+        <>
+          <Container size="small">
+            <Divider y={24} />
+            <Flex
+              direction="column"
+              justify="center"
+              align="center"
+              gap={8}
+              flex={1}
+            >
+              <Heading>Event not found</Heading>
+              <Text>Try check envent again or create new invoice</Text>
+            </Flex>
+            <Divider y={24} />
+          </Container>
+
+          <Flex>
+            <Container size="small">
+              <Divider y={16} />
+              <Flex gap={8} direction="column">
+                <Flex gap={8}>
+                  <Button variant="bezeledGray" onClick={() => handleBack()}>
+                    Back
+                  </Button>
+                  <Button
+                    variant="bezeledGray"
+                    onClick={() => {
+                      handleEmergency(filterInternalEmergency!)
+                    }}
+                  >
+                    Check event
+                  </Button>
+                </Flex>
+              </Flex>
+              <Divider y={24} />
+            </Container>
+          </Flex>
+        </>
+      ) : isPaid ? (
         <>
           <Confetti />
           <Container size="small">
@@ -356,7 +480,7 @@ export default function Page() {
             <Container size="small">
               <Divider y={16} />
               <Flex gap={8} direction="column">
-                <Flex>
+                <Flex gap={8}>
                   {isAvailable && permission === 'prompt' && (
                     <Button variant="bezeledGray" onClick={() => startRead()}>
                       Solicitar NFC
@@ -366,8 +490,14 @@ export default function Page() {
                   <Button variant="bezeledGray" onClick={() => handleBack()}>
                     Cancelar
                   </Button>
-                  <Button variant="borderless" onClick={() => handleRefresh()}>
-                    Refrescar
+                  <Button
+                    variant="bezeledGray"
+                    onClick={() => {
+                      setCheckEmergencyEvent(true)
+                      handleEmergency(filterInternalEmergency!)
+                    }}
+                  >
+                    Check event
                   </Button>
                 </Flex>
               </Flex>

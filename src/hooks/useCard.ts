@@ -19,7 +19,9 @@ export type CardReturns = {
   status: ScanCardStatus
   requestLNURL: (url: string, type: ScanAction) => Promise<LNURLResponse>
   scanURL: () => Promise<string>
-  scan: (type?: ScanAction) => Promise<LNURLResponse>
+  scan: (
+    type?: ScanAction
+  ) => Promise<{ cardUrl: string; lnurlResponse: LNURLResponse }>
   stop: () => void
 }
 
@@ -64,6 +66,7 @@ export const useCard = (): CardReturns => {
     read: readInjected,
     abortReadCtrl: abortReadInjectedCtrl
   } = useInjectedNFC()
+
   const [status, setStatus] = useState<ScanCardStatus>(ScanCardStatus.IDLE)
 
   const readNative = useCallback(async (): Promise<string> => {
@@ -73,7 +76,9 @@ export const useCard = (): CardReturns => {
     return decoder.decode(record.data)
   }, [read])
 
-  const scan = async (type?: ScanAction): Promise<LNURLResponse> => {
+  const scan = async (
+    type?: ScanAction
+  ): Promise<{ cardUrl: string; lnurlResponse: LNURLResponse }> => {
     setStatus(ScanCardStatus.SCANNING)
     let url = ''
     try {
@@ -91,12 +96,15 @@ export const useCard = (): CardReturns => {
     if (response?.status === 'ERROR') {
       throw new Error(response.reason)
     }
-    return response
+
+    return { cardUrl: url, lnurlResponse: response }
   }
 
   const scanURL = async (): Promise<string> => {
     const response = await (isInjectedAvailable ? readInjected() : readNative())
-    return response.replace('lnurlw://', 'https://')
+    const url = response.replace('lnurlw://', 'https://')
+
+    return url
   }
 
   return {

@@ -1,30 +1,50 @@
 [
   {
     "id": 1,
-    "name": "Bebidas"
+    "name": "Tragos"
   },
   {
     "id": 2,
-    "name": "Comidas"
+    "name": "Cerveza"
   },
   {
     "id": 3,
-    "name": "Merch"
+    "name": "Gaseosas"
   },
   {
     "id": 4,
-    "name": "Vegano"
+    "name": "Comida"
   },
   {
     "id": 5,
-    "name": "Snack"
+    "name": "Merch"
   },
   {
     "id": 6,
-    "name": "Sin TACC"
+    "name": "Empanadas"
   },
   {
     "id": 7,
-    "name": "Panificacíon"
+    "name": "Entretenimiento"
+  },
+  {
+    "id": 8,
+    "name": "Pizza"
+  },
+  {
+    "id": 9,
+    "name": "Con Alcohol"
+  },
+  {
+    "id": 10,
+    "name": "Sin Alcohol"
+  },
+  {
+    "id": 11,
+    "name": "Sandwiches"
+  },
+  {
+    "id": 12,
+    "name": "Hardware wallets"
   }
 ]

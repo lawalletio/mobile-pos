@@ -31,6 +31,7 @@ export interface INostrContext {
   localPrivateKey?: string
   relays?: string[]
   ndk: NDK
+  filter?: string
   getBalance: (pubkey: string) => Promise<number>
   generateZapEvent?: (amountMillisats: number, postEventId?: string) => NDKEvent
   subscribeZap?: (eventId: string) => NDKSubscription
@@ -44,10 +45,9 @@ const LEDGER_PUBKEY = process.env.NEXT_PUBLIC_LEDGER_PUBKEY!
 const relays = [
   NOSTR_RELAY,
   'wss://relay.damus.io',
-  'wss://nostr-pub.wellorder.net',
-  'wss://relay.nostr.info'
+  'wss://nostr-pub.wellorder.net'
 ]
-const relayPool = relayInit(NOSTR_RELAY)
+// const relayPool = relayInit(NOSTR_RELAY)
 
 // Context
 const ndk = new NDK({
@@ -69,8 +69,8 @@ interface INostrProviderProps {
 import NDK, {
   NDKEvent,
   NDKKind,
-  type NDKRelay,
-  type NDKSubscription
+  NDKSubscription,
+  type NDKRelay
 } from '@nostr-dev-kit/ndk'
 
 export const NostrProvider = ({ children }: INostrProviderProps) => {
@@ -78,6 +78,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
   // const [privateKey, setPrivateKey] = useState<string>()
   const [privateKey] = useLocalStorage('nostrPrivateKey', generatePrivateKey())
   const [publicKey, setPublicKey] = useState<string>()
+  const [filter, setFilter] = useState<string>()
 
   /** Functions */
   const generateZapEvent = useCallback(
@@ -128,20 +129,17 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
   const subscribeZap = (eventId: string): NDKSubscription => {
     console.info(`Listening for zap (${eventId})...`)
     console.info(`Recipient pubkey: ${zapEmitterPubKey}`)
-    const sub = ndk.subscribe(
-      [
-        {
-          kinds: [9735],
-          authors: [zapEmitterPubKey!],
-          '#e': [eventId],
-          since: 1693157776
-        }
-      ],
-      {
-        closeOnEose: false,
-        groupableDelay: 0
-      }
-    )
+
+    const zapFilters = {
+      kinds: [9735],
+      authors: [zapEmitterPubKey!],
+      '#e': [eventId],
+      since: 1693157776
+    }
+
+    setFilter(JSON.stringify(zapFilters))
+
+    const sub = new NDKSubscription(ndk, zapFilters, { closeOnEose: false })
     return sub
   }
 
@@ -166,7 +164,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
 
     return () => {
       console.info('Unsubscribed')
-      relayPool.close()
+      // relayPool.close()
     }
   }, [])
 
@@ -184,6 +182,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
         localPrivateKey: privateKey,
         relays,
         ndk,
+        filter,
         getBalance,
         generateZapEvent,
         subscribeZap,

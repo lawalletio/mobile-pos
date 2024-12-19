@@ -116,9 +116,13 @@ export default function Menu({
   const getTotalPrice = useCallback(() => {
     let totalPrice = 0
     cart.forEach(product => {
-      totalPrice += product.price.value
+      totalPrice +=
+        product.price.currency === 'SAT'
+          ? product.price.value
+          : convertCurrency(product.price.value, product.price.currency, 'SAT')
     })
     return totalPrice
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cart])
 
   const loadMenu = useCallback(async (name: string) => {
@@ -174,7 +178,7 @@ export default function Menu({
   useEffect(() => {}, [])
 
   useEffect(() => {
-    setAmount(convertCurrency(getTotalPrice(), 'ARS', 'SAT'))
+    setAmount(getTotalPrice())
     setProducts(aggregateProducts(cart))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productQuantities, getTotalPrice])

@@ -1,0 +1,102 @@
+[
+  {
+    "id": 1,
+    "category_id": 10,
+    "name": "Gaseosa",
+    "description": "",
+    "price": {
+      "value": 1990,
+      "currency": "SAT"
+    }
+  },
+  {
+    "id": 2,
+    "category_id": 10,
+    "name": "Agua",
+    "description": "",
+    "price": {
+      "value": 1490,
+      "currency": "SAT"
+    }
+  },
+  {
+    "id": 4,
+    "category_id": 9,
+    "name": "Cerveza",
+    "description": "",
+    "price": {
+      "value": 2990,
+      "currency": "SAT"
+    }
+  },
+  {
+    "id": 5,
+    "category_id": 9,
+    "name": "Gin Tonic",
+    "description": "",
+    "price": {
+      "value": 3490,
+      "currency": "SAT"
+    }
+  },
+  {
+    "id": 6,
+    "category_id": 9,
+    "name": "Aperol",
+    "description": "",
+    "price": {
+      "value": 3490,
+      "currency": "SAT"
+    }
+  },
+  {
+    "id": 7,
+    "category_id": 9,
+    "name": "Fernet",
+    "description": "",
+    "price": {
+      "value": 3490,
+      "currency": "SAT"
+    }
+  },
+  {
+    "id": 8,
+    "category_id": 9,
+    "name": "Campari",
+    "description": "",
+    "price": {
+      "value": 3490,
+      "currency": "SAT"
+    }
+  },
+  {
+    "id": 9,
+    "category_id": 9,
+    "name": "Cynar",
+    "description": "",
+    "price": {
+      "value": 3490,
+      "currency": "SAT"
+    }
+  },
+  {
+    "id": 10,
+    "category_id": 9,
+    "name": "Negroni",
+    "description": "",
+    "price": {
+      "value": 3490,
+      "currency": "SAT"
+    }
+  },
+  {
+    "id": 11,
+    "category_id": 9,
+    "name": "Caipiroska",
+    "description": "",
+    "price": {
+      "value": 3490,
+      "currency": "SAT"
+    }
+  }
+]

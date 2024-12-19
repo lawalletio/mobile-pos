@@ -13,7 +13,7 @@ import {
 import type { Dispatch, SetStateAction } from 'react'
 import type { Event, UnsignedEvent } from 'nostr-tools'
 import { useLN } from './LN'
-import type { NDKEvent } from '@nostr-dev-kit/ndk'
+import { NDKEvent, NDKRelay, NDKSubscription } from '@nostr-dev-kit/ndk'
 import { ProductQtyData } from '@/types/product'
 import { IPayment, IPaymentCache } from '@/types/order'
 
@@ -39,6 +39,10 @@ export interface IOrderContext {
   isPrinted?: boolean
   orderEvent: Event | undefined
   paymentsCache?: IPaymentCache
+  emergency: boolean
+  isCheckEmergencyEvent: boolean
+  handleEmergency: (filter: string) => void
+  setCheckEmergencyEvent: Dispatch<SetStateAction<boolean>>
   loadOrder: (orderId: string) => boolean
   setIsPrinted?: Dispatch<SetStateAction<boolean>>
   setIsPaid?: Dispatch<SetStateAction<boolean>>
@@ -85,7 +89,15 @@ export const OrderContext = createContext<IOrderContext>({
     throw new Error('Function not implemented.')
   },
   orderEvent: undefined,
-  paymentsCache: undefined
+  paymentsCache: undefined,
+  emergency: false,
+  isCheckEmergencyEvent: false,
+  handleEmergency: function (filter: string): void {
+    throw new Error('Function not implemented.')
+  },
+  setCheckEmergencyEvent: function (): void {
+    throw new Error('Function not implemented.')
+  }
 })
 
 // Component Props
@@ -98,9 +110,10 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   const { relays, localPublicKey, localPrivateKey, generateZapEvent } =
     useNostr()
   const { lud06, zapEmitterPubKey, requestInvoice, setLUD06 } = useLN()
-  const { subscribeZap, publish } = useNostr()
+  const { ndk, filter, subscribeZap, publish } = useNostr()
 
   // Local states
+  const [subZap, setSubZap] = useState<NDKSubscription | undefined>(undefined)
   const [orderId, setOrderId] = useState<string>()
   const [isPaid, setIsPaid] = useState<boolean>(false)
   const [isPrinted, setIsPrinted] = useState<boolean>(false)
@@ -111,10 +124,13 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   const [fiatAmount, setFiatAmount] = useState<number>(0)
   const [fiatCurrency, setFiatCurrency] = useState<string>('ARS')
   const [products, setProducts] = useState<ProductQtyData[]>([])
+  const [emergency, setEmergency] = useState<boolean>(false)
   const [paymentsCache, setPaymentsCache] = useLocalStorage<IPaymentCache>(
     'paymentsCache',
     {}
   )
+  const [isCheckEmergencyEvent, setCheckEmergencyEvent] =
+    useState<boolean>(false)
 
   const generateOrderEvent = useCallback((): Event => {
     const unsignedEvent: UnsignedEvent = {
@@ -240,6 +256,60 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     [amount]
   )
 
+  const handleEmergency = async (filterInternal: string) => {
+    console.dir('[EMERGENCY] handleEmergency in Order.tsx')
+
+    // ZapReceipt
+    const options = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: filter
+    }
+
+    try {
+      const response = await fetch(
+        'https://api.lawallet.ar/nostr/fetch',
+        options
+      )
+      const data = await response.json()
+
+      if (!data || data.length === 0) {
+        console.error('No event received')
+        // setCheckEmergencyEvent(true)
+        return
+      }
+
+      // Internal transaction
+      const optionsI = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: filterInternal
+      }
+
+      const responseI = await fetch(
+        'https://api.lawallet.ar/nostr/fetch',
+        options
+      )
+      const dataI = await responseI.json()
+
+      if (!data || data.length === 0 || !dataI || dataI.length === 0) {
+        console.error('No event received')
+        // setCheckEmergencyEvent(true)
+        return
+      }
+
+      setCheckEmergencyEvent(false)
+
+      const event = new NDKEvent(ndk, data[0] || dataI[0])
+
+      console.info('Emergency event: ', await event.toNostrEvent())
+
+      onZap(event)
+    } catch (err) {
+      console.error('Error en fetch:', err)
+    }
+  }
+
   // Handle new incoming zap
   const onZap = useCallback(
     (event: NDKEvent) => {
@@ -270,6 +340,9 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     setIsPrinted(false)
     setProducts([])
     setMemo({})
+    setEmergency(false)
+    setCheckEmergencyEvent(false)
+    setSubZap(undefined)
   }, [])
 
   /** useEffects */
@@ -292,19 +365,22 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
   // Subscribe for zaps
   useEffect(() => {
-    if (!orderId || !zapEmitterPubKey || isPaid) {
+    if (!orderId || !zapEmitterPubKey || isPaid || subZap) {
       return
     }
 
     console.info(`Subscribing for ${orderId}...`)
 
-    const subZap = subscribeZap!(orderId)
+    const sub = subscribeZap!(orderId)
 
-    subZap.addListener('event', onZap)
+    sub.addListener('event', onZap)
+    sub.start()
+    setSubZap(sub)
 
     return () => {
-      subZap.removeAllListeners()
-      subZap.stop()
+      sub.removeAllListeners()
+      sub.stop()
+      setSubZap(undefined)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId, zapEmitterPubKey, zapEmitterPubKey, isPaid])
@@ -320,9 +396,27 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         setCurrentInvoice!(_invoice)
       })
       .catch(() => {
+        setEmergency(true)
         alert("Couldn't generate invoice.")
       })
   }, [amount, orderId, zapEmitterPubKey, requestZapInvoice])
+
+  const handleResubscription = useCallback(
+    (relay: NDKRelay) => {
+      if (relay && subZap && filter) {
+        relay.subscribe(subZap, [JSON.parse(filter)])
+      }
+    },
+    [subZap, filter]
+  )
+
+  useEffect(() => {
+    ndk.pool.on('relay:connect', handleResubscription)
+
+    return () => {
+      ndk.pool.off('relay:connect', handleResubscription)
+    }
+  }, [handleResubscription, ndk.pool])
 
   return (
     <OrderContext.Provider
@@ -338,6 +432,10 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         isPrinted,
         orderEvent,
         paymentsCache,
+        emergency,
+        isCheckEmergencyEvent,
+        handleEmergency,
+        setCheckEmergencyEvent,
         loadOrder,
         setIsPrinted,
         setIsPaid,

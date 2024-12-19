@@ -33,7 +33,7 @@ export default function Page() {
     <>
       <Container size="small">
         <Flex direction="column" gap={8} flex={1} justify="center">
-          <Heading as="h4">Custom POS (v0.0.8)</Heading>
+          <Heading as="h4">Custom POS (v0.2.1)</Heading>
           <Flex gap={8}>
             <Card>
               <Divider y={12} />
