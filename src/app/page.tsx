@@ -25,17 +25,17 @@ export default function Page() {
           <Heading as="h4">Selecciona un modo (v{packageJson.version})</Heading>
           <Flex gap={8}>
             <Card>
-              <Link href="/cart/barra">
+              <Link href="/cart/mixed">
                 <Icon>
                   <CartIcon />
                 </Icon>
                 <Flex direction="column" gap={4}>
-                  <Heading as="h5">Barra</Heading>
-                  <Text size="small">Barra</Text>
+                  <Heading as="h5">Panchitos</Heading>
+                  <Text size="small">Todo el menú</Text>
                 </Flex>
               </Link>
             </Card>
-            <Card>
+            {/* <Card>
               <Link href="/cart/comida">
                 <Icon>
                   <CartIcon />
@@ -45,7 +45,7 @@ export default function Page() {
                   <Text size="small">Comida</Text>
                 </Flex>
               </Link>
-            </Card>
+            </Card> */}
           </Flex>
 
           <Flex gap={8}>
