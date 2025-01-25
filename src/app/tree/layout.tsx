@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Transferencia - LaPOS'
+  title: 'Arbolito - LaPOS'
 }
 
 export default function RootLayout({

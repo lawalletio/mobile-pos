@@ -26,8 +26,6 @@ export const decimalsToUse = (currency: AvailableCurrencies): number => {
 
     case 'ARS':
       return 0
-    case 'MXN':
-      return 0
 
     default:
       return 2
