@@ -1,5 +1,5 @@
-export type AvailableCurrencies = 'SAT' | 'USD' | 'ARS'
-export const CurrenciesList: AvailableCurrencies[] = ['SAT', 'USD', 'ARS']
+export type AvailableCurrencies = 'SAT' | 'USD' | 'ARS' | 'MXN'
+export const CurrenciesList: AvailableCurrencies[] = ['SAT', 'USD', 'MXN']
 
 type CurrencyMetadata = {
   locale: string
@@ -8,6 +8,9 @@ type CurrencyMetadata = {
 export const CurrenciesMetadata: Record<AvailableCurrencies, CurrencyMetadata> =
   {
     ARS: {
+      locale: 'es-AR'
+    },
+    MXN: {
       locale: 'es-AR'
     },
     SAT: {

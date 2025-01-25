@@ -134,7 +134,7 @@ export default function Page() {
   return (
     <>
       <Navbar showBackPage={true}>
-        <Heading as="h5">Modo ARBOLITO</Heading>
+        <Heading as="h5">Modo Transferencia</Heading>
       </Navbar>
       <Container size="small">
         <Divider y={24} />

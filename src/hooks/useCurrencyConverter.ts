@@ -20,6 +20,7 @@ export type UseConverterReturns = {
 const useCurrencyConverter = (): UseConverterReturns => {
   const [pricesData, setPricesData] = useState<PricesInfo>({
     ARS: 0,
+    MXN: 0,
     USD: 0,
     SAT: 1
   })
@@ -48,6 +49,7 @@ const useCurrencyConverter = (): UseConverterReturns => {
         if (!BTCPrices) return false
 
         const updatedPrices: PricesInfo = {
+          MXN: BTCPrices.MXN / scaledBTC,
           ARS: BTCPrices.ARS / scaledBTC,
           USD: BTCPrices.USD / scaledBTC,
           SAT: 1

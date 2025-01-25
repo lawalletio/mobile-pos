@@ -247,9 +247,9 @@ export default function Page() {
     }
 
     const printOrder = {
-      total: convertCurrency(amount, 'SAT', 'ARS'),
+      total: convertCurrency(amount, 'SAT', 'MXN'),
       totalSats: amount,
-      currency: 'ARS',
+      currency: 'MXN',
       items: products.map(product => ({
         name: product.name,
         price: product.price.value,

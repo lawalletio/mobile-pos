@@ -14,7 +14,7 @@ interface ProductProps {
   description: string
   price: {
     value: number
-    currency: 'SAT' | 'USD' | 'ARS'
+    currency: 'SAT' | 'USD' | 'ARS' | 'MXN'
   }
 }
 
