@@ -4,15 +4,21 @@
 import { Flex, Heading, Divider, Card, Button } from '@/components/UI'
 import Container from '@/components/Layout/Container'
 import Input from '@/components/UI/Input'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { fetchLNURL, validateEmail } from '@/lib/utils'
 import { BtnLoader } from '@/components/Loader/Loader'
 import { useRouter } from 'next/navigation'
+import { useLocalStorage } from 'react-use-storage'
 
 export default function Page() {
   const router = useRouter()
   const [destination, setDestination] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(false)
+
+  const [storedDestination, setStoredDestination] = useLocalStorage(
+    'destination',
+    ''
+  )
 
   const handleSetDestination = useCallback(async () => {
     if (isLoading) {
@@ -22,12 +28,25 @@ export default function Page() {
 
     try {
       await fetchLNURL(destination)
+      console.log('storing destination: ', destination)
+      setStoredDestination(destination)
       router.push(`/${destination}`)
     } catch (e) {
       setIsLoading(false)
       alert((e as Error).message)
     }
-  }, [destination, router, isLoading])
+  }, [destination, router, isLoading, setStoredDestination])
+
+  useEffect(() => {
+    if (storedDestination === '') {
+      return
+    }
+    setIsLoading(true)
+    console.info('pushing to: ', `/${storedDestination}`)
+    setDestination(storedDestination)
+    router.push(`/${storedDestination}`)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storedDestination])
 
   return (
     <>
