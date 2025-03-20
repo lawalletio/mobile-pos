@@ -24,7 +24,8 @@ import { useLocalStorage } from 'react-use-storage'
 // Utils
 import bolt11 from 'bolt11'
 import { parseZapInvoice } from '@/lib/utils'
-import { getEventHash, getSignature, nip44, validateEvent } from 'nostr-tools'
+import { finalizeEvent, validateEvent } from 'nostr-tools'
+import { hexToBytes } from '@noble/hashes/utils'
 
 // Interface
 export interface IOrderContext {
@@ -153,11 +154,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       ] as string[][]
     }
 
-    const event: Event = {
-      id: getEventHash(unsignedEvent),
-      sig: getSignature(unsignedEvent, localPrivateKey!),
-      ...unsignedEvent
-    }
+    const event = finalizeEvent(unsignedEvent, hexToBytes(localPrivateKey!))
 
     // Saving current payments status
     const payment: IPayment = {

@@ -8,8 +8,7 @@ import {
   getPublicKey,
   type Event,
   type UnsignedEvent,
-  getEventHash,
-  getSignature
+  finalizeEvent
 } from 'nostr-tools'
 import { ProductData, ProductQtyData } from '@/types/product'
 import { requestPayServiceParams } from 'lnurl-pay'
@@ -18,6 +17,7 @@ import { NDKKind } from '@nostr-dev-kit/ndk'
 import { utils } from 'lnurl-pay'
 import axios from 'axios'
 import { ScanAction } from '@/types/card'
+import { hexToBytes } from '@noble/hashes/utils'
 
 export const FEDERATION_ID = process.env.NEXT_PUBLIC_FEDERATION_ID!
 
@@ -160,7 +160,7 @@ export function generateInternalTransactionEvent({
   relays,
   amount
 }: InternalTransactionEventParams) {
-  const publicKey = getPublicKey(privateKey)
+  const publicKey = getPublicKey(hexToBytes(privateKey))
   const unsignedEvent: UnsignedEvent = {
     kind: 1112 as NDKKind,
     content: JSON.stringify({
@@ -179,11 +179,7 @@ export function generateInternalTransactionEvent({
     ] as string[][]
   }
 
-  const event: Event = {
-    id: getEventHash(unsignedEvent),
-    sig: getSignature(unsignedEvent, privateKey!),
-    ...unsignedEvent
-  }
+  const event = finalizeEvent(unsignedEvent, hexToBytes(privateKey))
 
   return event
 }
