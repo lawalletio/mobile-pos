@@ -15,8 +15,8 @@ importers:
         specifier: ^1.7.1
         version: 1.7.1
       '@nostr-dev-kit/ndk':
-        specifier: ^2.10.7
-        version: 2.12.2(typescript@5.8.2)
+        specifier: 2.13.0-rc2
+        version: 2.13.0-rc2(nostr-tools@2.11.0(typescript@5.8.2))
       axios:
         specifier: ^1.5.1
         version: 1.8.4
@@ -877,9 +877,11 @@ packages:
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
 
-  '@nostr-dev-kit/ndk@2.12.2':
-    resolution: {integrity: sha512-uvautgwbpk3AgddoFpew67/FiaV/zpKwwvSnjCvbE/tAdJBpUUS+VjWR5WfUnJvxTy/ZZpPW+X2TkwVFHhUdvA==}
+  '@nostr-dev-kit/ndk@2.13.0-rc2':
+    resolution: {integrity: sha512-oTj19rqcft6VCxvlkosIuCl8aQNrQzU0NJ/yi0XRbtlVReAyJhZ7iT6rZixO9aL4pAG9ZCBp+ej3GRcU3OIEeQ==}
     engines: {node: '>=16'}
+    peerDependencies:
+      nostr-tools: ^2.7.1
 
   '@parcel/watcher-android-arm64@2.5.1':
     resolution: {integrity: sha512-KF8+j9nNbUN8vzOFDpRMsaKBHZ/mcjEjMToVMJOhTozkDonQFFrRcfdLWn6yWKCmJKmdVxSgHiYvTCef4/qcBA==}
@@ -4254,7 +4256,7 @@ snapshots:
 
   '@nolyfill/is-core-module@1.0.39': {}
 
-  '@nostr-dev-kit/ndk@2.12.2(typescript@5.8.2)':
+  '@nostr-dev-kit/ndk@2.13.0-rc2(nostr-tools@2.11.0(typescript@5.8.2))':
     dependencies:
       '@noble/curves': 1.8.1
       '@noble/hashes': 1.7.1
@@ -4269,7 +4271,6 @@ snapshots:
       websocket-polyfill: 0.0.3
     transitivePeerDependencies:
       - supports-color
-      - typescript
 
   '@parcel/watcher-android-arm64@2.5.1':
     optional: true
