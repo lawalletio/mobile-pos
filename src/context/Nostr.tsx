@@ -129,13 +129,12 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
       kinds: [9735],
       authors: [zapEmitterPubKey!],
       '#e': [eventId],
-      since: 1693157776
+      since: Math.floor((new Date()).getTime()/1000)
     }
 
     setFilter(JSON.stringify(zapFilters))
 
-    const sub = new NDKSubscription(ndk, zapFilters, { closeOnEose: false })
-    return sub
+    return ndk.subscribe(zapFilters, { closeOnEose: false })
   }
 
   const getEvent = async (eventId: string): Promise<NDKEvent | null> => {
