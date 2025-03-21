@@ -377,8 +377,8 @@ export default function Page() {
               gap={8}
               flex={1}
             >
-              <Heading>Event not found</Heading>
-              <Text>Try check envent again or create new invoice</Text>
+              <Heading>Checking events</Heading>
+              <Text>Looking for Zap and Internal...</Text>
             </Flex>
             <Divider y={24} />
           </Container>
