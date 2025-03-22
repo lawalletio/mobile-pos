@@ -9,6 +9,8 @@ import { fetchLNURL, validateEmail } from '@/lib/utils'
 import { BtnLoader } from '@/components/Loader/Loader'
 import { useRouter } from 'next/navigation'
 
+import packageJson from '../../package.json'
+
 export default function Page() {
   const router = useRouter()
   const [destination, setDestination] = useState<string>('')
@@ -33,7 +35,7 @@ export default function Page() {
     <>
       <Container size="small">
         <Flex direction="column" gap={8} flex={1} justify="center">
-          <Heading as="h4">Custom POS (v0.2.1)</Heading>
+          <Heading as="h4">Custom POS (v{packageJson.version})</Heading>
           <Flex gap={8}>
             <Card>
               <Divider y={12} />
