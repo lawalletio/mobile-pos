@@ -24,7 +24,11 @@ import { useLocalStorage } from 'react-use-storage'
 // Utils
 import bolt11 from 'bolt11'
 import { parseZapInvoice } from '@/lib/utils'
-import { getEventHash, getSignature, nip44, validateEvent } from 'nostr-tools'
+import { finalizeEvent, validateEvent } from 'nostr-tools'
+import { hexToBytes } from '@noble/hashes/utils'
+
+// Constants
+const NOSTR_API_URL = 'https://api.lawallet.ar/nostr/fetch'
 
 // Interface
 export interface IOrderContext {
@@ -41,7 +45,7 @@ export interface IOrderContext {
   paymentsCache?: IPaymentCache
   emergency: boolean
   isCheckEmergencyEvent: boolean
-  handleEmergency: (filter: string) => void
+  handleEmergency: () => void
   setCheckEmergencyEvent: Dispatch<SetStateAction<boolean>>
   loadOrder: (orderId: string) => boolean
   setIsPrinted?: Dispatch<SetStateAction<boolean>>
@@ -92,7 +96,7 @@ export const OrderContext = createContext<IOrderContext>({
   paymentsCache: undefined,
   emergency: false,
   isCheckEmergencyEvent: false,
-  handleEmergency: function (filter: string): void {
+  handleEmergency: function (): void {
     throw new Error('Function not implemented.')
   },
   setCheckEmergencyEvent: function (): void {
@@ -153,11 +157,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       ] as string[][]
     }
 
-    const event: Event = {
-      id: getEventHash(unsignedEvent),
-      sig: getSignature(unsignedEvent, localPrivateKey!),
-      ...unsignedEvent
-    }
+    const event = finalizeEvent(unsignedEvent, hexToBytes(localPrivateKey!))
 
     // Saving current payments status
     const payment: IPayment = {
@@ -242,6 +242,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
   const handlePaymentReceived = useCallback(
     async (event: NDKEvent) => {
+      console.info('handlePaymentReceived in Order.tsx')
       const invoice = parseZapInvoice(event as Event)
       if (!invoice.complete) {
         console.info('Incomplete invoice')
@@ -251,15 +252,13 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       if (amountPaid >= amount) {
         setIsPaid(true)
       }
-      const _event = await event.toNostrEvent()
     },
     [amount]
   )
 
-  const handleEmergency = async (filterInternal: string) => {
+  const handleEmergency = async () => {
     console.dir('[EMERGENCY] handleEmergency in Order.tsx')
-
-    // ZapReceipt
+    // Fetch Options
     const options = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -267,52 +266,31 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     }
 
     try {
+      // Zap transaction
       const response = await fetch(
-        'https://api.lawallet.ar/nostr/fetch',
+        NOSTR_API_URL,
         options
       )
       const data = await response.json()
 
       if (!data || data.length === 0) {
-        console.error('No event received')
-        // setCheckEmergencyEvent(true)
+        console.info('No data found')
         return
       }
 
-      // Internal transaction
-      const optionsI = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: filterInternal
-      }
-
-      const responseI = await fetch(
-        'https://api.lawallet.ar/nostr/fetch',
-        options
-      )
-      const dataI = await responseI.json()
-
-      if (!data || data.length === 0 || !dataI || dataI.length === 0) {
-        console.error('No event received')
-        // setCheckEmergencyEvent(true)
-        return
-      }
-
-      setCheckEmergencyEvent(false)
-
-      const event = new NDKEvent(ndk, data[0] || dataI[0])
-
-      console.info('Emergency event: ', await event.toNostrEvent())
-
-      onZap(event)
+      onZap(data[0]);
     } catch (err) {
       console.error('Error en fetch:', err)
+    } finally {
+      setCheckEmergencyEvent(false)
     }
   }
 
   // Handle new incoming zap
   const onZap = useCallback(
     (event: NDKEvent) => {
+      console.info('onZap in Order.tsx')
+      console.dir(event)
       if (event.pubkey !== zapEmitterPubKey) {
         throw new Error('Invalid Recipient Pubkey')
       }
@@ -372,18 +350,24 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     console.info(`Subscribing for ${orderId}...`)
 
     const sub = subscribeZap!(orderId)
-
-    sub.addListener('event', onZap)
-    sub.start()
     setSubZap(sub)
-
-    return () => {
-      sub.removeAllListeners()
-      sub.stop()
-      setSubZap(undefined)
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId, zapEmitterPubKey, zapEmitterPubKey, isPaid])
+
+  // On subZap change
+  useEffect(() => {
+    if (!subZap) {
+      return
+    }
+    subZap.on('event', onZap)
+    subZap.start()
+    return () => {
+      console.info('Unsubscribing for zap...')
+      subZap.removeAllListeners()
+      subZap.stop()
+      setSubZap(undefined)
+    }
+  }, [subZap])
 
   // On orderId change
   useEffect(() => {

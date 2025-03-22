@@ -46,5 +46,13 @@
   {
     "id": 12,
     "name": "Hardware wallets"
+  },
+  {
+    "id": 13,
+    "name": "Panchos"
+  },
+  {
+    "id": 14,
+    "name": "Acompañamientos"
   }
 ]

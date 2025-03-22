@@ -1,7 +1,7 @@
 'use client'
 
 // React/Next
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 // Utils
@@ -24,7 +24,7 @@ import { ScanAction } from '@/types/card'
 import { fetchLNURL } from '@/lib/utils'
 import { BtnLoader } from '@/components/Loader/Loader'
 
-export default function Page() {
+function TreeContent() {
   // Hooks
   const router = useRouter()
   const query = useSearchParams()
@@ -191,5 +191,13 @@ export default function Page() {
         )}
       </Container>
     </>
+  )
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TreeContent />
+    </Suspense>
   )
 }
