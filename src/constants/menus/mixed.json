@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "category_id": 13,
+    "name": "Pancho Normie",
+    "description": "",
+    "price": {
+      "value": 3000,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 2,
+    "category_id": 13,
+    "name": "Pancheto",
+    "description": "",
+    "price": {
+      "value": 4000,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 3,
+    "category_id": 14,
+    "name": "Paquete de papas",
+    "description": "",
+    "price": {
+      "value": 1500,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 4,
+    "category_id": 14,
+    "name": "Paquete de Doritos",
+    "description": "",
+    "price": {
+      "value": 1500,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 5,
+    "category_id": 10,
+    "name": "Gaseosa",
+    "description": "",
+    "price": {
+      "value": 2500,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 6,
+    "category_id": 10,
+    "name": "Agua",
+    "description": "",
+    "price": {
+      "value": 2000,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 7,
+    "category_id": 9,
+    "name": "Cerveza",
+    "description": "",
+    "price": {
+      "value": 3000,
+      "currency": "ARS"
+    }
+  }
+]

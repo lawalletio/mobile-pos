@@ -95,7 +95,7 @@ export default function Page() {
                       <SharedWalletIcon />
                     </Icon>
                     <Flex direction="column" gap={4}>
-                      <Heading as="h5">Transferencia</Heading>
+                      <Heading as="h5">Arbolito</Heading>
                       <Text size="small">
                         Transferi dinero de una tarjeta a otra.
                       </Text>

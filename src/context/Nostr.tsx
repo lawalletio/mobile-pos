@@ -14,12 +14,11 @@ import type { Event, UnsignedEvent } from 'nostr-tools'
 
 // Utils
 import {
-  generatePrivateKey,
-  getEventHash,
+  generateSecretKey,
   getPublicKey,
-  getSignature,
-  relayInit
+  finalizeEvent,
 } from 'nostr-tools'
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils'
 import { useLocalStorage } from 'react-use-storage'
 
 // Hooks
@@ -76,7 +75,7 @@ import NDK, {
 export const NostrProvider = ({ children }: INostrProviderProps) => {
   const { zapEmitterPubKey } = useLN()
   // const [privateKey, setPrivateKey] = useState<string>()
-  const [privateKey] = useLocalStorage('nostrPrivateKey', generatePrivateKey())
+  const [privateKey] = useLocalStorage('nostrPrivateKey', bytesToHex(generateSecretKey()))
   const [publicKey, setPublicKey] = useState<string>()
   const [filter, setFilter] = useState<string>()
 
@@ -98,11 +97,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
 
       postEventId && unsignedEvent.tags.push(['e', postEventId])
 
-      const event = new NDKEvent(ndk, {
-        id: getEventHash(unsignedEvent),
-        sig: getSignature(unsignedEvent, privateKey!),
-        ...unsignedEvent
-      })
+      const event = new NDKEvent(ndk, finalizeEvent(unsignedEvent, hexToBytes(privateKey)))
 
       console.info('zap event: ')
       console.dir(event)
@@ -134,13 +129,12 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
       kinds: [9735],
       authors: [zapEmitterPubKey!],
       '#e': [eventId],
-      since: 1693157776
+      since: Math.floor((new Date()).getTime()/1000)
     }
 
     setFilter(JSON.stringify(zapFilters))
 
-    const sub = new NDKSubscription(ndk, zapFilters, { closeOnEose: false })
-    return sub
+    return ndk.subscribe(zapFilters, { closeOnEose: false })
   }
 
   const getEvent = async (eventId: string): Promise<NDKEvent | null> => {
@@ -170,7 +164,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
 
   useEffect(() => {
     // Generate Public key
-    const _publicKey = getPublicKey(privateKey!)
+    const _publicKey = privateKey || getPublicKey(hexToBytes(privateKey))
 
     setPublicKey(_publicKey)
   }, [privateKey])
