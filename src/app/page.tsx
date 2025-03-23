@@ -64,15 +64,13 @@ export default function Page() {
                 <Input
                   value={destination}
                   disabled={isLoading}
-                  onChange={e => setDestination(e.target.value)}
+                  onChange={e =>
+                    setDestination(e.target.value.toLocaleLowerCase().trim())
+                  }
                   placeholder="usuario@lawallet.ar"
                 />
                 <Flex direction="row">
-                  <Button
-                    disabled={!validateEmail(destination)}
-                    variant="bezeledGray"
-                    onClick={handleSetDestination}
-                  >
+                  <Button variant="bezeledGray" onClick={handleSetDestination}>
                     {isLoading ? <BtnLoader /> : 'Configurar'}
                   </Button>
                 </Flex>
