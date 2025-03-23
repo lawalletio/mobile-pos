@@ -19,12 +19,16 @@ import {
   SharedWalletIcon
 } from '@bitcoin-design/bitcoin-icons-react/filled'
 import { BtnLoader } from '@/components/Loader/Loader'
+import { useLocalStorage } from 'react-use-storage'
+import { useRouter } from 'next/navigation'
 
 export default function Page() {
   const { setDestinationLUD06 } = useContext(LaWalletContext)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   // Hooks
   const { destination } = useParams()
+  const [, setStoredDestination] = useLocalStorage('destination', '')
+  const router = useRouter()
 
   const handleSetDestination = useCallback(
     async (_destination: string) => {
@@ -50,6 +54,11 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [destination])
 
+  const removeStoredDestination = () => {
+    setStoredDestination('')
+    router.push('/')
+  }
+
   return (
     <>
       <Container size="small">
@@ -60,7 +69,13 @@ export default function Page() {
           ) : (
             <>
               <Heading as="h4">
-                {decodeURIComponent(destination as string)}
+                {decodeURIComponent(destination as string)}{' '}
+                <span
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => removeStoredDestination()}
+                >
+                  ❌
+                </span>
               </Heading>
               <Flex gap={8}>
                 <Card>
