@@ -25,17 +25,9 @@ export type CardReturns = {
   stop: () => void
 }
 
-const FEDERATION_ID = process.env.NEXT_PUBLIC_FEDERATION_ID!
-
 const requestLNURL = async (url: string, type?: ScanAction) => {
   const normalizedUrl = normalizeLNURL(url)
-  const headers = type
-    ? {
-        'Content-Type': 'application/json',
-        'X-LaWallet-Action': type,
-        'X-LaWallet-Param': `federationId=${FEDERATION_ID}, tokens=BTC`
-      }
-    : { 'Content-Type': 'application/json' }
+  const headers = { 'Content-Type': 'application/json' }
 
   let response
   try {
