@@ -275,28 +275,30 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     }
 
     try {
-      // Zap transaction
-      const response = await fetch(NOSTR_API_URL, options)
-      const data = await response.json()
+      // Check LUD21 if exists
+      if (lud21) {
+        try {
+          console.info('Checking LUD21')
+          const lud21Response = await fetch(lud21)
 
-      if (data || data.length > 0) {
-        onZap(data[0])
-        return
+          const verifyResponse =
+            (await lud21Response.json()) as LNURLVerifyResponse
+          if (verifyResponse.status === 'OK' && verifyResponse.settled) {
+            setIsPaid(true)
+            return
+          }
+        } catch (err) {
+          console.error('Error getting LUD21:', err)
+        }
       }
 
-      if (lud21) {
-        const verifyResponse = (await fetch(lud21, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            pr: currentInvoice
-          })
-        })) as unknown as LNURLVerifyResponse
-
-        if (verifyResponse.status === 'OK' && verifyResponse.settled) {
-          setIsPaid(true)
-          return
-        }
+      // Force fetch event
+      console.info('Feching event from relays')
+      const event = await ndk.fetchEvent(JSON.parse(filter!))
+      console.dir(event)
+      if (event) {
+        onZap(event)
+        return
       }
     } catch (err) {
       console.error('Error en fetch:', err)
@@ -375,7 +377,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     if (!subZap) {
       return
     }
-    // subZap.on('event', onZap)
+    subZap.on('event', onZap)
     subZap.start()
     return () => {
       console.info('Unsubscribing for zap...')
@@ -383,6 +385,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       subZap.stop()
       setSubZap(undefined)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subZap])
 
   // On orderId change
