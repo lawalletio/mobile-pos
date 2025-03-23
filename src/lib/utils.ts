@@ -213,3 +213,12 @@ export function extractEmailParts(email: string): {
     domain: match ? match[2] : null
   }
 }
+
+export function getDefaultDomain(): string {
+  const host = window.location.hostname.split('.')
+  if (host.length > 2) {
+    host.shift()
+    return host.join('.')
+  }
+  return window.location.hostname
+}

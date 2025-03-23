@@ -5,7 +5,7 @@ import { Flex, Heading, Divider, Card, Button } from '@/components/UI'
 import Container from '@/components/Layout/Container'
 import Input from '@/components/UI/Input'
 import { useCallback, useEffect, useState } from 'react'
-import { fetchLNURL, validateEmail } from '@/lib/utils'
+import { fetchLNURL, getDefaultDomain } from '@/lib/utils'
 import { BtnLoader } from '@/components/Loader/Loader'
 import { useRouter } from 'next/navigation'
 import { useLocalStorage } from 'react-use-storage'
@@ -23,16 +23,23 @@ export default function Page() {
   )
 
   const handleSetDestination = useCallback(async () => {
+    let targetLNURL = destination
     if (isLoading) {
       return
     }
     setIsLoading(true)
 
+    if (destination.indexOf('@') === -1) {
+      const domain = getDefaultDomain()
+      targetLNURL = `${destination}@${domain}`
+      setDestination(targetLNURL)
+    }
+
     try {
-      await fetchLNURL(destination)
-      console.log('storing destination: ', destination)
-      setStoredDestination(destination)
-      router.push(`/${destination}`)
+      await fetchLNURL(targetLNURL)
+      console.log('storing destination: ', targetLNURL)
+      setStoredDestination(targetLNURL)
+      router.push(`/${targetLNURL}`)
     } catch (e) {
       setIsLoading(false)
       alert((e as Error).message)
