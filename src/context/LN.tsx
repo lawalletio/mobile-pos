@@ -16,7 +16,7 @@ import type { InvoiceRequest } from '@/types/lightning'
 
 // Utils
 import axios from 'axios'
-import { LNURLResponse } from '@/types/lnurl'
+import { LNURLInvoiceResponse, LNURLResponse } from '@/types/lnurl'
 
 // Interface
 export interface ILNContext {
@@ -28,12 +28,14 @@ export interface ILNContext {
   setLUD06: Dispatch<SetStateAction<LNURLResponse | undefined>>
   clear: () => void
   setAccountPubKey: (_pubKey: string) => void
-  requestInvoice: (_req: InvoiceRequest) => Promise<string>
+  requestInvoice: (_req: InvoiceRequest) => Promise<LNURLInvoiceResponse>
 }
 
 // Context
 export const LNContext = createContext<ILNContext>({
-  requestInvoice: function (_req: InvoiceRequest): Promise<string> {
+  requestInvoice: function (
+    _req: InvoiceRequest
+  ): Promise<LNURLInvoiceResponse> {
     throw new Error('Function not implemented.')
   },
   setAccountPubKey: function (_pubKey: string): void {
@@ -69,13 +71,16 @@ export const LNProvider = ({ children }: ILNProviderProps) => {
   }, [])
 
   const requestInvoice = useCallback(
-    async ({ amountMillisats, zapEvent }: InvoiceRequest): Promise<string> => {
+    async ({
+      amountMillisats,
+      zapEvent
+    }: InvoiceRequest): Promise<LNURLInvoiceResponse> => {
       const encodedZapEvent = encodeURI(JSON.stringify(zapEvent))
       const url = `${callbackUrl}?amount=${amountMillisats}&nostr=${encodedZapEvent}&lnurl=${destinationPubKey}`
       console.info('url')
       console.dir(url)
       const response = await axios.get(url)
-      return response.data.pr as string
+      return response.data
     },
     [callbackUrl, destinationPubKey]
   )

@@ -20,10 +20,6 @@ import Container from '@/components/Layout/Container'
 import Navbar from '@/components/Layout/Navbar'
 import TokenList from '@/components/TokenList'
 import { BtnLoader } from '@/components/Loader/Loader'
-import { fetchLNURL } from '@/lib/utils'
-
-// Constants
-const DESTINATION_LNURL = process.env.NEXT_PUBLIC_DESTINATION!
 
 export default function Page() {
   // Hooks
@@ -31,7 +27,7 @@ export default function Page() {
   const { generateOrderEvent, setAmount, setOrderEvent, clear } = useOrder()
   const { publish } = useNostr()
   const { setLUD06 } = useLN()
-  const { userConfig } = useContext(LaWalletContext)
+  const { userConfig, destinationLUD06 } = useContext(LaWalletContext)
   const numpadData = useNumpad(userConfig.props.currency)
 
   // Local states
@@ -58,7 +54,7 @@ export default function Page() {
     router.push('/payment/' + order.id)
   }
 
-  /** usEffects */
+  /** useEffects */
 
   useEffect(() => {
     setAmount(sats)
@@ -66,10 +62,13 @@ export default function Page() {
   }, [sats])
 
   useEffect(() => {
-    console.info('HACIENDO ESTO : ' + DESTINATION_LNURL)
-    fetchLNURL(DESTINATION_LNURL).then(setLUD06)
+    if (!destinationLUD06) {
+      console.info('No destinationLUD06')
+      return
+    }
+    setLUD06(destinationLUD06)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [destinationLUD06])
 
   // on mount
   useEffect(() => {

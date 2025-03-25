@@ -16,6 +16,37 @@ export interface LNURLResponse {
   federationId?: string
 }
 
+export interface LNURLInvoiceResponseSuccess {
+  pr: string
+  routes?: string[]
+  verify?: string
+}
+
+export interface LNURLInvoiceResponseError {
+  status: string
+  reason: string
+}
+
+export type LNURLInvoiceResponse =
+  | LNURLInvoiceResponseSuccess
+  | LNURLInvoiceResponseError
+
+export type LNURLVerifyResponseSuccess = {
+  status: 'OK'
+  settled: boolean
+  preimage: string | null
+  pr: string
+}
+
+export type LNURLVerifyResponseError = {
+  status: 'ERROR'
+  reason: string
+}
+
+export type LNURLVerifyResponse =
+  | LNURLVerifyResponseSuccess
+  | LNURLVerifyResponseError
+
 export enum LNURLWStatus {
   IDLE = 'IDLE',
   SCANNING = 'SCANNING',

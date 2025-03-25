@@ -172,7 +172,6 @@ export default function Menu({
     clearOrder()
     loadMenu(pageName)
     setLUD06(lud06)
-    // fetchLNURL(DESTINATION_LNURL).then(setLUD06)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lud06])
 

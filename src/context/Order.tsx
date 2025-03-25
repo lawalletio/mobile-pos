@@ -26,6 +26,7 @@ import bolt11 from 'bolt11'
 import { parseZapInvoice } from '@/lib/utils'
 import { finalizeEvent, validateEvent } from 'nostr-tools'
 import { hexToBytes } from '@noble/hashes/utils'
+import { LNURLInvoiceResponseSuccess, LNURLVerifyResponse } from '@/types/lnurl'
 
 // Constants
 const NOSTR_API_URL = 'https://api.lawallet.ar/nostr/fetch'
@@ -61,7 +62,7 @@ export interface IOrderContext {
   requestZapInvoice?: (
     amountMillisats: number,
     orderEventId: string
-  ) => Promise<string>
+  ) => Promise<LNURLInvoiceResponseSuccess>
 }
 
 // Context
@@ -124,6 +125,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   const [orderEvent, setOrderEvent] = useState<Event>()
   const [amount, setAmount] = useState<number>(0)
   const [memo, setMemo] = useState<unknown>({})
+  const [lud21, setLUD21] = useState<string>()
   const [currentInvoice, setCurrentInvoice] = useState<string>()
   const [fiatAmount, setFiatAmount] = useState<number>(0)
   const [fiatCurrency, setFiatCurrency] = useState<string>('ARS')
@@ -222,7 +224,10 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   }, [generateOrderEvent, publish])
 
   const requestZapInvoice = useCallback(
-    async (amountMillisats: number, orderEventId: string): Promise<string> => {
+    async (
+      amountMillisats: number,
+      orderEventId: string
+    ): Promise<LNURLInvoiceResponseSuccess> => {
       // Generate ZapRequestEvent
       const zapEvent = generateZapEvent!(amountMillisats, orderEventId)
 
@@ -234,6 +239,10 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         amountMillisats,
         zapEvent: (await zapEvent.toNostrEvent()) as Event
       })
+
+      if (!('pr' in invoice)) {
+        throw new Error('Error requesting invoice')
+      }
 
       return invoice
     },
@@ -266,19 +275,31 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     }
 
     try {
-      // Zap transaction
-      const response = await fetch(
-        NOSTR_API_URL,
-        options
-      )
-      const data = await response.json()
+      // Check LUD21 if exists
+      if (lud21) {
+        try {
+          console.info('Checking LUD21')
+          const lud21Response = await fetch(lud21)
 
-      if (!data || data.length === 0) {
-        console.info('No data found')
-        return
+          const verifyResponse =
+            (await lud21Response.json()) as LNURLVerifyResponse
+          if (verifyResponse.status === 'OK' && verifyResponse.settled) {
+            setIsPaid(true)
+            return
+          }
+        } catch (err) {
+          console.error('Error getting LUD21:', err)
+        }
       }
 
-      onZap(data[0]);
+      // Force fetch event
+      console.info('Feching event from relays')
+      const event = await ndk.fetchEvent(JSON.parse(filter!))
+      console.dir(event)
+      if (event) {
+        onZap(event)
+        return
+      }
     } catch (err) {
       console.error('Error en fetch:', err)
     } finally {
@@ -287,26 +308,23 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   }
 
   // Handle new incoming zap
-  const onZap = useCallback(
-    (event: NDKEvent) => {
-      console.info('onZap in Order.tsx')
-      console.dir(event)
-      if (event.pubkey !== zapEmitterPubKey) {
-        throw new Error('Invalid Recipient Pubkey')
-      }
+  const onZap = (event: NDKEvent) => {
+    console.info('onZap in Order.tsx')
+    console.dir(event)
+    if (event.pubkey !== zapEmitterPubKey) {
+      throw new Error('Invalid Recipient Pubkey')
+    }
 
-      if (!validateEvent(event)) {
-        throw new Error('Invalid event')
-      }
+    if (!validateEvent(event)) {
+      throw new Error('Invalid event')
+    }
 
-      const paidInvoice = event.tags.find(tag => tag[0] === 'bolt11')?.[1]
-      const decodedPaidInvoice = bolt11.decode(paidInvoice!)
+    const paidInvoice = event.tags.find(tag => tag[0] === 'bolt11')?.[1]
+    const decodedPaidInvoice = bolt11.decode(paidInvoice!)
 
-      handlePaymentReceived(event)
-      console.info('Amount paid : ' + decodedPaidInvoice.millisatoshis)
-    },
-    [handlePaymentReceived, zapEmitterPubKey]
-  )
+    handlePaymentReceived(event)
+    console.info('Amount paid : ' + decodedPaidInvoice.millisatoshis)
+  }
 
   const clear = useCallback(() => {
     setOrderId(undefined)
@@ -367,6 +385,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       subZap.stop()
       setSubZap(undefined)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subZap])
 
   // On orderId change
@@ -377,7 +396,8 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
     requestZapInvoice!(amount * 1000, orderId)
       .then(_invoice => {
-        setCurrentInvoice!(_invoice)
+        setLUD21(_invoice.verify)
+        setCurrentInvoice!(_invoice.pr)
       })
       .catch(() => {
         setEmergency(true)
