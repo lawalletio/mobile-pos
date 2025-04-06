@@ -23,6 +23,7 @@
     "prettier": "^3.0.3",
     "qr-scanner": "^1.4.2",
     "react": "^19.0.0",
+    "react-camera-pro": "^1.4.0",
     "react-dom": "^19.0.0",
     "react-qr-code": "^2.0.12",
     "react-use-storage": "^0.5.1",
