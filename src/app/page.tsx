@@ -61,7 +61,7 @@ export default function Page() {
     <>
       <Container size="small">
         <Flex direction="column" gap={8} flex={1} justify="center">
-          <Heading as="h4">Custom POS (v{packageJson.version})</Heading>
+          <Heading as="h4">LaWallet POS (v{packageJson.version})</Heading>
           <Flex gap={8}>
             <Card>
               <Divider y={12} />
