@@ -39,6 +39,7 @@ import { Loader } from '@/components/Loader/Loader'
 import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import theme from '@/styles/theme'
 import { useNostr } from '@/context/Nostr'
+import { PrintOrder } from '@/types/print'
 
 export default function Page() {
   // Hooks
@@ -101,7 +102,6 @@ export default function Page() {
     [invoice]
   )
 
-
   const startRead = useCallback(async () => {
     try {
       const { cardUrl, lnurlResponse } = await scan(ScanAction.PAY_REQUEST)
@@ -158,8 +158,14 @@ export default function Page() {
         name: product.name,
         price: product.price.value,
         qty: product.qty
-      }))
-    }
+      })),
+      // qrcode: 'https://lacrypta.masize.com/api/extract',
+      imageUrl: 'https://agustin.masize.com/examples/posta.png',
+      blockNumber: '111.111',
+      btcPrice: '0.085 M',
+      currencyB: 'USD',
+      totalB: '0.01'
+    } as PrintOrder
 
     console.dir('printOrder:')
     console.dir(printOrder)
