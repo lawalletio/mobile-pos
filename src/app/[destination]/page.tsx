@@ -7,6 +7,11 @@ import Link from 'next/link'
 
 // Hooks
 import { LaWalletContext } from '@/context/LaWalletContext'
+import { useLocalStorage } from 'react-use-storage'
+import { useRouter } from 'next/navigation'
+import { useLN } from '@/context/LN'
+import { useProxy } from '@/context/Proxy'
+import { useOrder } from '@/context/Order'
 
 // Utils
 import { fetchLNURL } from '@/lib/utils'
@@ -16,34 +21,53 @@ import { Flex, Heading, Text, Divider, Icon, Card } from '@/components/UI'
 import Container from '@/components/Layout/Container'
 import {
   PantheonIcon,
-  SharedWalletIcon
+  GearIcon
 } from '@bitcoin-design/bitcoin-icons-react/filled'
 import { BtnLoader } from '@/components/Loader/Loader'
-import { useLocalStorage } from 'react-use-storage'
-import { useRouter } from 'next/navigation'
 
 export default function Page() {
-  const { setDestinationLUD06 } = useContext(LaWalletContext)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  // Hooks
-  const { destination } = useParams()
+  const [isLoading, setIsLoading] = useState<boolean>(true)
   const [, setStoredDestination] = useLocalStorage('destination', '')
+
+  // Hooks
   const router = useRouter()
+  const { destination } = useParams()
+  const { clear } = useLN()
+  const { clear: clearOrder } = useOrder()
+  const { enableProxy, isEnabled: isProxyEnabled } = useProxy()
+  const { setDestinationLUD06 } = useContext(LaWalletContext)
+
+  const removeStoredDestination = useCallback(() => {
+    setStoredDestination('')
+    setDestinationLUD06(null)
+    router.replace('/')
+  }, [setDestinationLUD06, router, setStoredDestination])
 
   const handleSetDestination = useCallback(
     async (_destination: string) => {
-      setIsLoading(true)
       try {
         const lud06 = await fetchLNURL(_destination)
-        console.dir(lud06)
         setDestinationLUD06(lud06)
+        if (isProxyEnabled) {
+          return
+        }
+
+        // disabled proxy
+        if (!lud06.allowsNostr) {
+          confirm(
+            'This Lightning Address has no nostr support (NIP-57).\nDo you want to enable Proxy?'
+          )
+            ? enableProxy()
+            : removeStoredDestination()
+        }
       } catch (e) {
         alert((e as Error).message)
+        removeStoredDestination()
       } finally {
         setIsLoading(false)
       }
     },
-    [setDestinationLUD06]
+    [setDestinationLUD06, enableProxy, removeStoredDestination, isProxyEnabled]
   )
 
   useEffect(() => {
@@ -52,12 +76,13 @@ export default function Page() {
     }
     handleSetDestination(decodeURIComponent(destination as string))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destination])
+  }, [destination, isProxyEnabled])
 
-  const removeStoredDestination = () => {
-    setStoredDestination('')
-    router.push('/')
-  }
+  useEffect(() => {
+    clear()
+    clearOrder()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <>
@@ -65,7 +90,9 @@ export default function Page() {
         <Divider y={24} />
         <Flex direction="column" gap={8} flex={1} justify="center">
           {isLoading ? (
-            <BtnLoader />
+            <Flex justify="center">
+              <BtnLoader />
+            </Flex>
           ) : (
             <>
               <Heading as="h4">
@@ -90,15 +117,13 @@ export default function Page() {
                   </Link>
                 </Card>
                 <Card color="secondary">
-                  <Link href="/tree">
+                  <Link href="/settings">
                     <Icon>
-                      <SharedWalletIcon />
+                      <GearIcon />
                     </Icon>
                     <Flex direction="column" gap={4}>
-                      <Heading as="h5">Arbolito</Heading>
-                      <Text size="small">
-                        Transferi dinero de una tarjeta a otra.
-                      </Text>
+                      <Heading as="h5">Settings</Heading>
+                      <Text size="small">POS Configuration</Text>
                     </Flex>
                   </Link>
                 </Card>

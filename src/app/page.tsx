@@ -1,21 +1,33 @@
 'use client'
 
+// React
+import { useCallback, useEffect, useState } from 'react'
+
 // Components
 import { Flex, Heading, Divider, Card, Button } from '@/components/UI'
 import Container from '@/components/Layout/Container'
 import Input from '@/components/UI/Input'
-import { useCallback, useEffect, useState } from 'react'
-import { fetchLNURL, getDefaultDomain } from '@/lib/utils'
+import Top from './layout/top'
+
+// Libs
+import { getDefaultDomain } from '@/lib/utils'
 import { BtnLoader } from '@/components/Loader/Loader'
+
+// Hooks
 import { useRouter } from 'next/navigation'
+import { useOrder } from '@/context/Order'
+import { useLN } from '@/context/LN'
 import { useLocalStorage } from 'react-use-storage'
 
+// Constants
 import packageJson from '../../package.json'
 
 export default function Page() {
   const router = useRouter()
   const [destination, setDestination] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const { clear: clearOrder } = useOrder()
+  const { clear } = useLN()
 
   const [storedDestination, setStoredDestination] = useLocalStorage(
     'destination',
@@ -36,7 +48,7 @@ export default function Page() {
     }
 
     try {
-      await fetchLNURL(targetLNURL)
+      // await fetchLNURL(targetLNURL)
       console.log('storing destination: ', targetLNURL)
       setStoredDestination(targetLNURL)
       router.push(`/${targetLNURL}`)
@@ -46,6 +58,7 @@ export default function Page() {
     }
   }, [destination, router, isLoading, setStoredDestination])
 
+  // Push to destination on mount
   useEffect(() => {
     if (storedDestination === '') {
       return
@@ -57,16 +70,30 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storedDestination])
 
+  // Clear context on mount
+  useEffect(() => {
+    clear()
+    clearOrder()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <>
+      <Top />
       <Container size="small">
         <Flex direction="column" gap={8} flex={1} justify="center">
           <Heading as="h4">LaWallet POS (v{packageJson.version})</Heading>
-          <Flex gap={8}>
-            <Card>
-              <Divider y={12} />
+
+          <Card>
+            <Divider y={12} />
+            <form
+              onSubmit={e => {
+                e.preventDefault()
+                handleSetDestination()
+              }}
+            >
               <Flex gap={16} direction="column" flex={1} justify="center">
-                <Heading as="h5">Destinatario</Heading>
+                <Heading as="h5">Lightning Address</Heading>
 
                 <Input
                   value={destination}
@@ -77,13 +104,13 @@ export default function Page() {
                   placeholder="usuario@lawallet.ar"
                 />
                 <Flex direction="row">
-                  <Button variant="bezeledGray" onClick={handleSetDestination}>
-                    {isLoading ? <BtnLoader /> : 'Configurar'}
+                  <Button variant="bezeledGray" type="submit">
+                    {isLoading ? <BtnLoader /> : 'Setup'}
                   </Button>
                 </Flex>
               </Flex>
-            </Card>
-          </Flex>
+            </form>
+          </Card>
         </Flex>
       </Container>
     </>
