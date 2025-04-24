@@ -38,8 +38,8 @@ import Container from '@/components/Layout/Container'
 import { Loader } from '@/components/Loader/Loader'
 import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import theme from '@/styles/theme'
-import { useNostr } from '@/context/Nostr'
 import { PrintOrder } from '@/types/print'
+import { useProxy } from '@/context/Proxy'
 
 export default function Page() {
   // Hooks
@@ -47,9 +47,8 @@ export default function Page() {
   const { orderId: orderIdFromUrl } = useParams()
   const query = useSearchParams()
   const [error, setError] = useState<string>()
-
   const { convertCurrency } = useCurrencyConverter()
-  const { zapEmitterPubKey, lud06, destinationPubKey } = useLN()
+  const { zapEmitterPubKey } = useLN()
   const {
     orderId,
     amount,
@@ -57,7 +56,7 @@ export default function Page() {
     isPaid,
     isPrinted,
     currentInvoice: invoice,
-    emergency,
+    error: orderError,
     isCheckEmergencyEvent,
     handleEmergency,
     setCheckEmergencyEvent,
@@ -65,8 +64,8 @@ export default function Page() {
     loadOrder
   } = useOrder()
   const { isAvailable, permission, status: scanStatus, scan, stop } = useCard()
-  const { localPrivateKey, relays, ndk, getBalance } = useNostr()
   const { print } = usePrint()
+  const { transfer, isEnabled: isProxyEnabled } = useProxy()
 
   const { userConfig } = useContext(LaWalletContext)
 
@@ -80,8 +79,8 @@ export default function Page() {
       router.back()
       return
     }
-    router.push(back)
-  }, [router, query])
+    router.replace(back)
+  }, [query, router])
 
   const processRegularPayment = useCallback(
     async (cardUrl: string, response: LNURLResponse) => {
@@ -122,7 +121,7 @@ export default function Page() {
     }
 
     // Order already set
-    if (orderId) {
+    if (orderId === orderIdFromUrl) {
       return
     }
 
@@ -149,6 +148,9 @@ export default function Page() {
     if (!isPaid || isPrinted) {
       return
     }
+
+    console.info('transfering', amount)
+    isProxyEnabled && transfer(amount * 1000)
 
     const printOrder = {
       total: convertCurrency(amount, 'SAT', 'ARS'),
@@ -214,21 +216,11 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  if (emergency && !isPaid) {
+  if (orderError && !isPaid) {
     return (
       <Flex gap={8} direction="column">
         <Flex>
-          caca
-          <Button
-            variant="bezeledGray"
-            onClick={() => {
-              setCheckEmergencyEvent(true)
-              handleEmergency()
-              handleBack()
-            }}
-          >
-            Emergency
-          </Button>
+          <Text>{orderError}</Text>
         </Flex>
 
         <Flex>
@@ -385,6 +377,7 @@ export default function Page() {
           </Container>
 
           <QRCode value={invoice} />
+          <Text>{isProxyEnabled ? 'Proxy enabled' : 'Proxy disabled'}</Text>
 
           <Flex>
             <Container size="small">
