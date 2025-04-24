@@ -16,7 +16,8 @@ interface ButtonProps {
   disabled?: boolean
   componentName?: string
   tabIndex?: number
-  onClick: (e: any) => void
+  type?: 'button' | 'submit'
+  onClick?: (e: any) => void
   onTouchStart?: () => void
   onTouchEnd?: () => void
   onMouseDown?: () => void
@@ -50,6 +51,7 @@ export default function Button(props: ButtonProps) {
   const {
     children,
     color = 'primary',
+    type = 'button',
     variant = 'filled',
     size = 'normal',
     disabled = false,
@@ -69,6 +71,7 @@ export default function Button(props: ButtonProps) {
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       tabIndex={tabIndex}
+      type={type}
       disabled={disabled}
       $isSmall={size === 'small'}
       $background={variantsList(variant, color)?.background}
