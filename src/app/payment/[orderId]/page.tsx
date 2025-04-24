@@ -47,6 +47,8 @@ export default function Page() {
   const { orderId: orderIdFromUrl } = useParams()
   const query = useSearchParams()
   const [error, setError] = useState<string>()
+  const [cardLnurlResponse, setCardLnurlResponse] = useState<LNURLResponse>()
+  const [cardUrl, setCardUrl] = useState<string>()
   const { convertCurrency } = useCurrencyConverter()
   const { zapEmitterPubKey } = useLN()
   const {
@@ -65,7 +67,7 @@ export default function Page() {
   } = useOrder()
   const { isAvailable, permission, status: scanStatus, scan, stop } = useCard()
   const { print } = usePrint()
-  const { transfer, isEnabled: isProxyEnabled } = useProxy()
+  const { transfer, internalTransfer, isEnabled: isProxyEnabled } = useProxy()
 
   const { userConfig } = useContext(LaWalletContext)
 
@@ -82,8 +84,26 @@ export default function Page() {
     router.replace(back)
   }, [query, router])
 
+  const settleProxy = useCallback(
+    (cardUrl: string, cardLnurlResponse: LNURLResponse) => {
+      let pendingToTransfer = amount * 1000
+      if (cardUrl.split('/')[2] === 'api.lacrypta.ar') {
+        try {
+          const satsback = Math.round(pendingToTransfer * 0.3)
+          internalTransfer(satsback, cardLnurlResponse.accountPubKey!)
+          pendingToTransfer -= satsback
+        } catch (e) {
+          console.error('Satsback failed ', e)
+        }
+      }
+      // transfer to proxee
+      transfer(pendingToTransfer)
+    },
+    [amount, transfer, internalTransfer]
+  )
+
   const processRegularPayment = useCallback(
-    async (cardUrl: string, response: LNURLResponse) => {
+    async (response: LNURLResponse) => {
       setCardStatus(LNURLWStatus.CALLBACK)
       const url = response.callback
       const _response = await axios.get(url, {
@@ -104,7 +124,9 @@ export default function Page() {
   const startRead = useCallback(async () => {
     try {
       const { cardUrl, lnurlResponse } = await scan(ScanAction.PAY_REQUEST)
-      await processRegularPayment(cardUrl, lnurlResponse)
+      setCardLnurlResponse(lnurlResponse)
+      setCardUrl(cardUrl)
+      await processRegularPayment(lnurlResponse)
     } catch (e) {
       setCardStatus(LNURLWStatus.ERROR)
       setError((e as Error).message)
@@ -149,8 +171,9 @@ export default function Page() {
       return
     }
 
-    console.info('transfering', amount)
-    isProxyEnabled && transfer(amount * 1000)
+    isProxyEnabled &&
+      cardLnurlResponse &&
+      settleProxy(cardUrl!, cardLnurlResponse)
 
     const printOrder = {
       total: convertCurrency(amount, 'SAT', 'ARS'),
@@ -191,23 +214,6 @@ export default function Page() {
     }
   }, [scanStatus])
 
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     console.info('Checking for events...')
-  //     if (!isPaid) {
-  //       console.info('No paid, checking for emergency event...')
-  //       handleEmergency(internalTxFilter!)
-  //     } else {
-  //       console.info('Paid, stopping interval...')
-  //       clearInterval(interval)
-  //     }
-  //   }, 2000)
-
-  //   return () => {
-  //     clearInterval(interval)
-  //   }
-  // }, [isPaid, handleEmergency])
-
   // on Mount
   useEffect(() => {
     return () => {
@@ -241,14 +247,12 @@ export default function Page() {
 
   return (
     <>
-      {invoice && (
-        <Alert
-          title={''}
-          description={'Disponible para escanear NFC.'}
-          type={'success'}
-          isOpen={cardStatus === LNURLWStatus.SCANNING}
-        />
-      )}
+      <Alert
+        title={''}
+        description={'Disponible para escanear NFC.'}
+        type={'success'}
+        isOpen={cardStatus === LNURLWStatus.SCANNING}
+      />
 
       <Alert
         title={''}

@@ -36,6 +36,10 @@ export interface IProxyContext {
     amountMilliSats: number,
     destination?: LNURLResponse
   ) => Promise<AxiosResponse<any, any>>
+  internalTransfer: (
+    amountMilliSats: number,
+    pubkey: string
+  ) => Promise<AxiosResponse<any, any>>
   enableProxy: () => void
   disableProxy: () => void
   setProxyPrivateKey: (privateKey: string) => void
@@ -47,6 +51,8 @@ export const ProxyContext = createContext<IProxyContext>({
   enableProxy: () => {},
   disableProxy: () => {},
   transfer: (_amountMilliSats: number, _destination?: LNURLResponse) =>
+    Promise.resolve({} as AxiosResponse),
+  internalTransfer: (_amountMilliSats: number, _pubkey: string) =>
     Promise.resolve({} as AxiosResponse),
   setProxyPrivateKey: (_privateKey: string) => {}
 })
@@ -111,25 +117,47 @@ export const ProxyProvider = ({ children }: { children: React.ReactNode }) => {
         })
       } as UnsignedEvent
 
-      const signedEvent = finalizeEvent(
-        unsignedEvent,
-        hexToBytes(proxyPrivateKey)
-      )
-
-      const res = await axios.post(
-        `https://api.lawallet.ar/nostr/publish`,
-        signedEvent,
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      )
+      const res = await publishEvent(unsignedEvent, proxyPrivateKey)
       console.info('res')
       console.dir(res)
       return res
     },
     [destinationLUD06, proxyLud06, proxyPrivateKey]
+  )
+
+  const internalTransfer = useCallback(
+    async (amountMilliSats: number, pubkey: string) => {
+      if (!proxyLud06) {
+        throw new Error('Proxy LUD06 not found')
+      }
+
+      if (!pubkey) {
+        throw new Error('No Pubkey')
+      }
+
+      const unsignedEvent = {
+        kind: 1112,
+        pubkey: getPublicKey(hexToBytes(proxyPrivateKey)),
+        created_at: Math.round(Date.now() / 1000),
+        tags: [
+          ['t', 'internal-transaction-start'],
+          ['p', LEDGER_PUBKEY],
+          ['p', pubkey]
+        ],
+        content: JSON.stringify({
+          tokens: {
+            BTC: amountMilliSats
+          }
+        })
+      } as UnsignedEvent
+
+      const res = await publishEvent(unsignedEvent, proxyPrivateKey)
+
+      console.info('res')
+      console.dir(res)
+      return res
+    },
+    [proxyLud06, proxyPrivateKey]
   )
 
   // on proxyPrivateKey change
@@ -171,7 +199,8 @@ export const ProxyProvider = ({ children }: { children: React.ReactNode }) => {
         setProxyPrivateKey,
         enableProxy,
         disableProxy,
-        transfer
+        transfer,
+        internalTransfer
       }}
     >
       {children}
@@ -182,4 +211,13 @@ export const ProxyProvider = ({ children }: { children: React.ReactNode }) => {
 // Hook
 export const useProxy = () => {
   return useContext(ProxyContext)
+}
+
+async function publishEvent(event: UnsignedEvent, privateKey: string) {
+  const signedEvent = finalizeEvent(event, hexToBytes(privateKey))
+  return axios.post(`https://api.lawallet.ar/nostr/publish`, signedEvent, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
 }
