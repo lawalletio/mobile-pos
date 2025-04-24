@@ -26,8 +26,8 @@ export default function Page() {
   const router = useRouter()
   const { generateOrderEvent, setAmount, setOrderEvent, clear } = useOrder()
   const { publish } = useNostr()
-  const { setLUD06 } = useLN()
-  const { userConfig, destinationLUD06 } = useContext(LaWalletContext)
+  const { userConfig } = useContext(LaWalletContext)
+  const { lud06 } = useLN()
   const numpadData = useNumpad(userConfig.props.currency)
 
   // Local states
@@ -51,6 +51,7 @@ export default function Page() {
 
     setOrderEvent!(order)
     setLoading(false)
+
     router.push('/payment/' + order.id)
   }
 
@@ -62,15 +63,14 @@ export default function Page() {
   }, [sats])
 
   useEffect(() => {
-    if (!destinationLUD06) {
-      console.info('No destinationLUD06')
+    if (!lud06) {
+      alert('No lud06')
+      router.replace('/')
       return
     }
-    setLUD06(destinationLUD06)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destinationLUD06])
+  }, [lud06])
 
-  // on mount
   useEffect(() => {
     clear()
     // eslint-disable-next-line react-hooks/exhaustive-deps
