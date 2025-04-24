@@ -44,7 +44,7 @@ export interface IOrderContext {
   isPrinted?: boolean
   orderEvent: Event | undefined
   paymentsCache?: IPaymentCache
-  emergency: boolean
+  error: string | undefined
   isCheckEmergencyEvent: boolean
   handleEmergency: () => void
   setCheckEmergencyEvent: Dispatch<SetStateAction<boolean>>
@@ -71,6 +71,7 @@ export const OrderContext = createContext<IOrderContext>({
   fiatAmount: 0,
   fiatCurrency: 'ARS',
   memo: undefined,
+  error: undefined,
   products: [],
   checkOut: function (): Promise<{ eventId: string }> {
     throw new Error('Function not implemented.')
@@ -95,7 +96,6 @@ export const OrderContext = createContext<IOrderContext>({
   },
   orderEvent: undefined,
   paymentsCache: undefined,
-  emergency: false,
   isCheckEmergencyEvent: false,
   handleEmergency: function (): void {
     throw new Error('Function not implemented.')
@@ -130,7 +130,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   const [fiatAmount, setFiatAmount] = useState<number>(0)
   const [fiatCurrency, setFiatCurrency] = useState<string>('ARS')
   const [products, setProducts] = useState<ProductQtyData[]>([])
-  const [emergency, setEmergency] = useState<boolean>(false)
+  const [error, setError] = useState<string | undefined>(undefined)
   const [paymentsCache, setPaymentsCache] = useLocalStorage<IPaymentCache>(
     'paymentsCache',
     {}
@@ -241,7 +241,9 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       })
 
       if (!('pr' in invoice)) {
-        throw new Error('Error requesting invoice')
+        throw new Error('Error requesting invoice', {
+          cause: invoice.reason
+        })
       }
 
       return invoice
@@ -336,7 +338,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     setIsPrinted(false)
     setProducts([])
     setMemo({})
-    setEmergency(false)
+    setError(undefined)
     setCheckEmergencyEvent(false)
     setSubZap(undefined)
   }, [])
@@ -390,7 +392,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
   // On orderId change
   useEffect(() => {
-    if (!orderId || !zapEmitterPubKey) {
+    if (!orderId || !zapEmitterPubKey || amount === 0) {
       return
     }
 
@@ -399,9 +401,8 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         setLUD21(_invoice.verify)
         setCurrentInvoice!(_invoice.pr)
       })
-      .catch(() => {
-        setEmergency(true)
-        alert("Couldn't generate invoice.")
+      .catch((e: Error) => {
+        setError(`Couldn't generate invoice. ${e.cause}`)
       })
   }, [amount, orderId, zapEmitterPubKey, requestZapInvoice])
 
@@ -436,7 +437,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         isPrinted,
         orderEvent,
         paymentsCache,
-        emergency,
+        error,
         isCheckEmergencyEvent,
         handleEmergency,
         setCheckEmergencyEvent,

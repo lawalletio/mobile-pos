@@ -13,11 +13,7 @@ import {
 import type { Event, UnsignedEvent } from 'nostr-tools'
 
 // Utils
-import {
-  generateSecretKey,
-  getPublicKey,
-  finalizeEvent,
-} from 'nostr-tools'
+import { generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools'
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils'
 import { useLocalStorage } from 'react-use-storage'
 
@@ -46,7 +42,6 @@ const relays = [
   'wss://relay.damus.io',
   'wss://nostr-pub.wellorder.net'
 ]
-// const relayPool = relayInit(NOSTR_RELAY)
 
 // Context
 const ndk = new NDK({
@@ -74,8 +69,10 @@ import NDK, {
 
 export const NostrProvider = ({ children }: INostrProviderProps) => {
   const { zapEmitterPubKey } = useLN()
-  // const [privateKey, setPrivateKey] = useState<string>()
-  const [privateKey] = useLocalStorage('nostrPrivateKey', bytesToHex(generateSecretKey()))
+  const [privateKey] = useLocalStorage(
+    'nostrPrivateKey',
+    bytesToHex(generateSecretKey())
+  )
   const [publicKey, setPublicKey] = useState<string>()
   const [filter, setFilter] = useState<string>()
 
@@ -97,7 +94,10 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
 
       postEventId && unsignedEvent.tags.push(['e', postEventId])
 
-      const event = new NDKEvent(ndk, finalizeEvent(unsignedEvent, hexToBytes(privateKey)))
+      const event = new NDKEvent(
+        ndk,
+        finalizeEvent(unsignedEvent, hexToBytes(privateKey))
+      )
 
       console.info('zap event: ')
       console.dir(event)
@@ -129,7 +129,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
       kinds: [9735],
       authors: [zapEmitterPubKey!],
       '#e': [eventId],
-      since: Math.floor((new Date()).getTime()/1000)
+      since: Math.floor(new Date().getTime() / 1000)
     }
 
     setFilter(JSON.stringify(zapFilters))
