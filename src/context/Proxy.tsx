@@ -20,8 +20,13 @@ const LEDGER_PUBKEY = process.env.NEXT_PUBLIC_LEDGER_PUBKEY!
 import { LNURLResponse } from '@/types/lnurl'
 
 // Utils
-import { finalizeEvent, getPublicKey, UnsignedEvent } from 'nostr-tools'
-import { hexToBytes } from '@noble/hashes/utils'
+import {
+  finalizeEvent,
+  generateSecretKey,
+  getPublicKey,
+  UnsignedEvent
+} from 'nostr-tools'
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils'
 import axios, { AxiosResponse } from 'axios'
 
 export interface IProxyContext {
@@ -51,8 +56,9 @@ export const ProxyProvider = ({ children }: { children: React.ReactNode }) => {
   const { destinationLUD06 } = useContext(LaWalletContext)
   const [proxyLud06, setProxyLud06] = useState<LNURLResponse | null>(null)
   const [isEnabled, setIsEnabled] = useLocalStorage<boolean>('proxy', false)
-  const [proxyPrivateKey, setProxyPrivateKey] = useState(
-    '8bc45bb460c419a2393002cc8dfe34e8336cb944e715d4677418df0c3651d8ee'
+  const [proxyPrivateKey, setProxyPrivateKey] = useLocalStorage<string>(
+    'proxyPrivate',
+    bytesToHex(generateSecretKey())
   )
 
   const enableProxy = useCallback(() => {
@@ -150,6 +156,8 @@ export const ProxyProvider = ({ children }: { children: React.ReactNode }) => {
     } else {
       if (destinationLUD06.allowsNostr) {
         setLUD06(destinationLUD06)
+      } else {
+        setLUD06(undefined)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
