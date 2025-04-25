@@ -27,6 +27,7 @@ import { parseZapInvoice } from '@/lib/utils'
 import { finalizeEvent, validateEvent } from 'nostr-tools'
 import { hexToBytes } from '@noble/hashes/utils'
 import { LNURLInvoiceResponseSuccess, LNURLVerifyResponse } from '@/types/lnurl'
+import { useVerifyLud21 } from '@/hooks/useVerifyLud21'
 
 // Constants
 const NOSTR_API_URL = 'https://api.lawallet.ar/nostr/fetch'
@@ -111,12 +112,6 @@ interface IOrderProviderProps {
 }
 
 export const OrderProvider = ({ children }: IOrderProviderProps) => {
-  // Hooks
-  const { relays, localPublicKey, localPrivateKey, generateZapEvent } =
-    useNostr()
-  const { lud06, zapEmitterPubKey, requestInvoice, setLUD06 } = useLN()
-  const { ndk, filter, subscribeZap, publish } = useNostr()
-
   // Local states
   const [subZap, setSubZap] = useState<NDKSubscription | undefined>(undefined)
   const [orderId, setOrderId] = useState<string>()
@@ -135,6 +130,18 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     'paymentsCache',
     {}
   )
+
+  // Hooks
+  const { relays, localPublicKey, localPrivateKey, generateZapEvent } =
+    useNostr()
+  const { lud06, zapEmitterPubKey, requestInvoice, setLUD06 } = useLN()
+  const { ndk, filter, subscribeZap, publish } = useNostr()
+  const lud21Paid = useVerifyLud21({
+    enabled: !isPaid,
+    lud21VerifyUrl: lud21 || '',
+    delay: 2000
+  })
+
   const [isCheckEmergencyEvent, setCheckEmergencyEvent] =
     useState<boolean>(false)
 
@@ -269,12 +276,6 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
   const handleEmergency = async () => {
     console.dir('[EMERGENCY] handleEmergency in Order.tsx')
-    // Fetch Options
-    const options = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: filter
-    }
 
     try {
       // Check LUD21 if exists
@@ -422,6 +423,21 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       ndk.pool.off('relay:connect', handleResubscription)
     }
   }, [handleResubscription, ndk.pool])
+
+  useEffect(() => {
+    if (lud21Paid) {
+      setIsPaid(true)
+    }
+  }, [lud21Paid])
+
+  useEffect(() => {
+    if (!subZap || !isPaid) {
+      return
+    }
+    subZap.stop()
+    subZap.removeAllListeners()
+    setSubZap(undefined)
+  }, [isPaid, subZap])
 
   return (
     <OrderContext.Provider
