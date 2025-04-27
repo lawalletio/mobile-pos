@@ -10,6 +10,7 @@ import { useNumpad } from '@/hooks/useNumpad'
 import { useOrder } from '@/context/Order'
 import { useNostr } from '@/context/Nostr'
 import { useLN } from '@/context/LN'
+import { useBitcoinBlock } from '@/context/BitcoinBlock'
 
 // Utils
 import { formatToPreference } from '@/lib/formatter'
@@ -29,6 +30,7 @@ export default function Page() {
   const { userConfig } = useContext(LaWalletContext)
   const { lud06 } = useLN()
   const numpadData = useNumpad(userConfig.props.currency)
+  const { refresh: refreshBitcoinBlock } = useBitcoinBlock()
 
   // Local states
   const [loading, setLoading] = useState<boolean>(false)
@@ -73,6 +75,7 @@ export default function Page() {
 
   useEffect(() => {
     clear()
+    refreshBitcoinBlock()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

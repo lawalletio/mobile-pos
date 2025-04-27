@@ -40,6 +40,7 @@ import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import theme from '@/styles/theme'
 import { PrintOrder } from '@/types/print'
 import { useProxy } from '@/context/Proxy'
+import { useBitcoinBlock } from '@/context/BitcoinBlock'
 
 export default function Page() {
   // Hooks
@@ -49,8 +50,9 @@ export default function Page() {
   const [error, setError] = useState<string>()
   const [cardLnurlResponse, setCardLnurlResponse] = useState<LNURLResponse>()
   const [cardUrl, setCardUrl] = useState<string>()
-  const { convertCurrency } = useCurrencyConverter()
+  const { convertCurrency, pricesData } = useCurrencyConverter()
   const { zapEmitterPubKey } = useLN()
+  const { lastBlockNumber } = useBitcoinBlock()
   const {
     orderId,
     amount,
@@ -184,12 +186,11 @@ export default function Page() {
         price: product.price.value,
         qty: product.qty
       })),
-      // qrcode: 'https://lacrypta.masize.com/api/extract',
-      imageUrl: 'https://agustin.masize.com/examples/posta.png',
-      blockNumber: '111.111',
-      btcPrice: '0.085 M',
+      // imageUrl: 'https://agustin.masize.com/examples/posta.png',
+      blockNumber: lastBlockNumber.toLocaleString('en-US'),
+      btcPrice: (pricesData.USD * 100).toFixed(2) + ' M',
       currencyB: 'USD',
-      totalB: '0.01'
+      totalB: Math.max(pricesData.USD * amount, 0.01).toFixed(2)
     } as PrintOrder
 
     console.dir('printOrder:')
