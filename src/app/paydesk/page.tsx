@@ -50,7 +50,7 @@ export default function Page() {
       console.warn('Error publishing order')
       console.warn(e)
     })
-
+    clear()
     setOrderEvent!(order)
     setLoading(false)
 
