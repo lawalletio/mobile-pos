@@ -47,9 +47,6 @@ export default function Page() {
   const router = useRouter()
   const { orderId: orderIdFromUrl } = useParams()
   const query = useSearchParams()
-  const [error, setError] = useState<string>()
-  const [cardLnurlResponse, setCardLnurlResponse] = useState<LNURLResponse>()
-  const [cardUrl, setCardUrl] = useState<string>()
   const { convertCurrency, pricesData } = useCurrencyConverter()
   const { zapEmitterPubKey } = useLN()
   const { lastBlockNumber } = useBitcoinBlock()
@@ -65,43 +62,68 @@ export default function Page() {
     handleEmergency,
     setCheckEmergencyEvent,
     setIsPrinted,
-    loadOrder
+    loadOrder,
+    clear
   } = useOrder()
   const { isAvailable, permission, status: scanStatus, scan, stop } = useCard()
   const { print } = usePrint()
   const { transfer, internalTransfer, isEnabled: isProxyEnabled } = useProxy()
-
   const { userConfig } = useContext(LaWalletContext)
 
   // Local states
   const [cardStatus, setCardStatus] = useState<LNURLWStatus>(LNURLWStatus.IDLE)
+  const [isProxySettled, setIsProxySettled] = useState(false)
+  const [error, setError] = useState<string>()
+  const [cardLnurlResponse, setCardLnurlResponse] = useState<LNURLResponse>()
+  const [cardUrl, setCardUrl] = useState<string>()
 
   /** Functions */
   const handleBack = useCallback(() => {
+    clear()
     const back = query.get('back')
     if (!back) {
       router.back()
       return
     }
     router.replace(back)
-  }, [query, router])
+  }, [clear, query, router])
 
   const settleProxy = useCallback(
-    (cardUrl: string, cardLnurlResponse: LNURLResponse) => {
+    (cardUrl?: string, cardLnurlResponse?: LNURLResponse) => {
+      if (isProxySettled) {
+        console.info('Proxy already settled, returning')
+        return
+      }
+      console.info('Setting proxy as settled')
+      setIsProxySettled(true)
       let pendingToTransfer = amount * 1000
-      if (cardUrl.split('/')[2] === 'api.lacrypta.ar') {
+      console.info('Initial pending to transfer:', pendingToTransfer)
+      if (cardUrl && cardUrl.split('/')[2] === 'api.lacrypta.ar') {
         try {
+          console.info('Card URL matches api.lacrypta.ar, calculating satsback')
           const satsback = Math.round(pendingToTransfer * 0.3)
-          internalTransfer(satsback, cardLnurlResponse.accountPubKey!)
+          console.info('Satsback amount:', satsback)
+          console.info(
+            'Transferring satsback to account:',
+            cardLnurlResponse!.accountPubKey
+          )
+          internalTransfer(satsback, cardLnurlResponse!.accountPubKey!)
           pendingToTransfer -= satsback
+          console.info(
+            'Remaining pending transfer after satsback:',
+            pendingToTransfer
+          )
         } catch (e) {
           console.error('Satsback failed ', e)
         }
       }
-      // transfer to proxee
+      console.info(
+        'Transferring remaining amount to proxee:',
+        pendingToTransfer
+      )
       transfer(pendingToTransfer)
     },
-    [amount, transfer, internalTransfer]
+    [amount, transfer, internalTransfer, isProxySettled]
   )
 
   const processRegularPayment = useCallback(
@@ -173,9 +195,8 @@ export default function Page() {
       return
     }
 
-    isProxyEnabled &&
-      cardLnurlResponse &&
-      settleProxy(cardUrl!, cardLnurlResponse)
+    console.info('isProxyEnabled:', isProxyEnabled)
+    isProxyEnabled && settleProxy(cardUrl!, cardLnurlResponse)
 
     const printOrder = {
       total: convertCurrency(amount, 'SAT', 'ARS'),
@@ -198,7 +219,7 @@ export default function Page() {
     print(printOrder)
     setIsPrinted!(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPaid, amount, products, print])
+  }, [isPaid, amount, products, print, isProxyEnabled])
 
   // on card scanStatus change
   useEffect(() => {
