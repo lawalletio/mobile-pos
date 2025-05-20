@@ -191,28 +191,27 @@ export default function Menu({
       <Container size="small">
         <Divider y={24} />
         <Flex direction="column" gap={24}>
-          {categories.map(category =>
-            groupedProducts[category.id] ? (
-              <Flex key={category.id} direction="column">
-                <Text size="small" color={theme.colors.gray50}>
-                  {category.name}
-                </Text>
-                <Flex direction="column">
-                  {groupedProducts[category.id]?.map(product => (
-                    <Product
-                      key={product.id}
-                      data={product}
-                      onAddToCart={() => addToCart(product)}
-                      quantityInCart={productQuantities[product.id] || 0}
-                      onRemoveOne={() => removeFromCart(product)}
-                      onAddOne={() => addToCart(product)}
-                    />
-                  ))}
+          {categories.map(
+            category =>
+              groupedProducts[category.id] && (
+                <Flex key={category.id} direction="column">
+                  <Text size="small" color={theme.colors.gray50}>
+                    {category.name}
+                  </Text>
+                  <Flex direction="column">
+                    {groupedProducts[category.id]?.map(product => (
+                      <Product
+                        key={product.id}
+                        data={product}
+                        onAddToCart={() => addToCart(product)}
+                        quantityInCart={productQuantities[product.id] || 0}
+                        onRemoveOne={() => removeFromCart(product)}
+                        onAddOne={() => addToCart(product)}
+                      />
+                    ))}
+                  </Flex>
                 </Flex>
-              </Flex>
-            ) : (
-              <></>
-            )
+              )
           )}
         </Flex>
         <Divider y={64} />

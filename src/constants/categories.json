@@ -54,5 +54,17 @@
   {
     "id": 14,
     "name": "Acompañamientos"
+  },
+  {
+    "id": 15,
+    "name": "Otros"
+  },
+  {
+    "id": 16,
+    "name": "Indumentaria"
+  },
+  {
+    "id": 17,
+    "name": "Libros"
   }
 ]

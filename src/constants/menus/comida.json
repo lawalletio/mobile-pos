@@ -1,22 +1,12 @@
 [
   {
-    "id": 3,
-    "category_id": 11,
-    "name": "Choripán",
-    "description": "",
-    "price": {
-      "value": 1990,
-      "currency": "SAT"
-    }
-  },
-  {
     "id": 4,
-    "category_id": 11,
-    "name": "Hamburguesa Veggie",
+    "category_id": 8,
+    "name": "Porción de Pizza",
     "description": "",
     "price": {
-      "value": 1990,
-      "currency": "SAT"
+      "value": 2100,
+      "currency": "ARS"
     }
   }
 ]

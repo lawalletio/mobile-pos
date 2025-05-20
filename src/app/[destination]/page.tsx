@@ -21,7 +21,8 @@ import { Flex, Heading, Text, Divider, Icon, Card } from '@/components/UI'
 import Container from '@/components/Layout/Container'
 import {
   PantheonIcon,
-  GearIcon
+  GearIcon,
+  MenuIcon
 } from '@bitcoin-design/bitcoin-icons-react/filled'
 import { BtnLoader } from '@/components/Loader/Loader'
 
@@ -104,6 +105,34 @@ export default function Page() {
                   ❌
                 </span>
               </Heading>
+              {/* TODO: Add Optional bar */}
+              <Flex gap={8}>
+                <Card>
+                  <Link href="/cart/barra">
+                    <Icon>
+                      <MenuIcon />
+                    </Icon>
+                    <Flex direction="column" gap={4}>
+                      <Heading as="h5">Barra</Heading>
+                      <Text size="small">Barra.</Text>
+                    </Flex>
+                  </Link>
+                </Card>
+              </Flex>
+              {/* TODO: Add Optional bar */}
+              <Flex gap={8}>
+                <Card>
+                  <Link href="/cart/merch">
+                    <Icon>
+                      <MenuIcon />
+                    </Icon>
+                    <Flex direction="column" gap={4}>
+                      <Heading as="h5">Merch</Heading>
+                      <Text size="small">Merch Shop.</Text>
+                    </Flex>
+                  </Link>
+                </Card>
+              </Flex>
               <Flex gap={8}>
                 <Card>
                   <Link href="/paydesk">
