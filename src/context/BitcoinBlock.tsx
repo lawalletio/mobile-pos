@@ -40,8 +40,6 @@ export const useBitcoinBlock = () => {
 
 async function getLastBlockNumber() {
   // get lastblock from mempool api
-  const response = await fetch(
-    'https://mempool.masize.com/api/v1/blocks/tip/height'
-  )
+  const response = await fetch('https://mempool.space/api/v1/blocks/tip/height')
   return await response.json()
 }
