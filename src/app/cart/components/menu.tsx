@@ -34,21 +34,17 @@ import categories from '@/constants/categories.json'
 // Style
 import theme from '@/styles/theme'
 import { aggregateProducts, fetchLNURL } from '@/lib/utils'
-import { LNURLResponse } from '@/types/lnurl'
 
 interface MenuProps {
   name?: string
   title?: string
-  lud06: LNURLResponse
 }
 
 export default function Menu({
   name: pageName = 'coffee',
-  title: pageTitle = 'Carrito de Café',
-  lud06
+  title: pageTitle = 'Carrito de Café'
 }: MenuProps) {
   // Hooks
-  const { setLUD06 } = useLN()
   const {
     amount,
     setAmount,
@@ -171,9 +167,8 @@ export default function Menu({
   useEffect(() => {
     clearOrder()
     loadMenu(pageName)
-    setLUD06(lud06)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lud06])
+  }, [pageName])
 
   useEffect(() => {}, [])
 

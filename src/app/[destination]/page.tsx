@@ -1,7 +1,7 @@
 'use client'
 
 // React/Next
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 
@@ -85,6 +85,11 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const destinationName = useMemo(
+    () => decodeURIComponent(destination as string),
+    [destination]
+  )
+
   return (
     <>
       <Container size="small">
@@ -97,7 +102,7 @@ export default function Page() {
           ) : (
             <>
               <Heading as="h4">
-                {decodeURIComponent(destination as string)}{' '}
+                {destinationName}{' '}
                 <span
                   style={{ cursor: 'pointer' }}
                   onClick={() => removeStoredDestination()}
@@ -106,33 +111,53 @@ export default function Page() {
                 </span>
               </Heading>
               {/* TODO: Add Optional bar */}
-              <Flex gap={8}>
-                <Card>
-                  <Link href="/cart/barra">
-                    <Icon>
-                      <MenuIcon />
-                    </Icon>
-                    <Flex direction="column" gap={4}>
-                      <Heading as="h5">Barra</Heading>
-                      <Text size="small">Barra.</Text>
-                    </Flex>
-                  </Link>
-                </Card>
-              </Flex>
-              {/* TODO: Add Optional bar */}
-              <Flex gap={8}>
-                <Card>
-                  <Link href="/cart/merch">
-                    <Icon>
-                      <MenuIcon />
-                    </Icon>
-                    <Flex direction="column" gap={4}>
-                      <Heading as="h5">Merch</Heading>
-                      <Text size="small">Merch Shop.</Text>
-                    </Flex>
-                  </Link>
-                </Card>
-              </Flex>
+              {destinationName === 'agustin@lawallet.ar' && (
+                <Flex gap={8}>
+                  <Card>
+                    <Link href="/cart/barra">
+                      <Icon>
+                        <MenuIcon />
+                      </Icon>
+                      <Flex direction="column" gap={4}>
+                        <Heading as="h5">Barra</Heading>
+                        <Text size="small">Barra.</Text>
+                      </Flex>
+                    </Link>
+                  </Card>
+                </Flex>
+              )}
+              {/* TODO: Add Optional merch */}
+              {destinationName === 'pos@lawallet.ar' && (
+                <Flex gap={8}>
+                  <Card>
+                    <Link href="/cart/merch">
+                      <Icon>
+                        <MenuIcon />
+                      </Icon>
+                      <Flex direction="column" gap={4}>
+                        <Heading as="h5">Merch</Heading>
+                        <Text size="small">Merch Shop.</Text>
+                      </Flex>
+                    </Link>
+                  </Card>
+                </Flex>
+              )}
+              {/* TODO: Add Optional food */}
+              {destinationName === 'fede@lawallet.ar' && (
+                <Flex gap={8}>
+                  <Card>
+                    <Link href="/cart/comida">
+                      <Icon>
+                        <MenuIcon />
+                      </Icon>
+                      <Flex direction="column" gap={4}>
+                        <Heading as="h5">Comida</Heading>
+                        <Text size="small">Comida.</Text>
+                      </Flex>
+                    </Link>
+                  </Card>
+                </Flex>
+              )}
               <Flex gap={8}>
                 <Card>
                   <Link href="/paydesk">
