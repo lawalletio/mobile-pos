@@ -20,7 +20,7 @@ import useCurrencyConverter from '@/hooks/useCurrencyConverter'
 import { LaWalletContext } from '@/context/LaWalletContext'
 
 // Utils
-import { formatToPreference } from '@/lib/formatter'
+import { formatToPreference, roundToDown } from '@/lib/formatter'
 
 // Components
 import {
@@ -209,7 +209,7 @@ export default function Page() {
       })),
       // imageUrl: 'https://agustin.masize.com/examples/posta.png',
       blockNumber: lastBlockNumber.toLocaleString('en-US'),
-      btcPrice: (pricesData.USD * 100).toFixed(2) + ' M',
+      btcPrice: roundToDown(pricesData.USD * 100, 2).toFixed(2) + ' M',
       currencyB: 'USD',
       totalB: Math.max(pricesData.USD * amount, 0.01).toFixed(2)
     } as PrintOrder
