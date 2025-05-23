@@ -148,5 +148,15 @@
       "value": 25,
       "currency": "USD"
     }
+  },
+  {
+    "id": 16,
+    "category_id": 15,
+    "name": "Velas aromáticas (chiquita)",
+    "description": "",
+    "price": {
+      "value": 17000,
+      "currency": "ARS"
+    }
   }
 ]
