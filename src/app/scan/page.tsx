@@ -64,7 +64,7 @@ export default function Page() {
           <Divider y={16} />
           <Flex gap={8}>
             <Button variant="bezeledGray" onClick={() => router.push('/tree')}>
-              Cancelar
+              Cancel
             </Button>
           </Flex>
           <Divider y={32} />
