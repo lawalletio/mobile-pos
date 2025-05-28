@@ -271,7 +271,7 @@ export default function Page() {
     <>
       <Alert
         title={''}
-        description={'Disponible para escanear NFC.'}
+        description={'Ready for NFC tapping.'}
         type={'success'}
         isOpen={cardStatus === LNURLWStatus.SCANNING}
       />
@@ -279,7 +279,7 @@ export default function Page() {
       <Alert
         title={''}
         description={
-          cardStatus === LNURLWStatus.REQUESTING ? 'Procesando' : 'Cobrando'
+          cardStatus === LNURLWStatus.REQUESTING ? 'Processing' : 'Transferring'
         }
         type={'success'}
         isOpen={[LNURLWStatus.REQUESTING, LNURLWStatus.CALLBACK].includes(
@@ -385,7 +385,7 @@ export default function Page() {
             >
               <Loader />
               <Text size="small" color={theme.colors.gray50}>
-                Esperando pago
+                Waiting for payment
               </Text>
               <Flex justify="center" align="center" gap={4}>
                 {userConfig.props.currency !== 'SAT' && <Text>$</Text>}
@@ -417,7 +417,7 @@ export default function Page() {
                   )}
 
                   <Button variant="bezeledGray" onClick={() => handleBack()}>
-                    Cancelar
+                    Cancel
                   </Button>
                   <Button
                     variant="bezeledGray"

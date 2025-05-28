@@ -46,6 +46,7 @@
   "CREATE_INVOICE": "Crear factura",
   "SCAN_QR_CODE": "Escanear código QR",
   "GENERATE": "Generar",
+  "CHARGE": "Cobrar",
   "LOGOUT": "Cerrar sesion",
   "CLOSE": "Cerrar",
   "GO_HOME": "Ir al inicio",

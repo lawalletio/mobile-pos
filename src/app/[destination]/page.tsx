@@ -165,8 +165,10 @@ export default function Page() {
                       <PantheonIcon />
                     </Icon>
                     <Flex direction="column" gap={4}>
-                      <Heading as="h5">Caja</Heading>
-                      <Text size="small">Medio de cobro para tu negocio.</Text>
+                      <Heading as="h5">Cash Register</Heading>
+                      <Text size="small">
+                        Type the price and pay with your LN.
+                      </Text>
                     </Flex>
                   </Link>
                 </Card>

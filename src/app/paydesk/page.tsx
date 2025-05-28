@@ -101,7 +101,7 @@ export default function Page() {
         <Divider y={24} />
         <Flex gap={8}>
           <Button onClick={handleClick} disabled={loading || sats === 0}>
-            {loading ? <BtnLoader /> : 'Generar'}
+            {loading ? <BtnLoader /> : 'Charge'}
           </Button>
         </Flex>
         <Divider y={24} />
