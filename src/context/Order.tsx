@@ -29,9 +29,6 @@ import { hexToBytes } from '@noble/hashes/utils'
 import { LNURLInvoiceResponseSuccess, LNURLVerifyResponse } from '@/types/lnurl'
 import { useVerifyLud21 } from '@/hooks/useVerifyLud21'
 
-// Constants
-const NOSTR_API_URL = 'https://api.lawallet.ar/nostr/fetch'
-
 // Interface
 export interface IOrderContext {
   orderId?: string
