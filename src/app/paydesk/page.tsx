@@ -10,6 +10,7 @@ import { useNumpad } from '@/hooks/useNumpad'
 import { useOrder } from '@/context/Order'
 import { useNostr } from '@/context/Nostr'
 import { useLN } from '@/context/LN'
+import { useBitcoinBlock } from '@/context/BitcoinBlock'
 
 // Utils
 import { formatToPreference } from '@/lib/formatter'
@@ -26,9 +27,10 @@ export default function Page() {
   const router = useRouter()
   const { generateOrderEvent, setAmount, setOrderEvent, clear } = useOrder()
   const { publish } = useNostr()
-  const { setLUD06 } = useLN()
-  const { userConfig, destinationLUD06 } = useContext(LaWalletContext)
+  const { userConfig } = useContext(LaWalletContext)
+  const { lud06 } = useLN()
   const numpadData = useNumpad(userConfig.props.currency)
+  const { refresh: refreshBitcoinBlock } = useBitcoinBlock()
 
   // Local states
   const [loading, setLoading] = useState<boolean>(false)
@@ -48,9 +50,10 @@ export default function Page() {
       console.warn('Error publishing order')
       console.warn(e)
     })
-
+    clear()
     setOrderEvent!(order)
     setLoading(false)
+
     router.push('/payment/' + order.id)
   }
 
@@ -62,17 +65,17 @@ export default function Page() {
   }, [sats])
 
   useEffect(() => {
-    if (!destinationLUD06) {
-      console.info('No destinationLUD06')
+    if (!lud06) {
+      alert('No lud06')
+      router.replace('/')
       return
     }
-    setLUD06(destinationLUD06)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destinationLUD06])
+  }, [lud06])
 
-  // on mount
   useEffect(() => {
     clear()
+    refreshBitcoinBlock()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -98,7 +101,7 @@ export default function Page() {
         <Divider y={24} />
         <Flex gap={8}>
           <Button onClick={handleClick} disabled={loading || sats === 0}>
-            {loading ? <BtnLoader /> : 'Generar'}
+            {loading ? <BtnLoader /> : 'Charge'}
           </Button>
         </Flex>
         <Divider y={24} />

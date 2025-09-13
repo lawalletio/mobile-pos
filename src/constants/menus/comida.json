@@ -1,22 +1,42 @@
 [
   {
-    "id": 3,
-    "category_id": 11,
-    "name": "Choripán",
+    "id": 4,
+    "category_id": 8,
+    "name": "The Laszlo Legend",
     "description": "",
     "price": {
-      "value": 1990,
-      "currency": "SAT"
+      "value": 2100,
+      "currency": "ARS"
     }
   },
   {
-    "id": 4,
-    "category_id": 11,
-    "name": "Hamburguesa Veggie",
+    "id": 5,
+    "category_id": 8,
+    "name": "Nakamoto Deluxe",
     "description": "",
     "price": {
-      "value": 1990,
-      "currency": "SAT"
+      "value": 2100,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 6,
+    "category_id": 8,
+    "name": "Proof of toppings",
+    "description": "",
+    "price": {
+      "value": 2100,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 7,
+    "category_id": 8,
+    "name": "Etherean",
+    "description": "",
+    "price": {
+      "value": 2100,
+      "currency": "ARS"
     }
   }
 ]

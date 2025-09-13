@@ -1,6 +1,6 @@
 {
   "name": "mobile-pos",
-  "version": "0.2.3",
+  "version": "0.4.4",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -23,10 +23,12 @@
     "prettier": "^3.0.3",
     "qr-scanner": "^1.4.2",
     "react": "^19.0.0",
+    "react-camera-pro": "^1.4.0",
     "react-dom": "^19.0.0",
     "react-qr-code": "^2.0.12",
     "react-use-storage": "^0.5.1",
     "sass": "^1.69.4",
+    "sharp": "^0.34.0",
     "styled-components": "^6.1.0",
     "use-nfc-hook": "^1.0.4"
   },

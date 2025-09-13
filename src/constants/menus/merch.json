@@ -1,142 +1,162 @@
 [
   {
     "id": 1,
-    "category_id": 5,
+    "category_id": 15,
     "name": "Mate de acero",
     "description": "",
     "price": {
-      "value": 14990,
-      "currency": "SAT"
+      "value": 17900,
+      "currency": "ARS"
     }
   },
   {
     "id": 2,
-    "category_id": 5,
-    "name": "Llavero destapador",
+    "category_id": 15,
+    "name": "Popsocket celular",
     "description": "",
     "price": {
-      "value": 1490,
-      "currency": "SAT"
+      "value": 2490,
+      "currency": "ARS"
     }
   },
   {
     "id": 3,
-    "category_id": 5,
-    "name": "Popsocket celular",
+    "category_id": 15,
+    "name": "Taza",
     "description": "",
     "price": {
-      "value": 2190,
-      "currency": "SAT"
+      "value": 8900,
+      "currency": "ARS"
     }
   },
   {
     "id": 4,
-    "category_id": 5,
-    "name": "Taza",
-    "description": "",
-    "price": {
-      "value": 7900,
-      "currency": "SAT"
-    }
-  },
-  {
-    "id": 5,
-    "category_id": 5,
-    "name": "Manta",
-    "description": "",
-    "price": {
-      "value": 15900,
-      "currency": "SAT"
-    }
-  },
-  {
-    "id": 6,
-    "category_id": 5,
-    "name": "Remera",
-    "description": "",
-    "price": {
-      "value": 22900,
-      "currency": "SAT"
-    }
-  },
-  {
-    "id": 7,
-    "category_id": 5,
-    "name": "Vaso térmico",
-    "description": "",
-    "price": {
-      "value": 3990,
-      "currency": "SAT"
-    }
-  },
-  {
-    "id": 8,
-    "category_id": 5,
-    "name": "Tote Bags",
-    "description": "",
-    "price": {
-      "value": 7900,
-      "currency": "SAT"
-    }
-  },
-  {
-    "id": 9,
-    "category_id": 5,
-    "name": "Gorras",
-    "description": "",
-    "price": {
-      "value": 10900,
-      "currency": "SAT"
-    }
-  },
-  {
-    "id": 10,
-    "category_id": 5,
-    "name": "Buzos",
-    "description": "",
-    "price": {
-      "value": 39900,
-      "currency": "SAT"
-    }
-  },
-  {
-    "id": 11,
-    "category_id": 5,
-    "name": "Tabla para pizza",
-    "description": "",
-    "price": {
-      "value": 10900,
-      "currency": "SAT"
-    }
-  },
-  {
-    "id": 12,
-    "category_id": 5,
+    "category_id": 15,
     "name": "Moneda BTC La Crypta",
     "description": "",
     "price": {
       "value": 7590,
-      "currency": "SAT"
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 5,
+    "category_id": 15,
+    "name": "Velas aromáticas",
+    "description": "",
+    "price": {
+      "value": 21000,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 6,
+    "category_id": 15,
+    "name": "Tabla para pizza",
+    "description": "",
+    "price": {
+      "value": 10900,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 7,
+    "category_id": 16,
+    "name": "Manta Polar",
+    "description": "",
+    "price": {
+      "value": 17900,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 8,
+    "category_id": 16,
+    "name": "Remera",
+    "description": "",
+    "price": {
+      "value": 24900,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 9,
+    "category_id": 16,
+    "name": "Buzo Halving",
+    "description": "",
+    "price": {
+      "value": 44900,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 10,
+    "category_id": 16,
+    "name": "Tote Bags",
+    "description": "",
+    "price": {
+      "value": 8900,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 11,
+    "category_id": 16,
+    "name": "Gorras",
+    "description": "",
+    "price": {
+      "value": 11900,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 12,
+    "category_id": 12,
+    "name": "Trezor Safe 3",
+    "description": "",
+    "price": {
+      "value": 196900,
+      "currency": "ARS"
     }
   },
   {
     "id": 13,
     "category_id": 12,
-    "name": "Trezor Safe 3",
+    "name": "Trezor Safe 5",
     "description": "",
     "price": {
-      "value": 159900,
-      "currency": "SAT"
+      "value": 374900,
+      "currency": "ARS"
     }
   },
   {
     "id": 14,
-    "category_id": 12,
-    "name": "Trezor Safe 5",
+    "category_id": 17,
+    "name": "Profecía Bitcoin",
     "description": "",
     "price": {
-      "value": 389900,
-      "currency": "SAT"
+      "value": 25000,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 15,
+    "category_id": 17,
+    "name": "Criptoria",
+    "description": "",
+    "price": {
+      "value": 25,
+      "currency": "USD"
+    }
+  },
+  {
+    "id": 16,
+    "category_id": 15,
+    "name": "Velas aromáticas (chiquita)",
+    "description": "",
+    "price": {
+      "value": 17000,
+      "currency": "ARS"
     }
   }
 ]

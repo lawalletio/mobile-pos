@@ -1,8 +1,6 @@
 // React/Next
 import { createContext } from 'react'
 
-import posResponse from '../constants/lud06/pos.json'
-
 // Context and Hooks
 import useConfiguration, { ConfigReturns } from '@/hooks/useConfiguration'
 import { useLocalStorage } from 'react-use-storage'
@@ -10,8 +8,8 @@ import { LNURLResponse } from '@/types/lnurl'
 
 interface LaWalletContextType {
   userConfig: ConfigReturns
-  destinationLUD06: LNURLResponse
-  setDestinationLUD06: (value: LNURLResponse) => void
+  destinationLUD06: LNURLResponse | null
+  setDestinationLUD06: (value: LNURLResponse | null) => void
 }
 
 // Constants
@@ -20,7 +18,7 @@ export const LaWalletContext = createContext({} as LaWalletContextType)
 export function LaWalletProvider({ children }: { children: React.ReactNode }) {
   const userConfig: ConfigReturns = useConfiguration()
   const [destinationLUD06, setDestinationLUD06] =
-    useLocalStorage<LNURLResponse>('destinationLUD06', posResponse)
+    useLocalStorage<LNURLResponse | null>('destinationLUD06', null)
 
   const value: LaWalletContextType = {
     userConfig,

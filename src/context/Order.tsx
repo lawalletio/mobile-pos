@@ -27,9 +27,7 @@ import { parseZapInvoice } from '@/lib/utils'
 import { finalizeEvent, validateEvent } from 'nostr-tools'
 import { hexToBytes } from '@noble/hashes/utils'
 import { LNURLInvoiceResponseSuccess, LNURLVerifyResponse } from '@/types/lnurl'
-
-// Constants
-const NOSTR_API_URL = 'https://api.lawallet.ar/nostr/fetch'
+import { useVerifyLud21 } from '@/hooks/useVerifyLud21'
 
 // Interface
 export interface IOrderContext {
@@ -44,7 +42,7 @@ export interface IOrderContext {
   isPrinted?: boolean
   orderEvent: Event | undefined
   paymentsCache?: IPaymentCache
-  emergency: boolean
+  error: string | undefined
   isCheckEmergencyEvent: boolean
   handleEmergency: () => void
   setCheckEmergencyEvent: Dispatch<SetStateAction<boolean>>
@@ -71,6 +69,7 @@ export const OrderContext = createContext<IOrderContext>({
   fiatAmount: 0,
   fiatCurrency: 'ARS',
   memo: undefined,
+  error: undefined,
   products: [],
   checkOut: function (): Promise<{ eventId: string }> {
     throw new Error('Function not implemented.')
@@ -95,7 +94,6 @@ export const OrderContext = createContext<IOrderContext>({
   },
   orderEvent: undefined,
   paymentsCache: undefined,
-  emergency: false,
   isCheckEmergencyEvent: false,
   handleEmergency: function (): void {
     throw new Error('Function not implemented.')
@@ -111,12 +109,6 @@ interface IOrderProviderProps {
 }
 
 export const OrderProvider = ({ children }: IOrderProviderProps) => {
-  // Hooks
-  const { relays, localPublicKey, localPrivateKey, generateZapEvent } =
-    useNostr()
-  const { lud06, zapEmitterPubKey, requestInvoice, setLUD06 } = useLN()
-  const { ndk, filter, subscribeZap, publish } = useNostr()
-
   // Local states
   const [subZap, setSubZap] = useState<NDKSubscription | undefined>(undefined)
   const [orderId, setOrderId] = useState<string>()
@@ -130,11 +122,23 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   const [fiatAmount, setFiatAmount] = useState<number>(0)
   const [fiatCurrency, setFiatCurrency] = useState<string>('ARS')
   const [products, setProducts] = useState<ProductQtyData[]>([])
-  const [emergency, setEmergency] = useState<boolean>(false)
+  const [error, setError] = useState<string | undefined>(undefined)
   const [paymentsCache, setPaymentsCache] = useLocalStorage<IPaymentCache>(
     'paymentsCache',
     {}
   )
+
+  // Hooks
+  const { relays, localPublicKey, localPrivateKey, generateZapEvent } =
+    useNostr()
+  const { lud06, zapEmitterPubKey, requestInvoice, setLUD06 } = useLN()
+  const { ndk, filter, subscribeZap, publish } = useNostr()
+  const lud21Paid = useVerifyLud21({
+    enabled: !isPaid,
+    lud21VerifyUrl: lud21 || '',
+    delay: 2000
+  })
+
   const [isCheckEmergencyEvent, setCheckEmergencyEvent] =
     useState<boolean>(false)
 
@@ -241,7 +245,9 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       })
 
       if (!('pr' in invoice)) {
-        throw new Error('Error requesting invoice')
+        throw new Error('Error requesting invoice', {
+          cause: invoice.reason
+        })
       }
 
       return invoice
@@ -267,12 +273,6 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
   const handleEmergency = async () => {
     console.dir('[EMERGENCY] handleEmergency in Order.tsx')
-    // Fetch Options
-    const options = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: filter
-    }
 
     try {
       // Check LUD21 if exists
@@ -336,7 +336,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     setIsPrinted(false)
     setProducts([])
     setMemo({})
-    setEmergency(false)
+    setError(undefined)
     setCheckEmergencyEvent(false)
     setSubZap(undefined)
   }, [])
@@ -390,7 +390,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
   // On orderId change
   useEffect(() => {
-    if (!orderId || !zapEmitterPubKey) {
+    if (!orderId || !zapEmitterPubKey || amount === 0) {
       return
     }
 
@@ -399,9 +399,8 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         setLUD21(_invoice.verify)
         setCurrentInvoice!(_invoice.pr)
       })
-      .catch(() => {
-        setEmergency(true)
-        alert("Couldn't generate invoice.")
+      .catch((e: Error) => {
+        setError(`Couldn't generate invoice. ${e.cause}`)
       })
   }, [amount, orderId, zapEmitterPubKey, requestZapInvoice])
 
@@ -422,6 +421,21 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     }
   }, [handleResubscription, ndk.pool])
 
+  useEffect(() => {
+    if (lud21Paid) {
+      setIsPaid(true)
+    }
+  }, [lud21Paid])
+
+  useEffect(() => {
+    if (!subZap || !isPaid) {
+      return
+    }
+    subZap.stop()
+    subZap.removeAllListeners()
+    setSubZap(undefined)
+  }, [isPaid, subZap])
+
   return (
     <OrderContext.Provider
       value={{
@@ -436,7 +450,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         isPrinted,
         orderEvent,
         paymentsCache,
-        emergency,
+        error,
         isCheckEmergencyEvent,
         handleEmergency,
         setCheckEmergencyEvent,

@@ -15,6 +15,8 @@ import { LNProvider } from '@/context/LN'
 import { NostrProvider } from '@/context/Nostr'
 import { OrderProvider } from '@/context/Order'
 import { InjectedNFCProvider } from '@/context/InjectedNFC'
+import { ProxyProvider } from '@/context/Proxy'
+import { BitcoinBlockProvider } from '@/context/BitcoinBlock'
 
 interface ProviderProps {
   children: ReactNode
@@ -49,14 +51,18 @@ const Providers = (props: ProviderProps) => {
         <InjectedNFCProvider>
           <LaWalletProvider>
             <LNProvider>
-              <NostrProvider>
-                <OrderProvider>
-                  <StyledComponentsRegistry>
-                    <GlobalStyles />
-                    <ThemeProvider theme={theme}>{children}</ThemeProvider>
-                  </StyledComponentsRegistry>
-                </OrderProvider>
-              </NostrProvider>
+              <ProxyProvider>
+                <NostrProvider>
+                  <OrderProvider>
+                    <BitcoinBlockProvider>
+                      <StyledComponentsRegistry>
+                        <GlobalStyles />
+                        <ThemeProvider theme={theme}>{children}</ThemeProvider>
+                      </StyledComponentsRegistry>
+                    </BitcoinBlockProvider>
+                  </OrderProvider>
+                </NostrProvider>
+              </ProxyProvider>
             </LNProvider>
           </LaWalletProvider>
         </InjectedNFCProvider>

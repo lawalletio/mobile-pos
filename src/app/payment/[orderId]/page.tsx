@@ -20,7 +20,7 @@ import useCurrencyConverter from '@/hooks/useCurrencyConverter'
 import { LaWalletContext } from '@/context/LaWalletContext'
 
 // Utils
-import { formatToPreference } from '@/lib/formatter'
+import { formatToPreference, roundToDown } from '@/lib/formatter'
 
 // Components
 import {
@@ -38,17 +38,18 @@ import Container from '@/components/Layout/Container'
 import { Loader } from '@/components/Loader/Loader'
 import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import theme from '@/styles/theme'
-import { useNostr } from '@/context/Nostr'
+import { PrintOrder } from '@/types/print'
+import { useProxy } from '@/context/Proxy'
+import { useBitcoinBlock } from '@/context/BitcoinBlock'
 
 export default function Page() {
   // Hooks
   const router = useRouter()
   const { orderId: orderIdFromUrl } = useParams()
   const query = useSearchParams()
-  const [error, setError] = useState<string>()
-
-  const { convertCurrency } = useCurrencyConverter()
-  const { zapEmitterPubKey, lud06, destinationPubKey } = useLN()
+  const { convertCurrency, pricesData } = useCurrencyConverter()
+  const { zapEmitterPubKey } = useLN()
+  const { lastBlockNumber } = useBitcoinBlock()
   const {
     orderId,
     amount,
@@ -56,34 +57,77 @@ export default function Page() {
     isPaid,
     isPrinted,
     currentInvoice: invoice,
-    emergency,
+    error: orderError,
     isCheckEmergencyEvent,
     handleEmergency,
     setCheckEmergencyEvent,
     setIsPrinted,
-    loadOrder
+    loadOrder,
+    clear
   } = useOrder()
   const { isAvailable, permission, status: scanStatus, scan, stop } = useCard()
-  const { localPrivateKey, relays, ndk, getBalance } = useNostr()
   const { print } = usePrint()
-
+  const { transfer, internalTransfer, isEnabled: isProxyEnabled } = useProxy()
   const { userConfig } = useContext(LaWalletContext)
 
   // Local states
   const [cardStatus, setCardStatus] = useState<LNURLWStatus>(LNURLWStatus.IDLE)
+  const [isProxySettled, setIsProxySettled] = useState(false)
+  const [error, setError] = useState<string>()
+  const [cardLnurlResponse, setCardLnurlResponse] = useState<LNURLResponse>()
+  const [cardUrl, setCardUrl] = useState<string>()
 
   /** Functions */
   const handleBack = useCallback(() => {
+    clear()
     const back = query.get('back')
     if (!back) {
       router.back()
       return
     }
-    router.push(back)
-  }, [router, query])
+    router.replace(back)
+  }, [clear, query, router])
+
+  const settleProxy = useCallback(
+    (cardUrl?: string, cardLnurlResponse?: LNURLResponse) => {
+      if (isProxySettled) {
+        console.info('Proxy already settled, returning')
+        return
+      }
+      console.info('Setting proxy as settled')
+      setIsProxySettled(true)
+      let pendingToTransfer = amount * 1000
+      console.info('Initial pending to transfer:', pendingToTransfer)
+      if (cardUrl && cardUrl.split('/')[2] === 'api.lacrypta.ar') {
+        try {
+          console.info('Card URL matches api.lacrypta.ar, calculating satsback')
+          const satsback = Math.round(pendingToTransfer * 0.3)
+          console.info('Satsback amount:', satsback)
+          console.info(
+            'Transferring satsback to account:',
+            cardLnurlResponse!.accountPubKey
+          )
+          internalTransfer(satsback, cardLnurlResponse!.accountPubKey!)
+          pendingToTransfer -= satsback
+          console.info(
+            'Remaining pending transfer after satsback:',
+            pendingToTransfer
+          )
+        } catch (e) {
+          console.error('Satsback failed ', e)
+        }
+      }
+      console.info(
+        'Transferring remaining amount to proxee:',
+        pendingToTransfer
+      )
+      transfer(pendingToTransfer)
+    },
+    [amount, transfer, internalTransfer, isProxySettled]
+  )
 
   const processRegularPayment = useCallback(
-    async (cardUrl: string, response: LNURLResponse) => {
+    async (response: LNURLResponse) => {
       setCardStatus(LNURLWStatus.CALLBACK)
       const url = response.callback
       const _response = await axios.get(url, {
@@ -101,11 +145,12 @@ export default function Page() {
     [invoice]
   )
 
-
   const startRead = useCallback(async () => {
     try {
       const { cardUrl, lnurlResponse } = await scan(ScanAction.PAY_REQUEST)
-      await processRegularPayment(cardUrl, lnurlResponse)
+      setCardLnurlResponse(lnurlResponse)
+      setCardUrl(cardUrl)
+      await processRegularPayment(lnurlResponse)
     } catch (e) {
       setCardStatus(LNURLWStatus.ERROR)
       setError((e as Error).message)
@@ -122,7 +167,7 @@ export default function Page() {
     }
 
     // Order already set
-    if (orderId) {
+    if (orderId === orderIdFromUrl) {
       return
     }
 
@@ -150,6 +195,9 @@ export default function Page() {
       return
     }
 
+    console.info('isProxyEnabled:', isProxyEnabled)
+    isProxyEnabled && settleProxy(cardUrl!, cardLnurlResponse)
+
     const printOrder = {
       total: convertCurrency(amount, 'SAT', 'ARS'),
       totalSats: amount,
@@ -158,15 +206,20 @@ export default function Page() {
         name: product.name,
         price: product.price.value,
         qty: product.qty
-      }))
-    }
+      })),
+      // imageUrl: 'https://agustin.masize.com/examples/posta.png',
+      blockNumber: lastBlockNumber.toLocaleString('en-US'),
+      btcPrice: roundToDown(pricesData.USD * 100, 2).toFixed(2) + ' M',
+      currencyB: 'USD',
+      totalB: Math.max(pricesData.USD * amount, 0.01).toFixed(2)
+    } as PrintOrder
 
     console.dir('printOrder:')
     console.dir(printOrder)
     print(printOrder)
     setIsPrinted!(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPaid, amount, products, print])
+  }, [isPaid, amount, products, print, isProxyEnabled])
 
   // on card scanStatus change
   useEffect(() => {
@@ -183,23 +236,6 @@ export default function Page() {
     }
   }, [scanStatus])
 
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     console.info('Checking for events...')
-  //     if (!isPaid) {
-  //       console.info('No paid, checking for emergency event...')
-  //       handleEmergency(internalTxFilter!)
-  //     } else {
-  //       console.info('Paid, stopping interval...')
-  //       clearInterval(interval)
-  //     }
-  //   }, 2000)
-
-  //   return () => {
-  //     clearInterval(interval)
-  //   }
-  // }, [isPaid, handleEmergency])
-
   // on Mount
   useEffect(() => {
     return () => {
@@ -208,21 +244,11 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  if (emergency && !isPaid) {
+  if (orderError && !isPaid) {
     return (
       <Flex gap={8} direction="column">
         <Flex>
-          caca
-          <Button
-            variant="bezeledGray"
-            onClick={() => {
-              setCheckEmergencyEvent(true)
-              handleEmergency()
-              handleBack()
-            }}
-          >
-            Emergency
-          </Button>
+          <Text>{orderError}</Text>
         </Flex>
 
         <Flex>
@@ -243,19 +269,17 @@ export default function Page() {
 
   return (
     <>
-      {invoice && (
-        <Alert
-          title={''}
-          description={'Disponible para escanear NFC.'}
-          type={'success'}
-          isOpen={cardStatus === LNURLWStatus.SCANNING}
-        />
-      )}
+      <Alert
+        title={''}
+        description={'Ready for NFC tapping.'}
+        type={'success'}
+        isOpen={cardStatus === LNURLWStatus.SCANNING}
+      />
 
       <Alert
         title={''}
         description={
-          cardStatus === LNURLWStatus.REQUESTING ? 'Procesando' : 'Cobrando'
+          cardStatus === LNURLWStatus.REQUESTING ? 'Processing' : 'Transferring'
         }
         type={'success'}
         isOpen={[LNURLWStatus.REQUESTING, LNURLWStatus.CALLBACK].includes(
@@ -361,7 +385,7 @@ export default function Page() {
             >
               <Loader />
               <Text size="small" color={theme.colors.gray50}>
-                Esperando pago
+                Waiting for payment
               </Text>
               <Flex justify="center" align="center" gap={4}>
                 {userConfig.props.currency !== 'SAT' && <Text>$</Text>}
@@ -379,6 +403,7 @@ export default function Page() {
           </Container>
 
           <QRCode value={invoice} />
+          <Text>{isProxyEnabled ? 'Proxy enabled' : 'Proxy disabled'}</Text>
 
           <Flex>
             <Container size="small">
@@ -392,7 +417,7 @@ export default function Page() {
                   )}
 
                   <Button variant="bezeledGray" onClick={() => handleBack()}>
-                    Cancelar
+                    Cancel
                   </Button>
                   <Button
                     variant="bezeledGray"
