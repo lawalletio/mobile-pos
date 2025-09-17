@@ -111,7 +111,7 @@ export default function Page() {
                 </span>
               </Heading>
               {/* TODO: Add Optional bar */}
-              {destinationName === 'barra@lawallet.ar' && (
+              {destinationName === 'barra@lacrypta.ar' && (
                 <Flex gap={8}>
                   <Card>
                     <Link href="/cart/barra">
@@ -127,7 +127,7 @@ export default function Page() {
                 </Flex>
               )}
               {/* TODO: Add Optional merch */}
-              {destinationName === 'lacryptashop@lawallet.ar' && (
+              {destinationName === 'merch@lacrypta.ar' && (
                 <Flex gap={8}>
                   <Card>
                     <Link href="/cart/merch">
@@ -143,7 +143,7 @@ export default function Page() {
                 </Flex>
               )}
               {/* TODO: Add Optional food */}
-              {destinationName === 'comida@lawallet.ar' && (
+              {destinationName === 'comida@lacrypta.ar' && (
                 <Flex gap={8}>
                   <Card>
                     <Link href="/cart/comida">
