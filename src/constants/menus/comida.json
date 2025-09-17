@@ -1,41 +1,21 @@
 [
   {
-    "id": 4,
-    "category_id": 8,
-    "name": "The Laszlo Legend",
+    "id": 1,
+    "category_id": 11,
+    "name": "Sandwiches pernil",
     "description": "",
     "price": {
-      "value": 2100,
+      "value": 3800,
       "currency": "ARS"
     }
   },
   {
-    "id": 5,
-    "category_id": 8,
-    "name": "Nakamoto Deluxe",
+    "id": 2,
+    "category_id": 11,
+    "name": "Sandwiches pernil x 2",
     "description": "",
     "price": {
-      "value": 2100,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 6,
-    "category_id": 8,
-    "name": "Proof of toppings",
-    "description": "",
-    "price": {
-      "value": 2100,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 7,
-    "category_id": 8,
-    "name": "Etherean",
-    "description": "",
-    "price": {
-      "value": 2100,
+      "value": 7000,
       "currency": "ARS"
     }
   }
