@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "category_id": 16,
+    "name": "Gorra Bitnaria",
+    "description": "",
+    "price": {
+      "value": 33000,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 2,
+    "category_id": 16,
+    "name": "Beanie Bitnaria",
+    "description": "",
+    "price": {
+      "value": 30000,
+      "currency": "ARS"
+    }
+  }
+]
