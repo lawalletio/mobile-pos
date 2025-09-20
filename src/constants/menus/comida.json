@@ -2,20 +2,20 @@
   {
     "id": 1,
     "category_id": 11,
-    "name": "Sandwiches pernil",
+    "name": "Sandwich pernil",
     "description": "",
     "price": {
-      "value": 3800,
+      "value": 3500,
       "currency": "ARS"
     }
   },
   {
     "id": 2,
     "category_id": 11,
-    "name": "Sandwiches pernil x 2",
+    "name": "Promo: Sandwiches pernil x 2",
     "description": "",
     "price": {
-      "value": 7000,
+      "value": 6000,
       "currency": "ARS"
     }
   }
