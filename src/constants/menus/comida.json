@@ -18,5 +18,15 @@
       "value": 6000,
       "currency": "ARS"
     }
+  },
+  {
+    "id": 3,
+    "category_id": 8,
+    "name": "Porción Pizza",
+    "description": "",
+    "price": {
+      "value": 3000,
+      "currency": "ARS"
+    }
   }
 ]
