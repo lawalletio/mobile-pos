@@ -2,30 +2,10 @@
   {
     "id": 1,
     "category_id": 11,
-    "name": "Sandwich pernil",
+    "name": "Shawarma",
     "description": "",
     "price": {
-      "value": 3500,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 2,
-    "category_id": 11,
-    "name": "Promo: Sandwiches pernil x 2",
-    "description": "",
-    "price": {
-      "value": 6000,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 3,
-    "category_id": 8,
-    "name": "Porción Pizza",
-    "description": "",
-    "price": {
-      "value": 3000,
+      "value": 12000,
       "currency": "ARS"
     }
   }

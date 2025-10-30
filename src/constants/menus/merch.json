@@ -5,7 +5,7 @@
     "name": "Mate de acero",
     "description": "",
     "price": {
-      "value": 17900,
+      "value": 21000,
       "currency": "ARS"
     }
   },
@@ -35,32 +35,42 @@
     "name": "Moneda BTC La Crypta",
     "description": "",
     "price": {
-      "value": 7590,
+      "value": 6900,
       "currency": "ARS"
     }
   },
   {
     "id": 5,
-    "category_id": 15,
-    "name": "Velas aromáticas",
+    "category_id": 19,
+    "name": "Velas aromática chica",
     "description": "",
     "price": {
-      "value": 21000,
+      "value": 16000,
       "currency": "ARS"
     }
   },
   {
     "id": 6,
-    "category_id": 15,
-    "name": "Tabla para pizza",
+    "category_id": 19,
+    "name": "Vela aromática grande",
     "description": "",
     "price": {
-      "value": 10900,
+      "value": 16000,
       "currency": "ARS"
     }
   },
   {
     "id": 7,
+    "category_id": 15,
+    "name": "Vaso plástico con tapa",
+    "description": "",
+    "price": {
+      "value": 6900,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 8,
     "category_id": 16,
     "name": "Manta Polar",
     "description": "",
@@ -70,17 +80,17 @@
     }
   },
   {
-    "id": 8,
+    "id": 9,
     "category_id": 16,
     "name": "Remera",
     "description": "",
     "price": {
-      "value": 24900,
+      "value": 27900,
       "currency": "ARS"
     }
   },
   {
-    "id": 9,
+    "id": 10,
     "category_id": 16,
     "name": "Buzo Halving",
     "description": "",
@@ -90,7 +100,7 @@
     }
   },
   {
-    "id": 10,
+    "id": 11,
     "category_id": 16,
     "name": "Tote Bags",
     "description": "",
@@ -100,22 +110,12 @@
     }
   },
   {
-    "id": 11,
+    "id": 12,
     "category_id": 16,
     "name": "Gorras",
     "description": "",
     "price": {
       "value": 11900,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 12,
-    "category_id": 12,
-    "name": "Trezor Safe 3",
-    "description": "",
-    "price": {
-      "value": 196900,
       "currency": "ARS"
     }
   },
@@ -131,6 +131,16 @@
   },
   {
     "id": 14,
+    "category_id": 12,
+    "name": "Jade",
+    "description": "",
+    "price": {
+      "value": 100,
+      "currency": "USD"
+    }
+  },
+  {
+    "id": 15,
     "category_id": 17,
     "name": "Profecía Bitcoin",
     "description": "",
@@ -140,7 +150,7 @@
     }
   },
   {
-    "id": 15,
+    "id": 16,
     "category_id": 17,
     "name": "Criptoria",
     "description": "",
@@ -150,12 +160,62 @@
     }
   },
   {
-    "id": 16,
-    "category_id": 15,
-    "name": "Velas aromáticas (chiquita)",
+    "id": 17,
+    "category_id": 17,
+    "name": "Economías circulares castellano",
     "description": "",
     "price": {
-      "value": 17000,
+      "value": 25,
+      "currency": "USD"
+    }
+  },
+  {
+    "id": 18,
+    "category_id": 17,
+    "name": "El gran parásito",
+    "description": "",
+    "price": {
+      "value": 21000,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 19,
+    "category_id": 17,
+    "name": "El patrón Fiat",
+    "description": "",
+    "price": {
+      "value": 33000,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 20,
+    "category_id": 17,
+    "name": "El Patrón Bitcoin",
+    "description": "",
+    "price": {
+      "value": 21000,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 21,
+    "category_id": 17,
+    "name": "Principios de Economía",
+    "description": "",
+    "price": {
+      "value": 44000,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 22,
+    "category_id": 17,
+    "name": "Bitcoinismo",
+    "description": "",
+    "price": {
+      "value": 21000,
       "currency": "ARS"
     }
   }
