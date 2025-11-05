@@ -17,9 +17,13 @@ export const useVerifyLud21 = ({
     if (!enabled || !lud21VerifyUrl || settled) return
 
     let interval = setInterval(async () => {
-      const response = await fetch(lud21VerifyUrl)
-      const data = await response.json()
-      data.settled && setSettled(true)
+      try {
+        const response = await fetch(lud21VerifyUrl)
+        const data = await response.json()
+        data.settled && setSettled(true)
+      } catch (error) {
+        console.error('Error verifying LUD21:', error)
+      }
     }, delay)
 
     return () => clearInterval(interval)
