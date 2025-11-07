@@ -174,6 +174,24 @@ export default function Page() {
                   </Card>
                 </Flex>
               )}
+
+              {/* TODO: Add Optional bitnaria */}
+              {destinationName === 'cafe@lacrypta.ar' && (
+                <Flex gap={8}>
+                  <Card>
+                    <Link href="/cart/cafe">
+                      <Icon>
+                        <MenuIcon />
+                      </Icon>
+                      <Flex direction="column" gap={4}>
+                        <Heading as="h5">Cafe</Heading>
+                        <Text size="small">Cafe.</Text>
+                      </Flex>
+                    </Link>
+                  </Card>
+                </Flex>
+              )}
+
               <Flex gap={8}>
                 <Card>
                   <Link href="/paydesk">

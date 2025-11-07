@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "category_id": 20,
+    "name": "Medialunas",
+    "description": "",
+    "price": {
+      "value": 1490,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 2,
+    "category_id": 20,
+    "name": "Bolsa de Chipa x 2",
+    "description": "",
+    "price": {
+      "value": 2990,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 3,
+    "category_id": 20,
+    "name": "Café",
+    "description": "",
+    "price": {
+      "value": 1490,
+      "currency": "ARS"
+    }
+  }
+]
