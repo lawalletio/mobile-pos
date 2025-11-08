@@ -218,5 +218,15 @@
       "value": 21000,
       "currency": "ARS"
     }
-  }
+  },
+  {
+    "id": 23,
+    "category_id": 17,
+    "name": "La filosofía de Bitcoin",
+    "description": "",
+    "price": {
+      "value": 35,
+      "currency": "USD"
+    }
+  },
 ]
