@@ -17,7 +17,7 @@
     "confetti-js": "^0.0.18",
     "date-fns": "^4.1.0",
     "lnurl-pay": "^4.0.0",
-    "next": "15.2.3",
+    "next": "15.2.8",
     "next-pwa": "^5.6.0",
     "nostr-tools": "^2.11.0",
     "prettier": "^3.0.3",
