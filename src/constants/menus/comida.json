@@ -1,11 +1,11 @@
 [
   {
     "id": 1,
-    "category_id": 11,
-    "name": "Shawarma",
+    "category_id": 8,
+    "name": "Porción de Pizza",
     "description": "",
     "price": {
-      "value": 11990,
+      "value": 3000,
       "currency": "ARS"
     }
   }
