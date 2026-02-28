@@ -6,6 +6,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState
 } from 'react'
 
@@ -339,6 +340,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     setError(undefined)
     setCheckEmergencyEvent(false)
     setSubZap(undefined)
+    invoiceRequestIdRef.current++  // Invalidate any in-flight invoice requests
   }, [])
 
   /** useEffects */
@@ -388,21 +390,34 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subZap])
 
-  // On orderId change
+  // On orderId change — request invoice
+  // Use a ref to track the current request and prevent stale responses
+  // from overwriting the current invoice (race condition)
+  const invoiceRequestIdRef = useRef(0)
   useEffect(() => {
     if (!orderId || !zapEmitterPubKey || amount === 0) {
       return
     }
 
+    // Increment request ID to invalidate any in-flight requests
+    const requestId = ++invoiceRequestIdRef.current
+
     requestZapInvoice!(amount * 1000, orderId)
       .then(_invoice => {
+        // Only update state if this is still the current request
+        if (requestId !== invoiceRequestIdRef.current) {
+          console.warn('Ignoring stale invoice response (superseded by newer request)')
+          return
+        }
         setLUD21(_invoice.verify)
         setCurrentInvoice!(_invoice.pr)
       })
       .catch((e: Error) => {
+        if (requestId !== invoiceRequestIdRef.current) return
         setError(`Couldn't generate invoice. ${e.cause}`)
       })
-  }, [amount, orderId, zapEmitterPubKey, requestZapInvoice])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [amount, orderId, zapEmitterPubKey])
 
   const handleResubscription = useCallback(
     (relay: NDKRelay) => {
