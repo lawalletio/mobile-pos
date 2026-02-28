@@ -135,14 +135,30 @@ export function isValidUrl(urlString: string): boolean {
 }
 
 export async function fetchLNURL(lnurl: string): Promise<LNURLResponse> {
-  console.info('fetchLNURL')
-  console.info(lnurl)
-  console.info('requestPayServiceParams')
-  return (
-    await requestPayServiceParams({
+  console.info('fetchLNURL:', lnurl)
+
+  // First try direct resolution via lnurl-pay library
+  try {
+    const result = await requestPayServiceParams({
       lnUrlOrAddress: lnurl
     })
-  ).rawData as unknown as LNURLResponse
+    return result.rawData as unknown as LNURLResponse
+  } catch (directError) {
+    console.warn('Direct LNURL fetch failed (likely CORS), trying server proxy:', directError)
+  }
+
+  // Fallback: use server-side proxy to bypass CORS
+  const params = lnurl.includes('@')
+    ? `address=${encodeURIComponent(lnurl)}`
+    : `url=${encodeURIComponent(lnurl)}`
+  const response = await fetch(`/api/lnurl-resolve?${params}`)
+  const data = await response.json()
+
+  if (data.status === 'ERROR') {
+    throw new Error(data.reason || 'Failed to resolve LNURL via proxy')
+  }
+
+  return data as LNURLResponse
 }
 
 interface InternalTransactionEventParams {
