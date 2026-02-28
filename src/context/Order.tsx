@@ -173,7 +173,8 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       isPaid,
       lud06: lud06!,
       isPrinted: isPrinted,
-      items: products
+      items: products,
+      lud21Verify: lud21
     }
 
     paymentsCache[payment.id] = payment
@@ -189,6 +190,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     localPrivateKey,
     isPaid,
     lud06,
+    lud21,
     isPrinted,
     paymentsCache,
     setPaymentsCache
@@ -209,6 +211,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       setOrderEvent(order.event)
       setLUD06(order.lud06)
       setOrderId(order.id)
+      if (order.lud21Verify) setLUD21(order.lud21Verify)
 
       console.dir(order)
       return true
@@ -339,6 +342,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     setError(undefined)
     setCheckEmergencyEvent(false)
     setSubZap(undefined)
+    setLUD21(undefined)
   }, [])
 
   /** useEffects */

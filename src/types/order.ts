@@ -21,6 +21,7 @@ export interface IPayment {
   lud06: LNURLResponse
   isPaid: boolean
   isPrinted: boolean
+  lud21Verify?: string
 }
 
 export interface IPaymentCache {
