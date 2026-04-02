@@ -125,11 +125,12 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
     console.info(`Listening for zap (${eventId})...`)
     console.info(`Recipient pubkey: ${zapEmitterPubKey}`)
 
+    // Use a 30-second buffer to handle clock drift between client and relay
     const zapFilters = {
       kinds: [9735],
       authors: [zapEmitterPubKey!],
       '#e': [eventId],
-      since: Math.floor(new Date().getTime() / 1000)
+      since: Math.floor(new Date().getTime() / 1000) - 30
     }
 
     setFilter(JSON.stringify(zapFilters))

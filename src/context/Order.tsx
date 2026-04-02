@@ -6,6 +6,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState
 } from 'react'
 
@@ -307,16 +308,19 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     }
   }
 
-  // Handle new incoming zap
-  const onZap = (event: NDKEvent) => {
+  // Handle new incoming zap — use ref to avoid stale closure in subscription
+  const onZapRef = useRef<(event: NDKEvent) => void>()
+  onZapRef.current = (event: NDKEvent) => {
     console.info('onZap in Order.tsx')
     console.dir(event)
     if (event.pubkey !== zapEmitterPubKey) {
-      throw new Error('Invalid Recipient Pubkey')
+      console.warn('Invalid Recipient Pubkey, ignoring event')
+      return
     }
 
     if (!validateEvent(event)) {
-      throw new Error('Invalid event')
+      console.warn('Invalid event, ignoring')
+      return
     }
 
     const paidInvoice = event.tags.find(tag => tag[0] === 'bolt11')?.[1]
@@ -325,6 +329,10 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     handlePaymentReceived(event)
     console.info('Amount paid : ' + decodedPaidInvoice.millisatoshis)
   }
+
+  const onZap = useCallback((event: NDKEvent) => {
+    onZapRef.current?.(event)
+  }, [])
 
   const clear = useCallback(() => {
     setOrderId(undefined)
@@ -404,10 +412,16 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       })
   }, [amount, orderId, zapEmitterPubKey, requestZapInvoice])
 
+  // Re-subscribe on relay reconnect
   const handleResubscription = useCallback(
     (relay: NDKRelay) => {
       if (relay && subZap && filter) {
-        relay.subscribe(subZap, [JSON.parse(filter)])
+        console.info(`Relay reconnected: ${relay.url}, re-subscribing...`)
+        try {
+          relay.subscribe(subZap, [JSON.parse(filter)])
+        } catch (e) {
+          console.error('Failed to resubscribe on relay reconnect:', e)
+        }
       }
     },
     [subZap, filter]
@@ -420,6 +434,24 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       ndk.pool.off('relay:connect', handleResubscription)
     }
   }, [handleResubscription, ndk.pool])
+
+  // Periodic relay health check — if subscription is active but all relays
+  // disconnected, attempt to reconnect NDK
+  useEffect(() => {
+    if (!subZap || isPaid) return
+
+    const healthCheck = setInterval(() => {
+      const connectedRelays = Array.from(ndk.pool.relays.values()).filter(
+        r => r.connectivity.isAvailable()
+      )
+      if (connectedRelays.length === 0) {
+        console.warn('No connected relays detected, attempting reconnect...')
+        void ndk.connect()
+      }
+    }, 10000) // Check every 10 seconds
+
+    return () => clearInterval(healthCheck)
+  }, [subZap, isPaid, ndk])
 
   useEffect(() => {
     if (lud21Paid) {
