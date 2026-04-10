@@ -2,21 +2,41 @@
   {
     "id": 1,
     "category_id": 10,
-    "name": "Gaseosa",
+    "name": "Coca",
     "description": "",
     "price": {
-      "value": 3100,
-      "currency": "ARS"
+      "value": 2100,
+      "currency": "SAT"
     }
   },
   {
     "id": 2,
+    "category_id": 10,
+    "name": "Seven",
+    "description": "",
+    "price": {
+      "value": 2100,
+      "currency": "SAT"
+    }
+  },
+  {
+    "id": 3,
+    "category_id": 10,
+    "name": "Agua",
+    "description": "",
+    "price": {
+      "value": 1200,
+      "currency": "SAT"
+    }
+  },
+  {
+    "id": 4,
     "category_id": 9,
     "name": "Cerveza",
     "description": "",
     "price": {
-      "value": 4800,
-      "currency": "ARS"
+      "value": 3100,
+      "currency": "SAT"
     }
   }
 ]

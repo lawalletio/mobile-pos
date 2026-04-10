@@ -5,8 +5,8 @@
     "name": "Shawarma",
     "description": "",
     "price": {
-      "value": 14900,
-      "currency": "ARS"
+      "value": 14400,
+      "currency": "SAT"
     }
   }
 ]
