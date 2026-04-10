@@ -114,6 +114,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   const [subZap, setSubZap] = useState<NDKSubscription | undefined>(undefined)
   const [orderId, setOrderId] = useState<string>()
   const [isPaid, setIsPaid] = useState<boolean>(false)
+  const isPaidRef = useRef(false)
   const [isPrinted, setIsPrinted] = useState<boolean>(false)
   const [orderEvent, setOrderEvent] = useState<Event>()
   const [amount, setAmount] = useState<number>(0)
@@ -139,6 +140,11 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     lud21VerifyUrl: lud21 || '',
     delay: 2000
   })
+
+  // Keep ref in sync for synchronous checks across async callbacks
+  useEffect(() => {
+    isPaidRef.current = isPaid
+  }, [isPaid])
 
   const [isCheckEmergencyEvent, setCheckEmergencyEvent] =
     useState<boolean>(false)
@@ -177,8 +183,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       items: products
     }
 
-    paymentsCache[payment.id] = payment
-    setPaymentsCache(paymentsCache)
+    setPaymentsCache({ ...paymentsCache, [payment.id]: payment })
 
     return event
   }, [
@@ -203,6 +208,9 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       if (!order) {
         return false
       }
+      // Clear stale invoice/lud21 before loading new order
+      setCurrentInvoice(undefined)
+      setLUD21(undefined)
       setAmount(order.amount)
       setIsPaid(order.isPaid)
       setIsPrinted(order.isPrinted)
@@ -258,6 +266,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
   const handlePaymentReceived = useCallback(
     async (event: NDKEvent) => {
+      if (isPaidRef.current) return
       console.info('handlePaymentReceived in Order.tsx')
       const invoice = parseZapInvoice(event as Event)
       if (!invoice.complete) {
@@ -272,8 +281,42 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     [amount]
   )
 
-  const handleEmergency = async () => {
+  // Handle new incoming zap
+  const onZap = useCallback(
+    (event: NDKEvent) => {
+      console.info('onZap in Order.tsx')
+      console.dir(event)
+      if (event.pubkey !== zapEmitterPubKey) {
+        console.error('Invalid Recipient Pubkey:', event.pubkey, '!==', zapEmitterPubKey)
+        return
+      }
+
+      if (!validateEvent(event)) {
+        console.error('Invalid event')
+        return
+      }
+
+      const paidInvoice = event.tags.find(tag => tag[0] === 'bolt11')?.[1]
+      if (!paidInvoice) {
+        console.error('No bolt11 tag found in zap event')
+        return
+      }
+
+      const decodedPaidInvoice = bolt11.decode(paidInvoice)
+      handlePaymentReceived(event)
+      console.info('Amount paid : ' + decodedPaidInvoice.millisatoshis)
+    },
+    [zapEmitterPubKey, handlePaymentReceived]
+  )
+
+  const handleEmergency = useCallback(async () => {
     console.dir('[EMERGENCY] handleEmergency in Order.tsx')
+
+    if (isPaidRef.current) {
+      console.info('Already paid, skipping emergency check')
+      setCheckEmergencyEvent(false)
+      return
+    }
 
     try {
       // Check LUD21 if exists
@@ -293,12 +336,21 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         }
       }
 
-      // Force fetch event
-      console.info('Feching event from relays')
-      const event = await ndk.fetchEvent(JSON.parse(filter!))
+      // Force fetch event from relays
+      if (!filter) {
+        console.error('No filter available for relay fetch')
+        return
+      }
+
+      console.info('Fetching event from relays')
+      const event = await ndk.fetchEvent(JSON.parse(filter))
       console.dir(event)
       if (event) {
-        onZap(event)
+        try {
+          onZap(event)
+        } catch (err) {
+          console.error('Error processing zap event:', err)
+        }
         return
       }
     } catch (err) {
@@ -306,26 +358,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     } finally {
       setCheckEmergencyEvent(false)
     }
-  }
-
-  // Handle new incoming zap
-  const onZap = (event: NDKEvent) => {
-    console.info('onZap in Order.tsx')
-    console.dir(event)
-    if (event.pubkey !== zapEmitterPubKey) {
-      throw new Error('Invalid Recipient Pubkey')
-    }
-
-    if (!validateEvent(event)) {
-      throw new Error('Invalid event')
-    }
-
-    const paidInvoice = event.tags.find(tag => tag[0] === 'bolt11')?.[1]
-    const decodedPaidInvoice = bolt11.decode(paidInvoice!)
-
-    handlePaymentReceived(event)
-    console.info('Amount paid : ' + decodedPaidInvoice.millisatoshis)
-  }
+  }, [lud21, filter, ndk, onZap])
 
   const clear = useCallback(() => {
     setOrderId(undefined)
@@ -333,7 +366,9 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     setAmount(0)
     setFiatAmount(0)
     setIsPaid(false)
+    isPaidRef.current = false
     setCurrentInvoice(undefined)
+    setLUD21(undefined)
     setIsPrinted(false)
     setProducts([])
     setMemo({})
@@ -345,21 +380,28 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
   /** useEffects */
 
-  // on order id change
+  // on order id change - update cache immutably
   useEffect(() => {
     if (!orderId) {
       return
     }
     const order = paymentsCache[orderId]
-    // Prevent order from updating to false
-    paymentsCache[orderId] = {
-      ...order,
-      isPaid: order.isPaid || isPaid,
-      isPrinted: order.isPrinted || isPrinted
+    if (!order) return
+    const updatedIsPaid = order.isPaid || isPaid
+    const updatedIsPrinted = order.isPrinted || isPrinted
+    // Only update if values actually changed
+    if (updatedIsPaid !== order.isPaid || updatedIsPrinted !== order.isPrinted) {
+      setPaymentsCache({
+        ...paymentsCache,
+        [orderId]: {
+          ...order,
+          isPaid: updatedIsPaid,
+          isPrinted: updatedIsPrinted
+        }
+      })
     }
-    setPaymentsCache(paymentsCache)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderId, isPaid, isPrinted, paymentsCache])
+  }, [orderId, isPaid, isPrinted])
 
   // Subscribe for zaps
   useEffect(() => {
@@ -372,9 +414,9 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     const sub = subscribeZap!(orderId)
     setSubZap(sub)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderId, zapEmitterPubKey, zapEmitterPubKey, isPaid])
+  }, [orderId, zapEmitterPubKey, isPaid])
 
-  // On subZap change
+  // On subZap change - manage listener lifecycle
   useEffect(() => {
     if (!subZap) {
       return
@@ -387,8 +429,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       subZap.stop()
       setSubZap(undefined)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subZap])
+  }, [subZap, onZap])
 
   // On orderId change — request invoice
   // Use a ref to track the current request and prevent stale responses
@@ -398,6 +439,10 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     if (!orderId || !zapEmitterPubKey || amount === 0) {
       return
     }
+
+    // Clear stale invoice immediately so QR doesn't show old one
+    setCurrentInvoice(undefined)
+    setLUD21(undefined)
 
     // Increment request ID to invalidate any in-flight requests
     const requestId = ++invoiceRequestIdRef.current
@@ -410,7 +455,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
           return
         }
         setLUD21(_invoice.verify)
-        setCurrentInvoice!(_invoice.pr)
+        setCurrentInvoice(_invoice.pr)
       })
       .catch((e: Error) => {
         if (requestId !== invoiceRequestIdRef.current) return
@@ -437,19 +482,10 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   }, [handleResubscription, ndk.pool])
 
   useEffect(() => {
-    if (lud21Paid) {
+    if (lud21Paid && !isPaidRef.current) {
       setIsPaid(true)
     }
   }, [lud21Paid])
-
-  useEffect(() => {
-    if (!subZap || !isPaid) {
-      return
-    }
-    subZap.stop()
-    subZap.removeAllListeners()
-    setSubZap(undefined)
-  }, [isPaid, subZap])
 
   return (
     <OrderContext.Provider
