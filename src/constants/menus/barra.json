@@ -5,7 +5,7 @@
     "name": "Coca",
     "description": "",
     "price": {
-      "value": 2100,
+      "value": 2200,
       "currency": "SAT"
     }
   },
@@ -15,7 +15,7 @@
     "name": "Seven",
     "description": "",
     "price": {
-      "value": 2100,
+      "value": 2200,
       "currency": "SAT"
     }
   },
