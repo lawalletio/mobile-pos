@@ -15,7 +15,7 @@
     "name": "Popsocket celular",
     "description": "",
     "price": {
-      "value": 2490,
+      "value": 1000,
       "currency": "ARS"
     }
   },
@@ -35,7 +35,7 @@
     "name": "Moneda BTC La Crypta",
     "description": "",
     "price": {
-      "value": 6900,
+      "value": 3500,
       "currency": "ARS"
     }
   },
@@ -55,7 +55,7 @@
     "name": "Vela aromática grande",
     "description": "",
     "price": {
-      "value": 16000,
+      "value": 21000,
       "currency": "ARS"
     }
   },
@@ -65,7 +65,7 @@
     "name": "Vaso plástico con tapa",
     "description": "",
     "price": {
-      "value": 6900,
+      "value": 1500,
       "currency": "ARS"
     }
   },
@@ -75,7 +75,7 @@
     "name": "Manta Polar",
     "description": "",
     "price": {
-      "value": 17900,
+      "value": 26000,
       "currency": "ARS"
     }
   },
@@ -85,7 +85,17 @@
     "name": "Remera",
     "description": "",
     "price": {
-      "value": 27900,
+      "value": 33000,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 26,
+    "category_id": 16,
+    "name": "Remera Premium",
+    "description": "",
+    "price": {
+      "value": 57000,
       "currency": "ARS"
     }
   },
@@ -112,31 +122,31 @@
   {
     "id": 12,
     "category_id": 16,
-    "name": "Gorras",
+    "name": "Gorra con sol bordado",
     "description": "",
     "price": {
-      "value": 21990,
+      "value": 32000,
       "currency": "ARS"
     }
   },
   {
-    "id": 13,
-    "category_id": 12,
-    "name": "Trezor Safe 5",
+    "id": 27,
+    "category_id": 16,
+    "name": "Gorra argentina artesanal",
     "description": "",
     "price": {
-      "value": 374900,
+      "value": 28000,
       "currency": "ARS"
     }
   },
   {
-    "id": 14,
-    "category_id": 12,
-    "name": "Jade",
+    "id": 28,
+    "category_id": 16,
+    "name": "Beanie",
     "description": "",
     "price": {
-      "value": 100,
-      "currency": "USD"
+      "value": 19000,
+      "currency": "ARS"
     }
   },
   {
@@ -145,7 +155,7 @@
     "name": "Profecía Bitcoin",
     "description": "",
     "price": {
-      "value": 25000,
+      "value": 30000,
       "currency": "ARS"
     }
   },
@@ -180,32 +190,12 @@
     }
   },
   {
-    "id": 19,
-    "category_id": 17,
-    "name": "El patrón Fiat",
-    "description": "",
-    "price": {
-      "value": 33000,
-      "currency": "ARS"
-    }
-  },
-  {
     "id": 20,
     "category_id": 17,
     "name": "El Patrón Bitcoin",
     "description": "",
     "price": {
       "value": 21000,
-      "currency": "ARS"
-    }
-  },
-  {
-    "id": 21,
-    "category_id": 17,
-    "name": "Principios de Economía",
-    "description": "",
-    "price": {
-      "value": 44000,
       "currency": "ARS"
     }
   },
@@ -226,6 +216,26 @@
     "description": "",
     "price": {
       "value": 35,
+      "currency": "USD"
+    }
+  },
+  {
+    "id": 24,
+    "category_id": 15,
+    "name": "Portavasos legacy",
+    "description": "",
+    "price": {
+      "value": 500,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 25,
+    "category_id": 15,
+    "name": "POS",
+    "description": "",
+    "price": {
+      "value": 210,
       "currency": "USD"
     }
   }

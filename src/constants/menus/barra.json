@@ -6,37 +6,87 @@
     "description": "",
     "price": {
       "value": 2100,
-      "currency": "SAT"
+      "currency": "ARS"
     }
   },
   {
     "id": 2,
     "category_id": 10,
-    "name": "Seven",
+    "name": "Coca Zero",
     "description": "",
     "price": {
       "value": 2100,
-      "currency": "SAT"
+      "currency": "ARS"
     }
   },
   {
     "id": 3,
     "category_id": 10,
-    "name": "Agua",
+    "name": "7Up",
     "description": "",
     "price": {
-      "value": 1200,
-      "currency": "SAT"
+      "value": 2100,
+      "currency": "ARS"
     }
   },
   {
     "id": 4,
-    "category_id": 9,
-    "name": "Cerveza",
+    "category_id": 10,
+    "name": "Agua Mineral",
     "description": "",
     "price": {
-      "value": 3100,
-      "currency": "SAT"
+      "value": 2100,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 5,
+    "category_id": 9,
+    "name": "Cerveza Andes Rubia 473ml",
+    "description": "",
+    "price": {
+      "value": 4200,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 6,
+    "category_id": 9,
+    "name": "Fuck KYC (Cuba Libre)",
+    "description": "",
+    "price": {
+      "value": 7300,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 7,
+    "category_id": 9,
+    "name": "Bitcoinari (Campari con naranja)",
+    "description": "",
+    "price": {
+      "value": 7300,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 8,
+    "category_id": 9,
+    "name": "Fernostr (Fernet con Coca)",
+    "description": "",
+    "price": {
+      "value": 7300,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 9,
+    "category_id": 9,
+    "name": "Lightning Tonic (Gin Tonic)",
+    "description": "",
+    "price": {
+      "value": 7300,
+      "currency": "ARS"
     }
   }
 ]
