@@ -12,24 +12,31 @@ export const useVerifyLud21 = ({
   delay = 2000
 }: IUseVerifyLud21): boolean => {
   const [settled, setSettled] = useState(false)
+  const settledRef = useRef(false)
   const prevUrlRef = useRef(lud21VerifyUrl)
 
-  // Reset settled when the verify URL changes (new invoice/order)
-  useEffect(() => {
-    if (prevUrlRef.current !== lud21VerifyUrl) {
-      prevUrlRef.current = lud21VerifyUrl
+  // Reset settled synchronously when the verify URL changes (new invoice/order)
+  if (prevUrlRef.current !== lud21VerifyUrl) {
+    prevUrlRef.current = lud21VerifyUrl
+    settledRef.current = false
+    if (settled) {
       setSettled(false)
     }
-  }, [lud21VerifyUrl])
+  }
 
   useEffect(() => {
-    if (!enabled || !lud21VerifyUrl || settled) return
+    if (!enabled || !lud21VerifyUrl || settledRef.current) return
 
     const interval = setInterval(async () => {
+      if (settledRef.current) {
+        clearInterval(interval)
+        return
+      }
       try {
         const response = await fetch(lud21VerifyUrl)
         const data = await response.json()
         if (data.settled) {
+          settledRef.current = true
           setSettled(true)
           clearInterval(interval)
         }

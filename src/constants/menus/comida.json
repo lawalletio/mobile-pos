@@ -1,12 +1,32 @@
 [
   {
     "id": 1,
-    "category_id": 4,
-    "name": "Shawarma",
+    "category_id": 8,
+    "name": "Porción de Pizza",
     "description": "",
     "price": {
-      "value": 14400,
-      "currency": "SAT"
+      "value": 3000,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 2,
+    "category_id": 8,
+    "name": "2 x Porciones",
+    "description": "",
+    "price": {
+      "value": 5500,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 3,
+    "category_id": 8,
+    "name": "Pizza entera",
+    "description": "",
+    "price": {
+      "value": 21000,
+      "currency": "ARS"
     }
   }
 ]
