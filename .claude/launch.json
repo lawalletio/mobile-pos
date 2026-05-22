@@ -12,6 +12,12 @@
       "runtimeExecutable": "bash",
       "runtimeArgs": ["-c", "source ~/.nvm/nvm.sh && nvm use && npm run start"],
       "port": 3000
+    },
+    {
+      "name": "menu-static",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8123"],
+      "port": 8123
     }
   ]
 }
