@@ -36,8 +36,6 @@ import { formatter } from '@/lib/formatter'
 import theme from '@/styles/theme'
 import { parseQueryParams, requestCardEndpoint } from '@/lib/utils'
 
-// Mocks
-// import { getMockInfo, getMockReset } from '@/lib/mocks'
 import { useRouter } from 'next/navigation'
 
 const requestCardFormat = async (

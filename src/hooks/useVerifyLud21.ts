@@ -27,22 +27,30 @@ export const useVerifyLud21 = ({
   useEffect(() => {
     if (!enabled || !lud21VerifyUrl || settledRef.current) return
 
-    const interval = setInterval(async () => {
+    const verify = async () => {
       if (settledRef.current) {
-        clearInterval(interval)
         return
       }
+
       try {
-        const response = await fetch(lud21VerifyUrl)
+        const separator = lud21VerifyUrl.includes('?') ? '&' : '?'
+        const response = await fetch(
+          `${lud21VerifyUrl}${separator}t=${Date.now()}`,
+          { cache: 'no-store' }
+        )
         const data = await response.json()
         if (data.settled) {
           settledRef.current = true
           setSettled(true)
-          clearInterval(interval)
         }
       } catch (error) {
         console.error('Error verifying LUD21:', error)
       }
+    }
+
+    void verify()
+    const interval = setInterval(() => {
+      void verify()
     }, delay)
 
     return () => clearInterval(interval)

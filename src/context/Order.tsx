@@ -20,6 +20,7 @@ import { IPayment, IPaymentCache } from '@/types/order'
 
 // Contexts and Hooks
 import { useNostr } from './Nostr'
+import { REQUIRED_NOSTR_RELAY_COUNT } from './Nostr'
 import { useLocalStorage } from 'react-use-storage'
 
 // Utils
@@ -45,7 +46,7 @@ export interface IOrderContext {
   paymentsCache?: IPaymentCache
   error: string | undefined
   isCheckEmergencyEvent: boolean
-  handleEmergency: () => void
+  handleEmergency: () => Promise<void>
   setCheckEmergencyEvent: Dispatch<SetStateAction<boolean>>
   loadOrder: (orderId: string) => boolean
   setIsPrinted?: Dispatch<SetStateAction<boolean>>
@@ -56,7 +57,8 @@ export interface IOrderContext {
   setAmount: Dispatch<SetStateAction<number>>
   checkOut: () => Promise<{ eventId: string }>
   setOrderEvent?: Dispatch<SetStateAction<Event | undefined>>
-  generateOrderEvent?: () => Event
+  generateOrderEvent?: (_amount?: number, _products?: ProductQtyData[]) => Event
+  publishOrderInBackground?: (_order: Event) => void
   setFiatAmount: Dispatch<SetStateAction<number>>
   requestZapInvoice?: (
     amountMillisats: number,
@@ -96,7 +98,7 @@ export const OrderContext = createContext<IOrderContext>({
   orderEvent: undefined,
   paymentsCache: undefined,
   isCheckEmergencyEvent: false,
-  handleEmergency: function (): void {
+  handleEmergency: function (): Promise<void> {
     throw new Error('Function not implemented.')
   },
   setCheckEmergencyEvent: function (): void {
@@ -129,6 +131,8 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     'paymentsCache',
     {}
   )
+  const paymentsCacheRef = useRef<IPaymentCache>(paymentsCache)
+  const zapReceiptRelaysRef = useRef<Record<string, Set<string>>>({})
 
   // Hooks
   const { relays, localPublicKey, localPrivateKey, generateZapEvent } =
@@ -138,7 +142,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   const lud21Paid = useVerifyLud21({
     enabled: !isPaid,
     lud21VerifyUrl: lud21 || '',
-    delay: 2000
+    delay: 750
   })
 
   // Keep ref in sync for synchronous checks across async callbacks
@@ -149,7 +153,66 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   const [isCheckEmergencyEvent, setCheckEmergencyEvent] =
     useState<boolean>(false)
 
-  const generateOrderEvent = useCallback((): Event => {
+  const sleep = (ms: number) =>
+    new Promise(resolve => {
+      setTimeout(resolve, ms)
+    })
+
+  const withTimeout = async <T,>(
+    promise: Promise<T>,
+    ms: number
+  ): Promise<T | undefined> => {
+    let timeoutId: ReturnType<typeof setTimeout>
+    const timeout = new Promise<undefined>(resolve => {
+      timeoutId = setTimeout(() => resolve(undefined), ms)
+    })
+
+    const result = await Promise.race([promise, timeout])
+    clearTimeout(timeoutId!)
+    return result
+  }
+
+  const checkLud21 = useCallback(async (): Promise<boolean> => {
+    if (!lud21) {
+      return false
+    }
+
+    const separator = lud21.includes('?') ? '&' : '?'
+    const lud21Response = await fetch(`${lud21}${separator}t=${Date.now()}`, {
+      cache: 'no-store'
+    })
+    const verifyResponse = (await lud21Response.json()) as LNURLVerifyResponse
+
+    return verifyResponse.status === 'OK' && verifyResponse.settled
+  }, [lud21])
+
+  const updateCachedPayment = useCallback(
+    (orderId: string, partial: Partial<IPayment>) => {
+      const cachedPayment = paymentsCacheRef.current[orderId]
+      if (!cachedPayment) {
+        return
+      }
+
+      const updatedCache = {
+        ...paymentsCacheRef.current,
+        [orderId]: {
+          ...cachedPayment,
+          ...partial
+        }
+      }
+
+      paymentsCacheRef.current = updatedCache
+      setPaymentsCache(updatedCache)
+    },
+    [setPaymentsCache]
+  )
+
+  const generateOrderEvent = useCallback((
+    customAmount?: number,
+    customProducts?: ProductQtyData[]
+  ): Event => {
+    const orderAmount = customAmount ?? amount
+    const orderProducts = customProducts ?? products
     const unsignedEvent: UnsignedEvent = {
       kind: 1,
       content: '',
@@ -163,10 +226,10 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
           'description',
           JSON.stringify({
             memo,
-            amount
+            amount: orderAmount
           })
         ],
-        ['products', JSON.stringify(products)]
+        ['products', JSON.stringify(orderProducts)]
       ] as string[][]
     }
 
@@ -174,16 +237,32 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
     // Saving current payments status
     const payment: IPayment = {
-      amount,
+      amount: orderAmount,
       event: event!,
       id: event!.id,
       isPaid,
       lud06: lud06!,
       isPrinted: isPrinted,
-      items: products
+      items: orderProducts,
+      createdAt: event.created_at,
+      nostrPublishStatus: 'pending',
+      nostrRelayUrls: [],
+      zapReceiptStatus: 'pending',
+      zapReceiptRelayUrls: []
     }
 
-    setPaymentsCache({ ...paymentsCache, [payment.id]: payment })
+    const updatedCache = { ...paymentsCacheRef.current, [payment.id]: payment }
+    paymentsCacheRef.current = updatedCache
+    setPaymentsCache(updatedCache)
+    setAmount(orderAmount)
+    setIsPaid(false)
+    isPaidRef.current = false
+    setIsPrinted(false)
+    setCurrentInvoice(undefined)
+    setLUD21(undefined)
+    setError(undefined)
+    setOrderEvent(event)
+    setOrderId(payment.id)
 
     return event
   }, [
@@ -196,9 +275,28 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     isPaid,
     lud06,
     isPrinted,
-    paymentsCache,
     setPaymentsCache
   ])
+
+  const publishOrderInBackground = useCallback(
+    (order: Event) => {
+      updateCachedPayment(order.id, { nostrPublishStatus: 'pending' })
+
+      publish!(order)
+        .then(relays => {
+          updateCachedPayment(order.id, {
+            nostrPublishStatus: 'published',
+            nostrRelayUrls: Array.from(relays).map(relay => relay.url)
+          })
+        })
+        .catch(e => {
+          console.warn('Error publishing order')
+          console.warn(e)
+          updateCachedPayment(order.id, { nostrPublishStatus: 'failed' })
+        })
+    },
+    [publish, updateCachedPayment]
+  )
 
   // Load order from cache
   const loadOrder = useCallback(
@@ -208,9 +306,8 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       if (!order) {
         return false
       }
-      // Clear stale invoice/lud21 before loading new order
-      setCurrentInvoice(undefined)
-      setLUD21(undefined)
+      setCurrentInvoice(order.currentInvoice)
+      setLUD21(order.lud21VerifyUrl)
       setAmount(order.amount)
       setIsPaid(order.isPaid)
       setIsPrinted(order.isPrinted)
@@ -231,10 +328,10 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   }> => {
     // Order Nostr event
     const order = generateOrderEvent()
-    await publish!(order)
+    publishOrderInBackground(order)
 
     return { eventId: order.id }
-  }, [generateOrderEvent, publish])
+  }, [generateOrderEvent, publishOrderInBackground])
 
   const requestZapInvoice = useCallback(
     async (
@@ -242,7 +339,11 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       orderEventId: string
     ): Promise<LNURLInvoiceResponseSuccess> => {
       // Generate ZapRequestEvent
-      const zapEvent = generateZapEvent!(amountMillisats, orderEventId)
+      const zapEvent = generateZapEvent!(
+        amountMillisats,
+        orderEventId,
+        lud06?.nip05Pubkey
+      )
 
       console.info('zapEvent')
       console.dir(zapEvent)
@@ -261,14 +362,15 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
       return invoice
     },
-    [generateZapEvent, requestInvoice]
+    [generateZapEvent, lud06?.nip05Pubkey, requestInvoice]
   )
 
   const handlePaymentReceived = useCallback(
-    async (event: NDKEvent) => {
+    (event: Event | NDKEvent) => {
       if (isPaidRef.current) return
       console.info('handlePaymentReceived in Order.tsx')
-      const invoice = parseZapInvoice(event as Event)
+      const nostrEvent = event instanceof NDKEvent ? event.rawEvent() : event
+      const invoice = parseZapInvoice(nostrEvent as Event)
       if (!invoice.complete) {
         console.info('Incomplete invoice')
         return
@@ -283,30 +385,67 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
 
   // Handle new incoming zap
   const onZap = useCallback(
-    (event: NDKEvent) => {
+    (event: Event | NDKEvent, relay?: NDKRelay) => {
       console.info('onZap in Order.tsx')
       console.dir(event)
-      if (event.pubkey !== zapEmitterPubKey) {
-        console.error('Invalid Recipient Pubkey:', event.pubkey, '!==', zapEmitterPubKey)
+      const nostrEvent = event instanceof NDKEvent ? event.rawEvent() : event
+
+      if (nostrEvent.pubkey !== zapEmitterPubKey) {
+        console.error(
+          'Invalid Recipient Pubkey:',
+          nostrEvent.pubkey,
+          '!==',
+          zapEmitterPubKey
+        )
         return
       }
 
-      if (!validateEvent(event)) {
+      if (!validateEvent(nostrEvent)) {
         console.error('Invalid event')
         return
       }
 
-      const paidInvoice = event.tags.find(tag => tag[0] === 'bolt11')?.[1]
+      const paidInvoice = nostrEvent.tags.find(tag => tag[0] === 'bolt11')?.[1]
       if (!paidInvoice) {
         console.error('No bolt11 tag found in zap event')
         return
       }
 
       const decodedPaidInvoice = bolt11.decode(paidInvoice)
-      handlePaymentReceived(event)
+      const zapReceiptId = nostrEvent.id
+      if (!zapReceiptId) {
+        console.error('Zap receipt has no id')
+        return
+      }
+      const receiptRelayUrls =
+        zapReceiptRelaysRef.current[zapReceiptId] ?? new Set<string>()
+      if (relay?.url) {
+        receiptRelayUrls.add(relay.url)
+      }
+
+      if (event instanceof NDKEvent) {
+        event.onRelays.forEach(relay => receiptRelayUrls.add(relay.url))
+      }
+
+      zapReceiptRelaysRef.current[zapReceiptId] = receiptRelayUrls
+      orderId && updateCachedPayment(orderId, {
+        zapReceiptStatus:
+          receiptRelayUrls.size >= REQUIRED_NOSTR_RELAY_COUNT
+            ? 'confirmed'
+            : 'pending',
+        zapReceiptRelayUrls: Array.from(receiptRelayUrls)
+      })
+
+      if (receiptRelayUrls.size < REQUIRED_NOSTR_RELAY_COUNT) {
+        console.info(
+          `Zap receipt ${zapReceiptId} seen on ${receiptRelayUrls.size}/${REQUIRED_NOSTR_RELAY_COUNT} relays; waiting for more relays before marking paid.`
+        )
+      }
+
+      handlePaymentReceived(nostrEvent as Event)
       console.info('Amount paid : ' + decodedPaidInvoice.millisatoshis)
     },
-    [zapEmitterPubKey, handlePaymentReceived]
+    [zapEmitterPubKey, handlePaymentReceived, orderId, updateCachedPayment]
   )
 
   const handleEmergency = useCallback(async () => {
@@ -319,35 +458,48 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     }
 
     try {
-      // Check LUD21 if exists
       if (lud21) {
-        try {
-          console.info('Checking LUD21')
-          const lud21Response = await fetch(lud21)
-
-          const verifyResponse =
-            (await lud21Response.json()) as LNURLVerifyResponse
-          if (verifyResponse.status === 'OK' && verifyResponse.settled) {
-            setIsPaid(true)
-            return
+        console.info('Checking LUD21')
+        for (let attempt = 0; attempt < 12; attempt++) {
+          try {
+            if (await checkLud21()) {
+              setIsPaid(true)
+              return
+            }
+          } catch (err) {
+            console.error('Error getting LUD21:', err)
           }
-        } catch (err) {
-          console.error('Error getting LUD21:', err)
+
+          await sleep(500)
         }
       }
 
+      const zapFilter = filter
+        ? JSON.parse(filter)
+        : orderId && zapEmitterPubKey
+          ? {
+              kinds: [9735],
+              authors: [zapEmitterPubKey],
+              '#e': [orderId]
+            }
+          : undefined
+
       // Force fetch event from relays
-      if (!filter) {
+      if (!zapFilter) {
         console.error('No filter available for relay fetch')
         return
       }
 
       console.info('Fetching event from relays')
-      const event = await ndk.fetchEvent(JSON.parse(filter))
+      const event = await withTimeout(ndk.fetchEvent(zapFilter), 5000)
       console.dir(event)
       if (event) {
         try {
           onZap(event)
+          if (isPaidRef.current) {
+            setIsPaid(true)
+            return
+          }
         } catch (err) {
           console.error('Error processing zap event:', err)
         }
@@ -358,7 +510,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     } finally {
       setCheckEmergencyEvent(false)
     }
-  }, [lud21, filter, ndk, onZap])
+  }, [checkLud21, filter, lud21, ndk, onZap, orderId, zapEmitterPubKey])
 
   const clear = useCallback(() => {
     setOrderId(undefined)
@@ -375,10 +527,15 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     setError(undefined)
     setCheckEmergencyEvent(false)
     setSubZap(undefined)
+    zapReceiptRelaysRef.current = {}
     invoiceRequestIdRef.current++  // Invalidate any in-flight invoice requests
   }, [])
 
   /** useEffects */
+
+  useEffect(() => {
+    paymentsCacheRef.current = paymentsCache
+  }, [paymentsCache])
 
   // on order id change - update cache immutably
   useEffect(() => {
@@ -421,7 +578,8 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     if (!subZap) {
       return
     }
-    subZap.on('event', onZap)
+    subZap.on('event', (event, relay) => onZap(event, relay))
+    subZap.on('event:dup', (event, relay) => onZap(event as Event, relay))
     subZap.start()
     return () => {
       console.info('Unsubscribing for zap...')
@@ -437,6 +595,10 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
   const invoiceRequestIdRef = useRef(0)
   useEffect(() => {
     if (!orderId || !zapEmitterPubKey || amount === 0) {
+      return
+    }
+
+    if (currentInvoice) {
       return
     }
 
@@ -456,13 +618,23 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         }
         setLUD21(_invoice.verify)
         setCurrentInvoice(_invoice.pr)
+        updateCachedPayment(orderId, {
+          currentInvoice: _invoice.pr,
+          lud21VerifyUrl: _invoice.verify
+        })
       })
       .catch((e: Error) => {
         if (requestId !== invoiceRequestIdRef.current) return
-        setError(`Couldn't generate invoice. ${e.cause}`)
+        setError(`Couldn't generate invoice. ${e.cause ?? e.message}`)
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [amount, orderId, zapEmitterPubKey])
+  }, [
+    amount,
+    currentInvoice,
+    orderId,
+    updateCachedPayment,
+    zapEmitterPubKey
+  ])
 
   const handleResubscription = useCallback(
     (relay: NDKRelay) => {
@@ -516,6 +688,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         setFiatAmount,
         requestZapInvoice,
         generateOrderEvent,
+        publishOrderInBackground,
         setOrderEvent
       }}
     >

@@ -3,6 +3,7 @@
 // React/Next
 import { useCallback, useContext, useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useLocalStorage } from 'react-use-storage'
 
 // Utils
 import { formatToPreference } from '@/lib/formatter'
@@ -16,7 +17,6 @@ import TokenList from '@/components/TokenList'
 // Contexts and Hooks
 import { useNumpad } from '@/hooks/useNumpad'
 import { useLN } from '@/context/LN'
-import { useNostr } from '@/context/Nostr'
 import { useOrder } from '@/context/Order'
 import { LaWalletContext } from '@/context/LaWalletContext'
 import { useCard } from '@/hooks/useCard'
@@ -30,17 +30,19 @@ function TreeContent() {
   const query = useSearchParams()
   const {
     generateOrderEvent,
+    publishOrderInBackground,
     setAmount,
     setOrderEvent,
     clear: clearOrder
   } = useOrder()
-  const { publish } = useNostr()
   const { isReady, setLUD06, clear: clearLN } = useLN()
   const { userConfig } = useContext(LaWalletContext)
   const numpadData = useNumpad(userConfig.props.currency)
   const { isAvailable, scan, stop } = useCard()
   const [isTapping, setIsTapping] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [tipEnabled] = useLocalStorage<boolean>('tipEnabled', false)
+  const [, setLastCheckoutBack] = useLocalStorage('lastCheckoutBack', '')
 
   const sats = numpadData.intAmount['SAT']
 
@@ -64,16 +66,20 @@ function TreeContent() {
 
   const handleClick = async () => {
     setIsLoading(true)
+    setLastCheckoutBack('/tree')
+    setAmount(sats)
+    if (tipEnabled) {
+      router.push('/tip?back=/tree')
+      return
+    }
+
     // POC
-    const order = generateOrderEvent!()
+    const order = generateOrderEvent!(sats)
 
     console.dir(order)
     // console.info('Publishing order')
 
-    publish!(order).catch(e => {
-      console.warn('Error publishing order')
-      console.warn(e)
-    })
+    publishOrderInBackground!(order)
     setOrderEvent!(order)
 
     router.push(`/payment/${order.id}?back=/tree`)

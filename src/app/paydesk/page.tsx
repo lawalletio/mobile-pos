@@ -3,12 +3,12 @@
 // React/Next
 import { useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useLocalStorage } from 'react-use-storage'
 
 // Contexts and Hooks
 import { LaWalletContext } from '@/context/LaWalletContext'
 import { useNumpad } from '@/hooks/useNumpad'
 import { useOrder } from '@/context/Order'
-import { useNostr } from '@/context/Nostr'
 import { useLN } from '@/context/LN'
 import { useBitcoinBlock } from '@/context/BitcoinBlock'
 
@@ -25,12 +25,20 @@ import { BtnLoader } from '@/components/Loader/Loader'
 export default function Page() {
   // Hooks
   const router = useRouter()
-  const { generateOrderEvent, setAmount, setOrderEvent, clear } = useOrder()
-  const { publish } = useNostr()
+  const {
+    generateOrderEvent,
+    publishOrderInBackground,
+    setAmount,
+    setOrderEvent,
+    clear
+  } = useOrder()
   const { userConfig } = useContext(LaWalletContext)
   const { lud06 } = useLN()
   const numpadData = useNumpad(userConfig.props.currency)
   const { refresh: refreshBitcoinBlock } = useBitcoinBlock()
+  const [tipEnabled] = useLocalStorage<boolean>('tipEnabled', false)
+  const [, setLastCheckoutBack] = useLocalStorage('lastCheckoutBack', '')
+  const [storedDestination] = useLocalStorage('destination', '')
 
   // Local states
   const [loading, setLoading] = useState<boolean>(false)
@@ -42,19 +50,26 @@ export default function Page() {
     if (sats === 0 || loading) return
 
     setLoading(true)
-    const order = generateOrderEvent!()
+    setLastCheckoutBack('/paydesk')
+    setAmount(sats)
+    if (tipEnabled) {
+      setLoading(false)
+      router.push('/tip?back=/paydesk')
+      return
+    }
+
+    const order = generateOrderEvent!(sats)
 
     console.dir(order)
-    // console.info('Publishing order')
-    publish!(order).catch(e => {
-      console.warn('Error publishing order')
-      console.warn(e)
-    })
-    clear()
+    publishOrderInBackground!(order)
     setOrderEvent!(order)
     setLoading(false)
 
-    router.push('/payment/' + order.id)
+    router.push(`/payment/${order.id}?back=/paydesk`)
+  }
+
+  const handleBack = () => {
+    router.replace(storedDestination ? `/${storedDestination}` : '/')
   }
 
   /** useEffects */
@@ -81,7 +96,7 @@ export default function Page() {
 
   return (
     <>
-      <Navbar showBackPage={true}>
+      <Navbar showBackPage={true} onBack={handleBack}>
         <Heading as="h5">Modo CAJA</Heading>
       </Navbar>
       <Container size="small">

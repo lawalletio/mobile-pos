@@ -3,11 +3,10 @@
 // React/Next
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useLocalStorage } from 'react-use-storage'
 
 // Hooks
-import { useLN } from '@/context/LN'
 import { useOrder } from '@/context/Order'
-import { useNostr } from '@/context/Nostr'
 import useCurrencyConverter from '@/hooks/useCurrencyConverter'
 
 // Types
@@ -28,12 +27,11 @@ import Container from '@/components/Layout/Container'
 import FooterCart from '@/components/Layout/FooterCart'
 import Navbar from '@/components/Layout/Navbar'
 
-// MOCK
 import categories from '@/constants/categories.json'
 
 // Style
 import theme from '@/styles/theme'
-import { aggregateProducts, fetchLNURL } from '@/lib/utils'
+import { aggregateProducts } from '@/lib/utils'
 
 interface MenuProps {
   name?: string
@@ -50,19 +48,19 @@ export default function Menu({
     setAmount,
     setOrderEvent,
     generateOrderEvent,
+    publishOrderInBackground,
     setProducts,
     clear: clearOrder
   } = useOrder()
-  const { publish } = useNostr()
   const router = useRouter()
   const { convertCurrency } = useCurrencyConverter()
+  const [tipEnabled] = useLocalStorage<boolean>('tipEnabled', false)
+  const [, setLastCheckoutBack] = useLocalStorage('lastCheckoutBack', '')
 
-  const [menuProducts, setMenuProducts] = useState<ProductData[]>([])
   const [groupedProducts, setGroupedProducts] = useState<{
     [categoryId: number]: ProductData[]
   }>([])
-
-  // Sheet
+  const [menuProducts, setMenuProducts] = useState<ProductData[]>([])
   const [showSheet, setShowSheet] = useState(false)
 
   // Cart
@@ -151,17 +149,22 @@ export default function Menu({
   }, [handleClearCart])
 
   const handleCheckout = async () => {
-    if (amount <= 0) return
+    const totalAmount = getTotalPrice()
+    if (totalAmount <= 0) return
 
-    const order = generateOrderEvent!()
-    // console.info('Publishing order')
-    publish!(order).catch(e => {
-      console.warn('Error publishing order')
-      console.warn(e)
-    })
+    const back = `/cart/${pageName}`
+    setLastCheckoutBack(back)
+    setAmount(totalAmount)
 
+    if (tipEnabled) {
+      router.push(`/tip?back=${encodeURIComponent(back)}`)
+      return
+    }
+
+    const order = generateOrderEvent!(totalAmount)
+    publishOrderInBackground!(order)
     setOrderEvent!(order)
-    router.push('/payment/' + order.id)
+    router.push(`/payment/${order.id}?back=${encodeURIComponent(back)}`)
   }
 
   useEffect(() => {
@@ -276,6 +279,8 @@ export default function Menu({
                   </li>
                 )
               }
+
+              return null
             })}
           </ul>
         </Container>

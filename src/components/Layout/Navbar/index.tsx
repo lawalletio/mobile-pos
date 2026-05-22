@@ -12,10 +12,11 @@ import { ReactNode } from 'react'
 interface ComponentProps {
   children?: ReactNode
   showBackPage?: boolean
+  onBack?: () => void
 }
 
 export default function Component(props: ComponentProps) {
-  const { children, showBackPage = false } = props
+  const { children, showBackPage = false, onBack } = props
 
   const router = useRouter()
 
@@ -24,7 +25,7 @@ export default function Component(props: ComponentProps) {
       <Container>
         <Flex flex={1} align="center" gap={8}>
           {showBackPage && (
-            <BackButton onClick={() => router.back()}>
+            <BackButton onClick={() => (onBack ? onBack() : router.back())}>
               <Icon>
                 <CaretLeftIcon />
               </Icon>
