@@ -6,6 +6,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState
 } from 'react'
 
@@ -13,7 +14,12 @@ import {
 import type { Event, UnsignedEvent } from 'nostr-tools'
 
 // Utils
-import { generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools'
+import {
+  generateSecretKey,
+  getPublicKey,
+  finalizeEvent,
+  nip19
+} from 'nostr-tools'
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils'
 import { useLocalStorage } from 'react-use-storage'
 
@@ -28,7 +34,14 @@ export interface INostrContext {
   ndk: NDK
   filter?: string
   getBalance: (pubkey: string) => Promise<number>
-  generateZapEvent?: (amountMillisats: number, postEventId?: string) => NDKEvent
+  resolveNip05?: (
+    nip05: string
+  ) => Promise<{ npub: string; pubkey: string; relays?: string[] } | undefined>
+  generateZapEvent?: (
+    amountMillisats: number,
+    postEventId?: string,
+    recipientPubkey?: string
+  ) => NDKEvent
   subscribeZap?: (eventId: string) => NDKSubscription
   getEvent?: (eventId: string) => Promise<NDKEvent | null>
   publish?: (_event: Event) => Promise<Set<NDKRelay>>
@@ -37,15 +50,40 @@ export interface INostrContext {
 const NOSTR_RELAY = process.env.NEXT_PUBLIC_NOSTR_RELAY!
 const LEDGER_PUBKEY = process.env.NEXT_PUBLIC_LEDGER_PUBKEY!
 
-const relays = [
+export const DEFAULT_NOSTR_RELAYS = [
   NOSTR_RELAY,
   'wss://relay.damus.io',
   'wss://nostr-pub.wellorder.net'
+].filter(Boolean)
+
+export const SUGGESTED_NOSTR_RELAYS = [
+  ...DEFAULT_NOSTR_RELAYS,
+  'wss://nos.lol',
+  'wss://nostr.wine',
+  'wss://relay.nostr.band',
+  'wss://relay.wellorder.net',
+  'wss://nostr.mom',
+  'wss://relay.primal.net',
+  'wss://relay.masize.com'
 ]
+
+export const REQUIRED_NOSTR_RELAY_COUNT = 2
+
+export function cleanRelays(relays: string[]): string[] {
+  return Array.from(
+    new Set(
+      relays
+        .map(relay => relay.trim())
+        .filter(Boolean)
+        .map(relay => (relay.startsWith('wss://') ? relay : `wss://${relay}`))
+        .map(relay => relay.replace(/\/+$/, ''))
+    )
+  )
+}
 
 // Context
 const ndk = new NDK({
-  explicitRelayUrls: relays
+  explicitRelayUrls: DEFAULT_NOSTR_RELAYS
 })
 
 export const NostrContext = createContext<INostrContext>({
@@ -63,6 +101,7 @@ interface INostrProviderProps {
 import NDK, {
   NDKEvent,
   NDKKind,
+  NDKRelaySet,
   NDKSubscription,
   type NDKRelay
 } from '@nostr-dev-kit/ndk'
@@ -73,12 +112,45 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
     'nostrPrivateKey',
     bytesToHex(generateSecretKey())
   )
+  const [storedRelays] = useLocalStorage<string[]>(
+    'nostrRelays',
+    DEFAULT_NOSTR_RELAYS
+  )
   const [publicKey, setPublicKey] = useState<string>()
   const [filter, setFilter] = useState<string>()
+  const relays = useMemo(() => {
+    const cleanedRelays = cleanRelays(storedRelays)
+    return cleanedRelays.length > 0 ? cleanedRelays : DEFAULT_NOSTR_RELAYS
+  }, [storedRelays])
+  const requiredRelayCount = Math.min(REQUIRED_NOSTR_RELAY_COUNT, relays.length)
+  const getRelaySet = useCallback(
+    () => NDKRelaySet.fromRelayUrls(relays, ndk),
+    [relays]
+  )
 
   /** Functions */
+  const resolveNip05 = useCallback(
+    async (nip05: string) => {
+      const user = await ndk.getUserFromNip05(nip05, true)
+      if (!user?.pubkey) {
+        return undefined
+      }
+
+      return {
+        npub: nip19.npubEncode(user.pubkey),
+        pubkey: user.pubkey,
+        relays: user.relayUrls
+      }
+    },
+    []
+  )
+
   const generateZapEvent = useCallback(
-    (amountMillisats: number, postEventId?: string): NDKEvent => {
+    (
+      amountMillisats: number,
+      postEventId?: string,
+      recipientPubkey = zapEmitterPubKey
+    ): NDKEvent => {
       const unsignedEvent: UnsignedEvent = {
         kind: 9734,
         content: '',
@@ -88,11 +160,11 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
           ['relays', ...relays],
           ['amount', amountMillisats.toString()],
           ['lnurl', 'lnurl'],
-          ['p', zapEmitterPubKey]
+          ['p', recipientPubkey]
         ] as string[][]
       }
 
-      postEventId && unsignedEvent.tags.push(['e', postEventId])
+      postEventId && unsignedEvent.tags.push(['e', postEventId, relays[0]])
 
       const event = new NDKEvent(
         ndk,
@@ -104,15 +176,19 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
 
       return event
     },
-    [zapEmitterPubKey, privateKey, publicKey]
+    [zapEmitterPubKey, privateKey, publicKey, relays]
   )
 
   const getBalance = async (pubkey: string): Promise<number> => {
-    const balance = await ndk.fetchEvent({
-      authors: [LEDGER_PUBKEY!],
-      kinds: [31111 as NDKKind],
-      '#d': [`balance:BTC:${pubkey}`]
-    })
+    const balance = await ndk.fetchEvent(
+      {
+        authors: [LEDGER_PUBKEY!],
+        kinds: [31111 as NDKKind],
+        '#d': [`balance:BTC:${pubkey}`]
+      },
+      undefined,
+      getRelaySet()
+    )
 
     if (!balance) {
       return 0
@@ -134,18 +210,22 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
 
     setFilter(JSON.stringify(zapFilters))
 
-    return ndk.subscribe(zapFilters, { closeOnEose: false })
+    return ndk.subscribe(zapFilters, { closeOnEose: false }, getRelaySet())
   }
 
   const getEvent = async (eventId: string): Promise<NDKEvent | null> => {
-    return ndk.fetchEvent({
-      ids: [eventId]
-    })
+    return ndk.fetchEvent(
+      {
+        ids: [eventId]
+      },
+      undefined,
+      getRelaySet()
+    )
   }
 
   const publish = async (event: Event): Promise<Set<NDKRelay>> => {
     const ndkEvent = new NDKEvent(ndk, event)
-    return ndkEvent.publish()
+    return ndkEvent.publish(getRelaySet(), 5000, requiredRelayCount)
   }
 
   /** useEffects */
@@ -164,7 +244,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
 
   useEffect(() => {
     // Generate Public key
-    const _publicKey = privateKey || getPublicKey(hexToBytes(privateKey))
+    const _publicKey = getPublicKey(hexToBytes(privateKey))
 
     setPublicKey(_publicKey)
   }, [privateKey])
@@ -178,6 +258,7 @@ export const NostrProvider = ({ children }: INostrProviderProps) => {
         ndk,
         filter,
         getBalance,
+        resolveNip05,
         generateZapEvent,
         subscribeZap,
         getEvent,

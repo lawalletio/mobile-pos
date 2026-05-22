@@ -13,6 +13,11 @@ export interface LNURLResponse {
   nostrPubkey?: string
   allowsNostr?: boolean
   accountPubKey?: string
+  lnurl?: string
+  nip05?: string
+  nip05Npub?: string
+  nip05Pubkey?: string
+  nip05Relays?: string[]
   federationId?: string
 }
 

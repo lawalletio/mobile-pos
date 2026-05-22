@@ -51,21 +51,6 @@ export const requestCardEndpoint = async (url: string, type: ScanAction) => {
     'X-LaWallet-Param': `federationId=${FEDERATION_ID}`
   }
 
-  // switch (type) {
-  //   case ScanAction.INFO:
-  //     return getMockInfo()
-  //     break
-
-  //   case ScanAction.RESET:
-  //     return getMockReset()
-  //     break
-
-  //   default:
-  //     throw new Error('Invalid ScanAction')
-  //     break
-  // }
-
-  // alert('headers: ' + JSON.stringify(headers))
   const response = await axios.get(url, {
     headers: headers
   })

@@ -17,6 +17,7 @@ import type { InvoiceRequest } from '@/types/lightning'
 // Utils
 import axios from 'axios'
 import { LNURLInvoiceResponse, LNURLResponse } from '@/types/lnurl'
+import { LaWalletContext } from './LaWalletContext'
 
 // Interface
 export interface ILNContext {
@@ -55,6 +56,8 @@ interface ILNProviderProps {
 }
 
 export const LNProvider = ({ children }: ILNProviderProps) => {
+  const { destinationLUD06 } = useContext(LaWalletContext)
+
   // Local state
   const [zapEmitterPubKey, setZapEmitterPubKey] = useState<string>()
   const [callbackUrl, setCallbackUrl] = useState<string>()
@@ -75,11 +78,13 @@ export const LNProvider = ({ children }: ILNProviderProps) => {
       amountMillisats,
       zapEvent
     }: InvoiceRequest): Promise<LNURLInvoiceResponse> => {
-      const encodedZapEvent = encodeURI(JSON.stringify(zapEvent))
-      const url = `${callbackUrl}?amount=${amountMillisats}&nostr=${encodedZapEvent}&lnurl=${destinationPubKey}`
-      console.info('url')
-      console.dir(url)
-      const response = await axios.get(url)
+      const response = await axios.get(callbackUrl!, {
+        params: {
+          amount: amountMillisats,
+          nostr: JSON.stringify(zapEvent),
+          ...(destinationPubKey ? { lnurl: destinationPubKey } : {})
+        }
+      })
       return response.data
     },
     [callbackUrl, destinationPubKey]
@@ -108,9 +113,17 @@ export const LNProvider = ({ children }: ILNProviderProps) => {
 
     setZapEmitterPubKey(lud06.nostrPubkey)
     setCallbackUrl(lud06.callback)
-    setDestinationPubKey(lud06.accountPubKey)
+    setDestinationPubKey(lud06.accountPubKey ?? lud06.lnurl)
     setIsReady(true)
   }, [lud06])
+
+  useEffect(() => {
+    if (!destinationLUD06) {
+      return
+    }
+
+    setLUD06(destinationLUD06)
+  }, [destinationLUD06])
 
   return (
     <LNContext.Provider

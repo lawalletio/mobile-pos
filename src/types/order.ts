@@ -19,8 +19,15 @@ export interface IPayment {
   amount: number
   event: Event
   lud06: LNURLResponse
+  currentInvoice?: string
+  lud21VerifyUrl?: string
   isPaid: boolean
   isPrinted: boolean
+  createdAt?: number
+  nostrPublishStatus?: 'pending' | 'published' | 'failed'
+  nostrRelayUrls?: string[]
+  zapReceiptStatus?: 'pending' | 'confirmed'
+  zapReceiptRelayUrls?: string[]
 }
 
 export interface IPaymentCache {

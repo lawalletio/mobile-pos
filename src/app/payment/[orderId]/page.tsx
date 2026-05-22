@@ -3,6 +3,7 @@
 // React/Next
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useLocalStorage } from 'react-use-storage'
 
 // Third-party
 import axios from 'axios'
@@ -39,7 +40,6 @@ import { Loader } from '@/components/Loader/Loader'
 import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import theme from '@/styles/theme'
 import { PrintOrder } from '@/types/print'
-import { useProxy } from '@/context/Proxy'
 import { useBitcoinBlock } from '@/context/BitcoinBlock'
 
 export default function Page() {
@@ -47,6 +47,7 @@ export default function Page() {
   const router = useRouter()
   const { orderId: orderIdFromUrl } = useParams()
   const query = useSearchParams()
+  const [lastCheckoutBack] = useLocalStorage('lastCheckoutBack', '')
   const { convertCurrency, pricesData } = useCurrencyConverter()
   const { zapEmitterPubKey } = useLN()
   const { lastBlockNumber } = useBitcoinBlock()
@@ -67,64 +68,24 @@ export default function Page() {
   } = useOrder()
   const { isAvailable, permission, status: scanStatus, scan, stop } = useCard()
   const { print } = usePrint()
-  const { transfer, internalTransfer, isEnabled: isProxyEnabled } = useProxy()
   const { userConfig } = useContext(LaWalletContext)
 
   // Local states
   const [cardStatus, setCardStatus] = useState<LNURLWStatus>(LNURLWStatus.IDLE)
-  const [isProxySettled, setIsProxySettled] = useState(false)
   const [error, setError] = useState<string>()
-  const [cardLnurlResponse, setCardLnurlResponse] = useState<LNURLResponse>()
-  const [cardUrl, setCardUrl] = useState<string>()
 
   /** Functions */
   const handleBack = useCallback(() => {
     clear()
     const back = query.get('back')
-    if (!back) {
-      router.back()
-      return
-    }
-    router.replace(back)
-  }, [clear, query, router])
-
-  const settleProxy = useCallback(
-    (cardUrl?: string, cardLnurlResponse?: LNURLResponse) => {
-      if (isProxySettled) {
-        console.info('Proxy already settled, returning')
-        return
-      }
-      console.info('Setting proxy as settled')
-      setIsProxySettled(true)
-      let pendingToTransfer = amount * 1000
-      console.info('Initial pending to transfer:', pendingToTransfer)
-      if (cardUrl && cardUrl.split('/')[2] === 'api.lacrypta.ar') {
-        try {
-          console.info('Card URL matches api.lacrypta.ar, calculating satsback')
-          const satsback = Math.round(pendingToTransfer * 0.3)
-          console.info('Satsback amount:', satsback)
-          console.info(
-            'Transferring satsback to account:',
-            cardLnurlResponse!.accountPubKey
-          )
-          internalTransfer(satsback, cardLnurlResponse!.accountPubKey!)
-          pendingToTransfer -= satsback
-          console.info(
-            'Remaining pending transfer after satsback:',
-            pendingToTransfer
-          )
-        } catch (e) {
-          console.error('Satsback failed ', e)
-        }
-      }
-      console.info(
-        'Transferring remaining amount to proxee:',
-        pendingToTransfer
-      )
-      transfer(pendingToTransfer)
-    },
-    [amount, transfer, internalTransfer, isProxySettled]
-  )
+    const target =
+      back && back !== '/tip'
+        ? back
+        : lastCheckoutBack && lastCheckoutBack !== '/tip'
+          ? lastCheckoutBack
+          : '/'
+    router.replace(target)
+  }, [clear, lastCheckoutBack, query, router])
 
   const processRegularPayment = useCallback(
     async (response: LNURLResponse) => {
@@ -147,9 +108,7 @@ export default function Page() {
 
   const startRead = useCallback(async () => {
     try {
-      const { cardUrl, lnurlResponse } = await scan(ScanAction.PAY_REQUEST)
-      setCardLnurlResponse(lnurlResponse)
-      setCardUrl(cardUrl)
+      const { lnurlResponse } = await scan(ScanAction.PAY_REQUEST)
       await processRegularPayment(lnurlResponse)
     } catch (e) {
       setCardStatus(LNURLWStatus.ERROR)
@@ -195,9 +154,6 @@ export default function Page() {
       return
     }
 
-    console.info('isProxyEnabled:', isProxyEnabled)
-    isProxyEnabled && settleProxy(cardUrl!, cardLnurlResponse)
-
     const printOrder = {
       total: convertCurrency(amount, 'SAT', 'ARS'),
       totalSats: amount,
@@ -219,7 +175,7 @@ export default function Page() {
     print(printOrder)
     setIsPrinted!(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPaid, amount, products, print, isProxyEnabled])
+  }, [isPaid, amount, products, print])
 
   // on card scanStatus change
   useEffect(() => {
@@ -263,7 +219,17 @@ export default function Page() {
   if (!invoice)
     return (
       <Flex flex={1} align="center" justify="center">
-        <Loader />
+        {amount <= 0 ? (
+          <Flex direction="column" gap={8} align="center">
+            <Text>No se pudo generar la invoice.</Text>
+            <Text size="small">La orden no tiene monto.</Text>
+            <Button variant="bezeledGray" onClick={() => handleBack()}>
+              Volver
+            </Button>
+          </Flex>
+        ) : (
+          <Loader />
+        )}
       </Flex>
     )
 
@@ -388,22 +354,22 @@ export default function Page() {
                 Waiting for payment
               </Text>
               <Flex justify="center" align="center" gap={4}>
-                {userConfig.props.currency !== 'SAT' && <Text>$</Text>}
-                <Heading>
-                  {formatToPreference(
-                    userConfig.props.currency,
-                    convertCurrency(amount, 'SAT', userConfig.props.currency)
-                  )}
-                </Heading>
-
-                <Text>{userConfig.props.currency}</Text>
+                <Heading>{amount}</Heading>
+                <Text>SAT</Text>
               </Flex>
+              <Text size="small" color={theme.colors.gray50}>
+                $
+                {formatToPreference(
+                  'ARS',
+                  convertCurrency(amount, 'SAT', 'ARS')
+                )}{' '}
+                ARS
+              </Text>
             </Flex>
             <Divider y={24} />
           </Container>
 
           <QRCode value={invoice} />
-          <Text>{isProxyEnabled ? 'Proxy enabled' : 'Proxy disabled'}</Text>
 
           <Flex>
             <Container size="small">

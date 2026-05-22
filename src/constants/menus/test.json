@@ -1,0 +1,22 @@
+[
+  {
+    "id": 9001,
+    "category_id": 15,
+    "name": "Producto test ARS",
+    "description": "",
+    "price": {
+      "value": 100,
+      "currency": "ARS"
+    }
+  },
+  {
+    "id": 9002,
+    "category_id": 15,
+    "name": "Producto test SAT",
+    "description": "",
+    "price": {
+      "value": 1000,
+      "currency": "SAT"
+    }
+  }
+]

@@ -10,11 +10,11 @@ import { LaWalletContext } from '@/context/LaWalletContext'
 import { useLocalStorage } from 'react-use-storage'
 import { useRouter } from 'next/navigation'
 import { useLN } from '@/context/LN'
-import { useProxy } from '@/context/Proxy'
 import { useOrder } from '@/context/Order'
+import { useNostr } from '@/context/Nostr'
 
 // Utils
-import { fetchLNURL } from '@/lib/utils'
+import { fetchLNURL, normalizeLNURL } from '@/lib/utils'
 
 // Components
 import { Flex, Heading, Text, Divider, Icon, Card } from '@/components/UI'
@@ -22,9 +22,21 @@ import Container from '@/components/Layout/Container'
 import {
   PantheonIcon,
   GearIcon,
+  InvoiceIcon,
   MenuIcon
 } from '@bitcoin-design/bitcoin-icons-react/filled'
 import { BtnLoader } from '@/components/Loader/Loader'
+
+const TEST_DESTINATION = 'test@lacrypta.ar'
+
+function getMetadataIdentifier(metadata?: string): string | undefined {
+  try {
+    const parsed = JSON.parse(metadata ?? '[]') as string[][]
+    return parsed.find(([type]) => type === 'text/identifier')?.[1]
+  } catch {
+    return undefined
+  }
+}
 
 export default function Page() {
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -35,7 +47,7 @@ export default function Page() {
   const { destination } = useParams()
   const { clear } = useLN()
   const { clear: clearOrder } = useOrder()
-  const { enableProxy, isEnabled: isProxyEnabled } = useProxy()
+  const { resolveNip05 } = useNostr()
   const { setDestinationLUD06 } = useContext(LaWalletContext)
 
   const removeStoredDestination = useCallback(() => {
@@ -48,18 +60,38 @@ export default function Page() {
     async (_destination: string) => {
       try {
         const lud06 = await fetchLNURL(_destination)
-        setDestinationLUD06(lud06)
-        if (isProxyEnabled) {
-          return
+        const metadataIdentifier = getMetadataIdentifier(lud06.metadata)
+        let resolvedIdentifier = _destination
+        let nip05 = await resolveNip05!(_destination)
+
+        if (
+          !nip05?.pubkey &&
+          metadataIdentifier &&
+          metadataIdentifier !== _destination
+        ) {
+          resolvedIdentifier = metadataIdentifier
+          nip05 = await resolveNip05!(metadataIdentifier)
         }
 
-        // disabled proxy
-        if (!lud06.allowsNostr) {
-          confirm(
-            'This Lightning Address has no nostr support (NIP-57).\nDo you want to enable Proxy?'
+        if (!nip05?.pubkey) {
+          throw new Error(
+            `No se pudo resolver NIP-05 para ${_destination}${
+              metadataIdentifier ? ` ni para ${metadataIdentifier}` : ''
+            }`
           )
-            ? enableProxy()
-            : removeStoredDestination()
+        }
+
+        setDestinationLUD06({
+          ...lud06,
+          lnurl: normalizeLNURL(_destination),
+          nip05: resolvedIdentifier,
+          nip05Npub: nip05.npub,
+          nip05Pubkey: nip05?.pubkey,
+          nip05Relays: nip05?.relays
+        })
+
+        if (!lud06.allowsNostr) {
+          throw new Error('This Lightning Address has no nostr support (NIP-57).')
         }
       } catch (e) {
         alert((e as Error).message)
@@ -68,7 +100,11 @@ export default function Page() {
         setIsLoading(false)
       }
     },
-    [setDestinationLUD06, enableProxy, removeStoredDestination, isProxyEnabled]
+    [
+      setDestinationLUD06,
+      removeStoredDestination,
+      resolveNip05
+    ]
   )
 
   useEffect(() => {
@@ -77,7 +113,7 @@ export default function Page() {
     }
     handleSetDestination(decodeURIComponent(destination as string))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destination, isProxyEnabled])
+  }, [destination])
 
   useEffect(() => {
     clear()
@@ -192,6 +228,22 @@ export default function Page() {
                 </Flex>
               )}
 
+              {destinationName === TEST_DESTINATION && (
+                <Flex gap={8}>
+                  <Card>
+                    <Link href="/cart/test">
+                      <Icon>
+                        <MenuIcon />
+                      </Icon>
+                      <Flex direction="column" gap={4}>
+                        <Heading as="h5">Test</Heading>
+                        <Text size="small">Menu de prueba.</Text>
+                      </Flex>
+                    </Link>
+                  </Card>
+                </Flex>
+              )}
+
               <Flex gap={8}>
                 <Card>
                   <Link href="/paydesk">
@@ -214,6 +266,17 @@ export default function Page() {
                     <Flex direction="column" gap={4}>
                       <Heading as="h5">Settings</Heading>
                       <Text size="small">POS Configuration</Text>
+                    </Flex>
+                  </Link>
+                </Card>
+                <Card>
+                  <Link href="/orders">
+                    <Icon>
+                      <InvoiceIcon />
+                    </Icon>
+                    <Flex direction="column" gap={4}>
+                      <Heading as="h5">Ordenes</Heading>
+                      <Text size="small">Historial del POS.</Text>
                     </Flex>
                   </Link>
                 </Card>
