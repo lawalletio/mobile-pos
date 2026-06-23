@@ -46,6 +46,7 @@ function TipContent() {
   const { convertCurrency } = useCurrencyConverter()
 
   const backParam = query.get('back')
+  const tabId = query.get('tab')
   const back =
     backParam && backParam !== '/tip'
       ? backParam
@@ -120,13 +121,18 @@ function TipContent() {
       const order = generateOrderEvent!(finalAmount, finalProducts)
       publishOrderInBackground!(order)
       setOrderEvent!(order)
+      const params = new URLSearchParams()
+      if (back) params.set('back', back)
+      if (tabId) params.set('tab', tabId)
+      const queryString = params.toString()
       router.push(
-        `/payment/${order.id}${back ? `?back=${encodeURIComponent(back)}` : ''}`
+        `/payment/${order.id}${queryString ? `?${queryString}` : ''}`
       )
     },
     [
       amount,
       back,
+      tabId,
       generateOrderEvent,
       mainPath,
       publishOrderInBackground,

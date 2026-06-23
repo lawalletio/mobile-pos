@@ -111,6 +111,25 @@ export const aggregateProducts = (
   return Array.from(productMap.values())
 }
 
+export const mergeProducts = (
+  existing: ProductQtyData[],
+  incoming: ProductQtyData[]
+): ProductQtyData[] => {
+  const productMap = new Map<string, ProductQtyData>()
+
+  ;[...existing, ...incoming].forEach(product => {
+    const key = `${product.id}`
+    const existingProduct = productMap.get(key)
+    if (existingProduct) {
+      existingProduct.qty += product.qty
+    } else {
+      productMap.set(key, { ...product })
+    }
+  })
+
+  return Array.from(productMap.values())
+}
+
 export function isValidUrl(urlString: string): boolean {
   const expression =
     /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/gi

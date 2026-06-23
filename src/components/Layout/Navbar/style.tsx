@@ -14,10 +14,22 @@ export const Navbar = styled.div<NavbarProps>`
 `
 
 export const BackButton = styled.button`
-  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 40px;
+  height: 40px;
+
+  background-color: ${theme.colors.gray15};
   border: none;
+  border-radius: 50%;
 
   color: ${theme.colors.primary};
 
   cursor: pointer;
+
+  &:hover {
+    opacity: 0.85;
+  }
 `

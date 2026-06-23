@@ -30,6 +30,10 @@ export default function Page() {
     'tipEnabled',
     false
   )
+  const [tabEnabled, setTabEnabled] = useLocalStorage<boolean>(
+    'tabEnabled',
+    false
+  )
   // Generate random private key
 
   const [, forceUpdate] = useState(0)
@@ -88,6 +92,24 @@ export default function Page() {
               }}
               onChange={e => setTipEnabled(e.target.checked)}
               checked={tipEnabled}
+              type="checkbox"
+            />
+          </Flex>
+
+          <Flex direction="row" align="center" justify="space-between" gap={16}>
+            <Flex direction="column" gap={4}>
+              <Heading as="h5">Tab</Heading>
+              <Text color={theme.colors.gray50} size="small">
+                Llevar cuenta por cliente (tab de bar).
+              </Text>
+            </Flex>
+            <input
+              style={{
+                width: '40px',
+                height: '40px'
+              }}
+              onChange={e => setTabEnabled(e.target.checked)}
+              checked={tabEnabled}
               type="checkbox"
             />
           </Flex>
