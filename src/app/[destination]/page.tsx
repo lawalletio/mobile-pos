@@ -19,9 +19,9 @@ import { fetchLNURL, normalizeLNURL } from '@/lib/utils'
 // Components
 import { Flex, Heading, Text, Divider, Icon, Card } from '@/components/UI'
 import Container from '@/components/Layout/Container'
+import Top from '../layout/top'
 import {
   PantheonIcon,
-  GearIcon,
   InvoiceIcon,
   MenuIcon
 } from '@bitcoin-design/bitcoin-icons-react/filled'
@@ -41,6 +41,7 @@ function getMetadataIdentifier(metadata?: string): string | undefined {
 export default function Page() {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [, setStoredDestination] = useLocalStorage('destination', '')
+  const [tabEnabled] = useLocalStorage<boolean>('tabEnabled', false)
 
   // Hooks
   const router = useRouter()
@@ -128,6 +129,7 @@ export default function Page() {
 
   return (
     <>
+      <Top />
       <Container size="small">
         <Divider y={24} />
         <Flex direction="column" gap={8} flex={1} justify="center">
@@ -244,42 +246,48 @@ export default function Page() {
                 </Flex>
               )}
 
-              <Flex gap={8}>
-                <Card>
-                  <Link href="/paydesk">
-                    <Icon>
-                      <PantheonIcon />
-                    </Icon>
-                    <Flex direction="column" gap={4}>
-                      <Heading as="h5">Cash Register</Heading>
-                      <Text size="small">
-                        Type the price and pay with your LN.
-                      </Text>
-                    </Flex>
-                  </Link>
-                </Card>
-                <Card color="secondary">
-                  <Link href="/settings">
-                    <Icon>
-                      <GearIcon />
-                    </Icon>
-                    <Flex direction="column" gap={4}>
-                      <Heading as="h5">Settings</Heading>
-                      <Text size="small">POS Configuration</Text>
-                    </Flex>
-                  </Link>
-                </Card>
-                <Card>
-                  <Link href="/orders">
-                    <Icon>
-                      <InvoiceIcon />
-                    </Icon>
-                    <Flex direction="column" gap={4}>
-                      <Heading as="h5">Ordenes</Heading>
-                      <Text size="small">Historial del POS.</Text>
-                    </Flex>
-                  </Link>
-                </Card>
+              <Flex direction="column" gap={8}>
+                <Flex gap={8}>
+                  <Card>
+                    <Link href="/paydesk">
+                      <Icon>
+                        <PantheonIcon />
+                      </Icon>
+                      <Flex direction="column" gap={4}>
+                        <Heading as="h5">Cash Register</Heading>
+                        <Text size="small">
+                          Type the price and pay with your LN.
+                        </Text>
+                      </Flex>
+                    </Link>
+                  </Card>
+                  <Card>
+                    <Link href="/orders">
+                      <Icon>
+                        <InvoiceIcon />
+                      </Icon>
+                      <Flex direction="column" gap={4}>
+                        <Heading as="h5">Ordenes</Heading>
+                        <Text size="small">Historial del POS.</Text>
+                      </Flex>
+                    </Link>
+                  </Card>
+                </Flex>
+                {tabEnabled && (
+                  <Flex gap={8}>
+                    <Card color="secondary">
+                      <Link href="/tab">
+                        <Icon>
+                          <InvoiceIcon />
+                        </Icon>
+                        <Flex direction="column" gap={4}>
+                          <Heading as="h5">Cerrar cuenta</Heading>
+                          <Text size="small">Cuentas abiertas (tab).</Text>
+                        </Flex>
+                      </Link>
+                    </Card>
+                  </Flex>
+                )}
               </Flex>
             </>
           )}

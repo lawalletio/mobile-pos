@@ -17,6 +17,7 @@ import { useOrder } from '@/context/Order'
 import { useLN } from '@/context/LN'
 import { useCard } from '@/hooks/useCard'
 import { usePrint } from '@/hooks/usePrint'
+import { useTabs } from '@/hooks/useTabs'
 import useCurrencyConverter from '@/hooks/useCurrencyConverter'
 import { LaWalletContext } from '@/context/LaWalletContext'
 
@@ -33,13 +34,17 @@ import {
   QRCode,
   Confetti,
   Icon,
-  Alert
+  Alert,
+  Sheet
 } from '@/components/UI'
 import Container from '@/components/Layout/Container'
+import Input from '@/components/UI/Input'
 import { Loader } from '@/components/Loader/Loader'
 import { CheckIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
 import theme from '@/styles/theme'
 import { PrintOrder } from '@/types/print'
+import { ProductQtyData } from '@/types/product'
+import { ITab } from '@/types/tab'
 import { useBitcoinBlock } from '@/context/BitcoinBlock'
 
 export default function Page() {
@@ -48,6 +53,8 @@ export default function Page() {
   const { orderId: orderIdFromUrl } = useParams()
   const query = useSearchParams()
   const [lastCheckoutBack] = useLocalStorage('lastCheckoutBack', '')
+  const [tabEnabled] = useLocalStorage<boolean>('tabEnabled', false)
+  const [tipEnabled] = useLocalStorage<boolean>('tipEnabled', false)
   const { convertCurrency, pricesData } = useCurrencyConverter()
   const { zapEmitterPubKey } = useLN()
   const { lastBlockNumber } = useBitcoinBlock()
@@ -64,15 +71,26 @@ export default function Page() {
     setCheckEmergencyEvent,
     setIsPrinted,
     loadOrder,
-    clear
+    clear,
+    setAmount,
+    setProducts,
+    setOrderEvent,
+    generateOrderEvent,
+    publishOrderInBackground
   } = useOrder()
   const { isAvailable, permission, status: scanStatus, scan, stop } = useCard()
   const { print } = usePrint()
+  const { tabs, addToTab, removeTab } = useTabs()
   const { userConfig } = useContext(LaWalletContext)
+  const tabId = query.get('tab')
 
   // Local states
   const [cardStatus, setCardStatus] = useState<LNURLWStatus>(LNURLWStatus.IDLE)
   const [error, setError] = useState<string>()
+  const [showTabSheet, setShowTabSheet] = useState(false)
+  const [newCustomerName, setNewCustomerName] = useState('')
+  const [addedTab, setAddedTab] = useState<ITab | null>(null)
+  const [showTabDetails, setShowTabDetails] = useState(false)
 
   /** Functions */
   const handleBack = useCallback(() => {
@@ -86,6 +104,49 @@ export default function Page() {
           : '/'
     router.replace(target)
   }, [clear, lastCheckoutBack, query, router])
+
+  const handleAddToTab = (name: string, existingId?: string) => {
+    const trimmed = name.trim()
+    if (!trimmed || amount <= 0) return
+
+    const tabItems: ProductQtyData[] =
+      products.length > 0
+        ? products
+        : [
+            {
+              id: 0,
+              category_id: 0,
+              name: 'Caja',
+              description: '',
+              price: { value: amount, currency: 'SAT' },
+              qty: 1
+            }
+          ]
+
+    const tab = addToTab(trimmed, tabItems, amount, existingId)
+    setShowTabSheet(false)
+    setNewCustomerName('')
+    setShowTabDetails(false)
+    setAddedTab(tab)
+  }
+
+  const handleCloseTab = (tab: ITab) => {
+    if (tab.amount <= 0) return
+
+    setAddedTab(null)
+    setAmount(tab.amount)
+    setProducts(tab.items)
+
+    if (tipEnabled) {
+      router.push(`/tip?back=/tab&tab=${tab.id}`)
+      return
+    }
+
+    const order = generateOrderEvent!(tab.amount, tab.items)
+    publishOrderInBackground!(order)
+    setOrderEvent!(order)
+    router.push(`/payment/${order.id}?back=/tab&tab=${tab.id}`)
+  }
 
   const processRegularPayment = useCallback(
     async (response: LNURLResponse) => {
@@ -177,6 +238,24 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPaid, amount, products, print])
 
+  // Clear the customer's tab once their account is settled
+  useEffect(() => {
+    if (isPaid && tabId) {
+      removeTab(tabId)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPaid, tabId])
+
+  // Auto-close the "added to tab" confirmation after 2s (unless details opened)
+  useEffect(() => {
+    if (!addedTab || showTabDetails) {
+      return
+    }
+
+    const timer = setTimeout(() => handleBack(), 2000)
+    return () => clearTimeout(timer)
+  }, [addedTab, showTabDetails, handleBack])
+
   // on card scanStatus change
   useEffect(() => {
     switch (scanStatus) {
@@ -199,6 +278,100 @@ export default function Page() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  if (addedTab) {
+    const totalItems = addedTab.items.reduce((sum, item) => sum + item.qty, 0)
+
+    return (
+      <>
+        <Container size="small">
+          <Divider y={24} />
+          <Flex
+            direction="column"
+            justify="center"
+            align="center"
+            gap={8}
+            flex={1}
+          >
+            <Icon color={theme.colors.primary}>
+              <CheckIcon />
+            </Icon>
+            <Text size="small" color={theme.colors.gray50}>
+              Agregado a la cuenta
+            </Text>
+            <Heading>{addedTab.name}</Heading>
+            <Flex justify="center" align="center" gap={4}>
+              <Heading>{addedTab.amount}</Heading>
+              <Text>SAT</Text>
+            </Flex>
+            <Text size="small" color={theme.colors.gray50}>
+              $
+              {formatToPreference(
+                'ARS',
+                convertCurrency(addedTab.amount, 'SAT', 'ARS')
+              )}{' '}
+              ARS
+            </Text>
+
+            {showTabDetails && (
+              <>
+                <Divider y={8} />
+                <Flex direction="column" gap={4}>
+                  {addedTab.items.map(item => (
+                    <Text key={item.id} size="small">
+                      {item.qty}x {item.name}
+                    </Text>
+                  ))}
+                </Flex>
+                <Text size="small" color={theme.colors.gray50}>
+                  {totalItems} {totalItems === 1 ? 'item' : 'items'}
+                </Text>
+              </>
+            )}
+          </Flex>
+          <Divider y={24} />
+        </Container>
+
+        <Flex>
+          <Container size="small">
+            <Divider y={16} />
+            <Flex gap={8} direction="column">
+              {showTabDetails ? (
+                <>
+                  <Flex>
+                    <Button
+                      variant="bezeled"
+                      onClick={() => handleCloseTab(addedTab)}
+                    >
+                      Cerrar cuenta ({addedTab.amount} SAT)
+                    </Button>
+                  </Flex>
+                  <Flex>
+                    <Button
+                      variant="bezeledGray"
+                      onClick={() => handleBack()}
+                    >
+                      Volver
+                    </Button>
+                  </Flex>
+                </>
+              ) : (
+                <Flex>
+                  <Button
+                    variant="bezeledGray"
+                    onClick={() => setShowTabDetails(true)}
+                  >
+                    Ver detalle
+                  </Button>
+                </Flex>
+              )}
+            </Flex>
+            <Divider y={24} />
+          </Container>
+        </Flex>
+      </>
+    )
+  }
 
   if (orderError && !isPaid) {
     return (
@@ -375,6 +548,16 @@ export default function Page() {
             <Container size="small">
               <Divider y={16} />
               <Flex gap={8} direction="column">
+                {tabEnabled && !tabId && (
+                  <Flex>
+                    <Button
+                      variant="bezeled"
+                      onClick={() => setShowTabSheet(true)}
+                    >
+                      Agregar a tab
+                    </Button>
+                  </Flex>
+                )}
                 <Flex gap={8}>
                   {isAvailable && permission === 'prompt' && (
                     <Button variant="bezeledGray" onClick={() => startRead()}>
@@ -401,6 +584,54 @@ export default function Page() {
           </Flex>
         </>
       )}
+
+      <Sheet
+        isOpen={showTabSheet}
+        onClose={() => {
+          setShowTabSheet(false)
+          setNewCustomerName('')
+        }}
+        title="Agregar a tab"
+      >
+        <Container>
+          <Divider y={8} />
+          <Flex direction="column" gap={8}>
+            <Input
+              value={newCustomerName}
+              onChange={e => setNewCustomerName(e.target.value)}
+              placeholder="Nombre del cliente"
+            />
+            <Flex>
+              <Button
+                color="secondary"
+                variant="bezeled"
+                onClick={() => handleAddToTab(newCustomerName)}
+              >
+                Crear y agregar
+              </Button>
+            </Flex>
+          </Flex>
+          <Divider y={16} />
+          {Object.values(tabs).length > 0 && (
+            <Flex direction="column" gap={8}>
+              <Text size="small" color={theme.colors.gray50}>
+                Clientes
+              </Text>
+              {Object.values(tabs).map(tab => (
+                <Flex key={tab.id}>
+                  <Button
+                    variant="bezeledGray"
+                    onClick={() => handleAddToTab(tab.name, tab.id)}
+                  >
+                    {tab.name}
+                  </Button>
+                </Flex>
+              ))}
+            </Flex>
+          )}
+          <Divider y={16} />
+        </Container>
+      </Sheet>
     </>
   )
 }

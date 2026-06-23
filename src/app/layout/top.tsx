@@ -7,7 +7,11 @@ export default function Top() {
   return (
     <Flex direction="row" justify="end" align="center">
       <div style={{ marginRight: '8px', marginTop: '8px' }}>
-        <Button onClick={() => router.push('/settings')}>
+        <Button
+          variant="bezeledGray"
+          size="small"
+          onClick={() => router.push('/settings')}
+        >
           <GearIcon />
         </Button>
       </div>
