@@ -207,76 +207,87 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     [setPaymentsCache]
   )
 
-  const generateOrderEvent = useCallback((
-    customAmount?: number,
-    customProducts?: ProductQtyData[]
-  ): Event => {
-    const orderAmount = customAmount ?? amount
-    const orderProducts = customProducts ?? products
-    const unsignedEvent: UnsignedEvent = {
-      kind: 1,
-      content: '',
-      pubkey: localPublicKey!,
-      created_at: Math.round(Date.now() / 1000),
-      tags: [
-        ['relays', ...relays!],
-        ['p', localPublicKey],
-        ['t', 'order'],
-        [
-          'description',
-          JSON.stringify({
-            memo,
-            amount: orderAmount
-          })
-        ],
-        ['products', JSON.stringify(orderProducts)]
-      ] as string[][]
-    }
+  const generateOrderEvent = useCallback(
+    (customAmount?: number, customProducts?: ProductQtyData[]): Event => {
+      const orderAmount = customAmount ?? amount
+      const orderProducts = customProducts ?? products
+      // A per-checkout nonce guarantees a UNIQUE event id even when the
+      // amount/products/memo and the (second-resolution) created_at are identical
+      // — otherwise two orders collide on the same id and the payment page reuses
+      // the previous order's invoice (the id-keyed invoice effect never re-fires).
+      const nonce =
+        globalThis.crypto?.randomUUID?.() ??
+        `${Date.now()}-${Math.random().toString(36).slice(2)}`
+      const unsignedEvent: UnsignedEvent = {
+        kind: 1,
+        content: '',
+        pubkey: localPublicKey!,
+        created_at: Math.round(Date.now() / 1000),
+        tags: [
+          ['relays', ...relays!],
+          ['p', localPublicKey],
+          ['t', 'order'],
+          ['nonce', nonce],
+          [
+            'description',
+            JSON.stringify({
+              memo,
+              amount: orderAmount
+            })
+          ],
+          ['products', JSON.stringify(orderProducts)]
+        ] as string[][]
+      }
 
-    const event = finalizeEvent(unsignedEvent, hexToBytes(localPrivateKey!))
+      const event = finalizeEvent(unsignedEvent, hexToBytes(localPrivateKey!))
 
-    // Saving current payments status
-    const payment: IPayment = {
-      amount: orderAmount,
-      event: event!,
-      id: event!.id,
-      isPaid,
-      lud06: lud06!,
-      isPrinted: isPrinted,
-      items: orderProducts,
-      createdAt: event.created_at,
-      nostrPublishStatus: 'pending',
-      nostrRelayUrls: [],
-      zapReceiptStatus: 'pending',
-      zapReceiptRelayUrls: []
-    }
+      // Saving current payments status
+      const payment: IPayment = {
+        amount: orderAmount,
+        event: event!,
+        id: event!.id,
+        // A freshly generated order is always unpaid/unprinted — never inherit
+        // the current (possibly stale) context flags.
+        isPaid: false,
+        lud06: lud06!,
+        isPrinted: false,
+        items: orderProducts,
+        createdAt: event.created_at,
+        nostrPublishStatus: 'pending',
+        nostrRelayUrls: [],
+        zapReceiptStatus: 'pending',
+        zapReceiptRelayUrls: []
+      }
 
-    const updatedCache = { ...paymentsCacheRef.current, [payment.id]: payment }
-    paymentsCacheRef.current = updatedCache
-    setPaymentsCache(updatedCache)
-    setAmount(orderAmount)
-    setIsPaid(false)
-    isPaidRef.current = false
-    setIsPrinted(false)
-    setCurrentInvoice(undefined)
-    setLUD21(undefined)
-    setError(undefined)
-    setOrderEvent(event)
-    setOrderId(payment.id)
+      const updatedCache = {
+        ...paymentsCacheRef.current,
+        [payment.id]: payment
+      }
+      paymentsCacheRef.current = updatedCache
+      setPaymentsCache(updatedCache)
+      setAmount(orderAmount)
+      setIsPaid(false)
+      isPaidRef.current = false
+      setIsPrinted(false)
+      setCurrentInvoice(undefined)
+      setLUD21(undefined)
+      setError(undefined)
+      setOrderEvent(event)
+      setOrderId(payment.id)
 
-    return event
-  }, [
-    localPublicKey,
-    relays,
-    memo,
-    amount,
-    products,
-    localPrivateKey,
-    isPaid,
-    lud06,
-    isPrinted,
-    setPaymentsCache
-  ])
+      return event
+    },
+    [
+      localPublicKey,
+      relays,
+      memo,
+      amount,
+      products,
+      localPrivateKey,
+      lud06,
+      setPaymentsCache
+    ]
+  )
 
   const publishOrderInBackground = useCallback(
     (order: Event) => {
@@ -428,13 +439,14 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       }
 
       zapReceiptRelaysRef.current[zapReceiptId] = receiptRelayUrls
-      orderId && updateCachedPayment(orderId, {
-        zapReceiptStatus:
-          receiptRelayUrls.size >= REQUIRED_NOSTR_RELAY_COUNT
-            ? 'confirmed'
-            : 'pending',
-        zapReceiptRelayUrls: Array.from(receiptRelayUrls)
-      })
+      orderId &&
+        updateCachedPayment(orderId, {
+          zapReceiptStatus:
+            receiptRelayUrls.size >= REQUIRED_NOSTR_RELAY_COUNT
+              ? 'confirmed'
+              : 'pending',
+          zapReceiptRelayUrls: Array.from(receiptRelayUrls)
+        })
 
       if (receiptRelayUrls.size < REQUIRED_NOSTR_RELAY_COUNT) {
         console.info(
@@ -528,7 +540,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     setCheckEmergencyEvent(false)
     setSubZap(undefined)
     zapReceiptRelaysRef.current = {}
-    invoiceRequestIdRef.current++  // Invalidate any in-flight invoice requests
+    invoiceRequestIdRef.current++ // Invalidate any in-flight invoice requests
   }, [])
 
   /** useEffects */
@@ -547,7 +559,10 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
     const updatedIsPaid = order.isPaid || isPaid
     const updatedIsPrinted = order.isPrinted || isPrinted
     // Only update if values actually changed
-    if (updatedIsPaid !== order.isPaid || updatedIsPrinted !== order.isPrinted) {
+    if (
+      updatedIsPaid !== order.isPaid ||
+      updatedIsPrinted !== order.isPrinted
+    ) {
       setPaymentsCache({
         ...paymentsCache,
         [orderId]: {
@@ -613,7 +628,9 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
       .then(_invoice => {
         // Only update state if this is still the current request
         if (requestId !== invoiceRequestIdRef.current) {
-          console.warn('Ignoring stale invoice response (superseded by newer request)')
+          console.warn(
+            'Ignoring stale invoice response (superseded by newer request)'
+          )
           return
         }
         setLUD21(_invoice.verify)
@@ -628,13 +645,7 @@ export const OrderProvider = ({ children }: IOrderProviderProps) => {
         setError(`Couldn't generate invoice. ${e.cause ?? e.message}`)
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    amount,
-    currentInvoice,
-    orderId,
-    updateCachedPayment,
-    zapEmitterPubKey
-  ])
+  }, [amount, currentInvoice, orderId, updateCachedPayment, zapEmitterPubKey])
 
   const handleResubscription = useCallback(
     (relay: NDKRelay) => {
