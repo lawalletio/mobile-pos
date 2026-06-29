@@ -1,7 +1,7 @@
 'use client'
 
 // React/Next
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useLocalStorage } from 'react-use-storage'
 
@@ -167,15 +167,28 @@ export default function Page() {
     [invoice]
   )
 
+  // Guard against processing the same invoice more than once. A single physical
+  // tap can trigger startRead repeatedly (the effect re-firing, the manual
+  // button, or the NFC layer re-reading a card left on the reader), which would
+  // POST the same SUN p/c to /scan/cb twice — the second hit fails with
+  // "counter value too old". Keying on `invoice` lets a genuinely new order
+  // (new invoice) read again, while a failed attempt can be retried.
+  const processedInvoiceRef = useRef<string | undefined>(undefined)
+
   const startRead = useCallback(async () => {
+    if (isPaid || !invoice || processedInvoiceRef.current === invoice) return
+    processedInvoiceRef.current = invoice
     try {
       const { lnurlResponse } = await scan(ScanAction.PAY_REQUEST)
       await processRegularPayment(lnurlResponse)
+      // Paid: stop the reader so a duplicate read can't re-POST the same tap.
+      stop()
     } catch (e) {
       setCardStatus(LNURLWStatus.ERROR)
       setError((e as Error).message)
+      processedInvoiceRef.current = undefined // allow a retry for this invoice
     }
-  }, [processRegularPayment, scan])
+  }, [invoice, isPaid, processRegularPayment, scan, stop])
 
   /** useEffects */
   // Search for orderIdFromURL
@@ -347,10 +360,7 @@ export default function Page() {
                     </Button>
                   </Flex>
                   <Flex>
-                    <Button
-                      variant="bezeledGray"
-                      onClick={() => handleBack()}
-                    >
+                    <Button variant="bezeledGray" onClick={() => handleBack()}>
                       Volver
                     </Button>
                   </Flex>
