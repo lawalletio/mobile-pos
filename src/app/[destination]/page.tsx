@@ -246,6 +246,22 @@ export default function Page() {
                 </Flex>
               )}
 
+              <Flex gap={8}>
+                <Card>
+                  <Link href="/cart/catalog">
+                    <Icon>
+                      <MenuIcon />
+                    </Icon>
+                    <Flex direction="column" gap={4}>
+                      <Heading as="h5">Menú</Heading>
+                      <Text size="small">
+                        Catálogo del comercio (Nostr).
+                      </Text>
+                    </Flex>
+                  </Link>
+                </Card>
+              </Flex>
+
               <Flex direction="column" gap={8}>
                 <Flex gap={8}>
                   <Card>
