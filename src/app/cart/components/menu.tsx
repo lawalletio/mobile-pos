@@ -1,16 +1,19 @@
 'use client'
 
 // React/Next
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocalStorage } from 'react-use-storage'
 
 // Hooks
 import { useOrder } from '@/context/Order'
+import { useNostr } from '@/context/Nostr'
+import { LaWalletContext } from '@/context/LaWalletContext'
 import useCurrencyConverter from '@/hooks/useCurrencyConverter'
 
 // Types
 import { ProductData } from '@/types/product'
+import { catalogRelays, loadCatalog, type PosCategory } from '@/lib/catalog'
 
 // Components
 import { TrashIcon } from '@bitcoin-design/bitcoin-icons-react/filled'
@@ -26,8 +29,9 @@ import {
 import Container from '@/components/Layout/Container'
 import FooterCart from '@/components/Layout/FooterCart'
 import Navbar from '@/components/Layout/Navbar'
+import { BtnLoader } from '@/components/Loader/Loader'
 
-import categories from '@/constants/categories.json'
+import jsonCategories from '@/constants/categories.json'
 
 // Style
 import theme from '@/styles/theme'
@@ -36,15 +40,30 @@ import { aggregateProducts } from '@/lib/utils'
 interface MenuProps {
   name?: string
   title?: string
+  source?: 'json' | 'nostr'
+}
+
+type MenuStatus = 'loading' | 'ready' | 'empty' | 'error'
+
+function groupByCategory(products: ProductData[]) {
+  const grouped: { [categoryId: number]: ProductData[] } = {}
+  products.forEach(product => {
+    const categoryId = product.category_id
+    if (!grouped[categoryId]) {
+      grouped[categoryId] = []
+    }
+    grouped[categoryId].push(product)
+  })
+  return grouped
 }
 
 export default function Menu({
   name: pageName = 'coffee',
-  title: pageTitle = 'Carrito de Café'
+  title: pageTitle = 'Carrito de Café',
+  source = 'json'
 }: MenuProps) {
   // Hooks
   const {
-    amount,
     setAmount,
     setOrderEvent,
     generateOrderEvent,
@@ -53,14 +72,22 @@ export default function Menu({
     clear: clearOrder
   } = useOrder()
   const router = useRouter()
+  const { ndk, relays } = useNostr()
+  const { destinationLUD06 } = useContext(LaWalletContext)
   const { convertCurrency } = useCurrencyConverter()
   const [tipEnabled] = useLocalStorage<boolean>('tipEnabled', false)
   const [, setLastCheckoutBack] = useLocalStorage('lastCheckoutBack', '')
 
   const [groupedProducts, setGroupedProducts] = useState<{
     [categoryId: number]: ProductData[]
-  }>([])
+  }>({})
   const [menuProducts, setMenuProducts] = useState<ProductData[]>([])
+  const [menuCategories, setMenuCategories] = useState<PosCategory[]>(
+    jsonCategories
+  )
+  const [status, setStatus] = useState<MenuStatus>(
+    source === 'nostr' ? 'loading' : 'ready'
+  )
   const [showSheet, setShowSheet] = useState(false)
 
   // Cart
@@ -119,23 +146,47 @@ export default function Menu({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cart])
 
-  const loadMenu = useCallback(async (name: string) => {
+  const loadJsonMenu = useCallback(async (name: string) => {
     const products = (await import(`@/constants/menus/${name}.json`))
       .default as ProductData[]
-    const _groupedProducts: {
-      [categoryId: number]: ProductData[]
-    } = {}
-    products.forEach(product => {
-      const categoryId = product.category_id
-      if (!_groupedProducts[categoryId]) {
-        _groupedProducts[categoryId] = []
-      }
-      _groupedProducts[categoryId].push(product)
-    })
-
-    setGroupedProducts(_groupedProducts)
+    setMenuCategories(jsonCategories)
+    setGroupedProducts(groupByCategory(products))
     setMenuProducts(products)
+    setStatus('ready')
   }, [])
+
+  const loadNostrMenu = useCallback(async () => {
+    const pubkey = destinationLUD06?.nip05Pubkey
+    if (!destinationLUD06) return
+    if (!pubkey) {
+      router.replace('/')
+      return
+    }
+
+    setStatus('loading')
+    try {
+      const menu = await loadCatalog(
+        ndk,
+        pubkey,
+        catalogRelays(relays ?? [], destinationLUD06.nip05Relays ?? [])
+      )
+      if (menu.products.length === 0) {
+        setGroupedProducts({})
+        setMenuProducts([])
+        setMenuCategories([])
+        setStatus('empty')
+        return
+      }
+
+      setMenuCategories(menu.categories)
+      setGroupedProducts(groupByCategory(menu.products))
+      setMenuProducts(menu.products)
+      setStatus('ready')
+    } catch (e) {
+      console.error(e)
+      setStatus('error')
+    }
+  }, [destinationLUD06, ndk, relays, router])
 
   const handleClearCart = useCallback(() => {
     setCart([])
@@ -169,11 +220,13 @@ export default function Menu({
 
   useEffect(() => {
     clearOrder()
-    loadMenu(pageName)
+    if (source === 'nostr') {
+      loadNostrMenu()
+      return
+    }
+    loadJsonMenu(pageName)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageName])
-
-  useEffect(() => {}, [])
+  }, [pageName, source, destinationLUD06?.nip05Pubkey])
 
   useEffect(() => {
     setAmount(getTotalPrice())
@@ -188,30 +241,50 @@ export default function Menu({
       </Navbar>
       <Container size="small">
         <Divider y={24} />
-        <Flex direction="column" gap={24}>
-          {categories.map(
-            category =>
-              groupedProducts[category.id] && (
-                <Flex key={category.id} direction="column">
-                  <Text size="small" color={theme.colors.gray50}>
-                    {category.name}
-                  </Text>
-                  <Flex direction="column">
-                    {groupedProducts[category.id]?.map(product => (
-                      <Product
-                        key={product.id}
-                        data={product}
-                        onAddToCart={() => addToCart(product)}
-                        quantityInCart={productQuantities[product.id] || 0}
-                        onRemoveOne={() => removeFromCart(product)}
-                        onAddOne={() => addToCart(product)}
-                      />
-                    ))}
+        {status === 'loading' && (
+          <Flex justify="center">
+            <BtnLoader />
+          </Flex>
+        )}
+        {status === 'empty' && (
+          <Flex justify="center">
+            <Text>Este comercio no tiene menú publicado.</Text>
+          </Flex>
+        )}
+        {status === 'error' && (
+          <Flex direction="column" gap={16} align="center">
+            <Text>No se pudo cargar el menú desde Nostr.</Text>
+            <Button variant="bezeled" onClick={() => loadNostrMenu()}>
+              Reintentar
+            </Button>
+          </Flex>
+        )}
+        {status === 'ready' && (
+          <Flex direction="column" gap={24}>
+            {menuCategories.map(
+              category =>
+                groupedProducts[category.id] && (
+                  <Flex key={category.id} direction="column">
+                    <Text size="small" color={theme.colors.gray50}>
+                      {category.name}
+                    </Text>
+                    <Flex direction="column">
+                      {groupedProducts[category.id]?.map(product => (
+                        <Product
+                          key={product.id}
+                          data={product}
+                          onAddToCart={() => addToCart(product)}
+                          quantityInCart={productQuantities[product.id] || 0}
+                          onRemoveOne={() => removeFromCart(product)}
+                          onAddOne={() => addToCart(product)}
+                        />
+                      ))}
+                    </Flex>
                   </Flex>
-                </Flex>
-              )
-          )}
-        </Flex>
+                )
+            )}
+          </Flex>
+        )}
         <Divider y={64} />
         {cart.length > 0 && (
           <FooterCart>
@@ -228,7 +301,6 @@ export default function Menu({
               </div>
               <Flex>
                 <Button
-                  // color="secondary"
                   variant="bezeled"
                   onClick={() => setShowSheet(true)}
                 >
