@@ -49,7 +49,7 @@ export default function Page() {
   const { clear } = useLN()
   const { clear: clearOrder } = useOrder()
   const { resolveNip05 } = useNostr()
-  const { setDestinationLUD06 } = useContext(LaWalletContext)
+  const { destinationLUD06, setDestinationLUD06 } = useContext(LaWalletContext)
 
   const removeStoredDestination = useCallback(() => {
     setStoredDestination('')
@@ -74,19 +74,21 @@ export default function Page() {
           nip05 = await resolveNip05!(metadataIdentifier)
         }
 
+        // NIP-05 is optional: without it we simply don't offer the merchant
+        // catalog (Nostr menu). The pay/collect flow only needs LNURL-pay.
         if (!nip05?.pubkey) {
-          throw new Error(
-            `No se pudo resolver NIP-05 para ${_destination}${
-              metadataIdentifier ? ` ni para ${metadataIdentifier}` : ''
-            }`
+          console.warn(
+            `NIP-05 not resolved for ${_destination}${
+              metadataIdentifier ? ` nor for ${metadataIdentifier}` : ''
+            }; merchant protocol disabled.`
           )
         }
 
         setDestinationLUD06({
           ...lud06,
           lnurl: normalizeLNURL(_destination),
-          nip05: resolvedIdentifier,
-          nip05Npub: nip05.npub,
+          nip05: nip05?.pubkey ? resolvedIdentifier : undefined,
+          nip05Npub: nip05?.npub,
           nip05Pubkey: nip05?.pubkey,
           nip05Relays: nip05?.relays
         })
@@ -246,21 +248,23 @@ export default function Page() {
                 </Flex>
               )}
 
-              <Flex gap={8}>
-                <Card>
-                  <Link href="/cart/catalog">
-                    <Icon>
-                      <MenuIcon />
-                    </Icon>
-                    <Flex direction="column" gap={4}>
-                      <Heading as="h5">Menú</Heading>
-                      <Text size="small">
-                        Catálogo del comercio (Nostr).
-                      </Text>
-                    </Flex>
-                  </Link>
-                </Card>
-              </Flex>
+              {destinationLUD06?.nip05Pubkey && (
+                <Flex gap={8}>
+                  <Card>
+                    <Link href="/cart/catalog">
+                      <Icon>
+                        <MenuIcon />
+                      </Icon>
+                      <Flex direction="column" gap={4}>
+                        <Heading as="h5">Menú</Heading>
+                        <Text size="small">
+                          Catálogo del comercio (Nostr).
+                        </Text>
+                      </Flex>
+                    </Link>
+                  </Card>
+                </Flex>
+              )}
 
               <Flex direction="column" gap={8}>
                 <Flex gap={8}>
